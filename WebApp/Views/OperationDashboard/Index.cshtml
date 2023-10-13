@@ -1,0 +1,758 @@
+﻿@using PagedList.Mvc
+
+@model WebApp.Models.OperationDashboardViewModel
+
+@{
+    ViewBag.Title = "Operational Dashboard";
+
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body card-listing">
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#operation" class="@(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "active" : "") underline-tab">Operation Dashboard</a></li>
+            <li class="nav-item"><a class="@(ViewBag.ActiveTab == 2 ? "active" : "") underline-tab" data-toggle="tab" href="#report">Report Generation</a></li>
+            <li class="nav-item"><a class="@(ViewBag.ActiveTab == 3 ? "active" : "") underline-tab" data-toggle="tab" href="#cutOff">Cut Off</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "show active" : "")" id="operation" role="tabpanel" aria-labelledby="operation-tab">
+                <div class="d-flex">
+                    <div class="flex-fill w-50 pr-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>RI Data Overview</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-65">Ceding Company</th>
+                                                <th class="w-20">No of Case(s)</th>
+                                                <th class="w-15 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="max-height: 310px !important;">
+                                            <tr v-if="!RiDataOverviews.length">
+                                                <td colspan="3" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(riData, index) in RiDataOverviews">
+                                                <td class="w-65">{{riData.CedantBo?.Name}}</td>
+                                                <td class="w-20 text-right">{{riData.NoOfCase}}</td>
+                                                <td class="w-15 text-center">
+                                                    <a href="javascript:void(0);" v-on:click="openOverviewModal(index, RiDataOverviewType)"><span class="fas fa-eye" /></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>SOA Data Overview</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-65">Ceding Company</th>
+                                                <th class="w-20">No of Case(s)</th>
+                                                <th class="w-15 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="max-height: 310px !important;">
+                                            <tr v-if="!SoaDataOverviews.length">
+                                                <td colspan="3" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(soaData, index) in SoaDataOverviews">
+                                                <td class="w-65">{{soaData.CedantBo?.Name}}</td>
+                                                <td class="w-20 text-right">{{soaData.NoOfCase}}</td>
+                                                <td class="w-15 text-center">
+                                                    <a href="javascript:void(0);" v-on:click="openOverviewModal(index, SoaDataOverviewType)"><span class="fas fa-eye" /></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>
+                                    Total Booked in Premium (By Quarter)
+                                    <span class="float-right" style="font-size: smaller">Year-to-date &bull; {{TotalBookedByQuarterYear}}</span>
+                                </h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="form-group row">
+                                    @Html.Label("Year", htmlAttributes: new { @class = "col-sm-2 col-form-label" })
+                                    <select v-model="TotalBookedByQuarterYear" class="col-sm-10 form-control selectpicker" ref="select" :name="TotalBookedByQuarterYear" data-container="body" v-on:change="refreshTotalBookedByQuarter()">
+                                        <option v-for="year in Years" :value="year.Value">{{ year.Text }}</option>
+                                    </select>
+                                </div>
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-50">Quarter</th>
+                                                <th class="w-50">Actual</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-if="!TotalBookedByQuarter.length">
+                                                <td colspan="3" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(TotalBooked, index) in TotalBookedByQuarter">
+                                                <td class="w-50">{{TotalBooked.Quarter}}</td>
+                                                <td class="w-50 text-right">{{TotalBooked.TotalGrossPremium}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>SOA Tracking Overview</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-35">Ceding Company</th>
+                                                <th class="w-25">No of Statement(s)</th>
+                                                <th class="w-25">Total Gross Premium (MYR)</th>
+                                                <th class="w-15 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="max-height: 310px !important;">
+                                            <tr v-if="!SoaTrackingOverviews.length">
+                                                <td colspan="4" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(SoaTracking, index) in SoaTrackingOverviews">
+                                                <td class="w-35">{{SoaTracking.CedantBo?.Name}}</td>
+                                                <td class="w-25 text-right">{{SoaTracking.NoOfCase}}</td>
+                                                <td class="w-25 text-right">{{SoaTracking.TotalGrossPremium}}</td>
+                                                <td class="w-15 text-center">
+                                                    <a href="javascript:void(0);" v-on:click="openSoaTrackingOverviewModal(index)"><span class="fas fa-eye" /></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-fill w-50 pl-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Claims Data Overview</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-65">Ceding Company</th>
+                                                <th class="w-20">No of Case(s)</th>
+                                                <th class="w-15 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="max-height: 310px !important;">
+                                            <tr v-if="!ClaimDataOverviews.length">
+                                                <td colspan="3" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(claimData, index) in ClaimDataOverviews">
+                                                <td class="w-65">{{claimData.CedantBo?.Name}}</td>
+                                                <td class="w-20 text-right">{{claimData.NoOfCase}}</td>
+                                                <td class="w-15 text-center">
+                                                    <a href="javascript:void(0);" v-on:click="openOverviewModal(index, ClaimDataOverviewType)"><span class="fas fa-eye" /></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Outstanding Claim Cases (Top 100)</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <table class="table table-hover tableBodyScroll">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-30 bg-white"></th>
+                                            <th class="w-15 bg-white"></th>
+                                            <th class="w-15 bg-white"></th>
+                                            <th class="w-40 text-center" colspan="2">No of Case(s)</th>
+                                        </tr>
+                                        <tr class="second-row-header">
+                                            <th class="w-30">Target Date to Issue Invoice</th>
+                                            <th class="w-15">Treaty Code</th>
+                                            <th class="w-15">SOA Quarter</th>
+                                            <th class="w-20">Total Cases</th>
+                                            <th class="w-20">Pending Approval</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody style="max-height: 310px !important;">
+                                        <tr v-if="!OutstandingClaimCases.length">
+                                            <td colspan="5" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(OutstandingClaimCase, index) in OutstandingClaimCases">
+                                            <td class="w-30">{{OutstandingClaimCase.TargetDateToIssueInvoiceStr}}</td>
+                                            <td class="w-15">{{OutstandingClaimCase.TreatyCode}}</td>
+                                            <td class="w-15">{{OutstandingClaimCase.SoaQuarter}}</td>
+                                            <td class="w-20 text-right">{{OutstandingClaimCase.NoOfCase}}</td>
+                                            <td class="w-20 text-right">{{OutstandingClaimCase.PendingCase}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Pending Claims Clarification <span style="font-size: smaller">(from Claims Department) &bull; @ViewBag.TotalPendingClarificationClaims Cases</span></h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-20">Entry No</th>
+                                                <th class="w-20">Claim ID</th>
+                                                <th class="w-15">Claim Type</th>
+                                                <th class="w-20">Status</th>
+                                                <th class="w-15 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="max-height: 310px !important;">
+                                            <tr v-if="!PendingClarificationClaims.length">
+                                                <td colspan="3" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(PendingClarificationClaim, index) in PendingClarificationClaims">
+                                                <td class="w-20">{{PendingClarificationClaim.EntryNo}}</td>
+                                                <td class="w-20">{{PendingClarificationClaim.ClaimId}}</td>
+                                                <td class="w-15">{{PendingClarificationClaim.ClaimTransactionType}}</td>
+                                                <td class="w-20">{{PendingClarificationClaim.StatusName}}</td>
+                                                <td class="w-15 text-center">
+                                                    <a href="javascript:void(0);" v-bind:href="claimRegisterLink(index)" title="Edit Claim Register"><span class="fas fa-pencil-alt" /></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>
+                                    Total Booked in Premium (By Cedant)
+                                    <span class="float-right" style="font-size: smaller">Year-to-date &bull; {{TotalBookedByCedantYear}}</span>
+                                </h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <div class="form-group row">
+                                    @Html.Label("Year", htmlAttributes: new { @class = "col-sm-2 col-form-label" })
+                                    <select v-model="TotalBookedByCedantYear" class="col-sm-10 form-control selectpicker" ref="select" :name="TotalBookedByCedantYear" data-container="body" v-on:change="refreshTotalBookedByCedant()">
+                                        <option v-for="year in Years" :value="year.Value">{{ year.Text }}</option>
+                                    </select>
+                                </div>
+                                <div class="table-responsive my-3">
+                                    <table class="table table-hover tableBodyScroll">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-80">Ceding Company</th>
+                                                <th class="w-20">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="max-height: 310px !important;">
+                                            <tr v-if="!TotalBookedByCedant.length">
+                                                <td colspan="2" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="(TotalBooked, index) in TotalBookedByCedant">
+                                                <td class="w-80">{{TotalBooked.CedantBo?.Name}}</td>
+                                                <td class="w-20">{{TotalBooked.TotalGrossPremium}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Sanction Summary</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <table class="table table-hover" style="table-layout: fixed;">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center w-40">Potential Match</th>
+                                            <th class="text-center w-30">Exact Match</th>
+                                            <th class="text-center w-30">Whitelist</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center">{{Summary?.PotentialCount}}</td>
+                                            <td class="text-center">{{Summary?.ExactMatchCount}}</td>
+                                            <td class="text-center">{{Summary?.WhitelistCount}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Potential Matched Cases (Unprocessed Data)</h4>
+                            </div>
+                            <div class="card-body card-body-dashboard">
+                                <table class="table table-hover" style="table-layout: fixed;">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-30">Source</th>
+                                            <th class="text-right w-20">RI Data</th>
+                                            <th class="text-right w-20">ClaimRegister</th>
+                                            <th class="text-right w-20">Referral Claim</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!PotentialMatchedCases.length">
+                                            <td colspan="4" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(potentialMatchedCase, index) in PotentialMatchedCases">
+                                            <td>{{ potentialMatchedCase.SourceBo?.Name }}</td>
+                                            <td class="text-right">{{ potentialMatchedCase.RiDataCount }}</td>
+                                            <td class="text-right">{{ potentialMatchedCase.ClaimRegisterCount }}</td>
+                                            <td class="text-right">{{ potentialMatchedCase.ReferralClaimCount }}</td>
+                                        </tr>
+                                        <tr v-if="PotentialMatchedCases.length">
+                                            <td class="font-weight-bold">Total</td>
+                                            <td class="text-right">{{TotalPotentialMatch?.RiDataCount}}</td>
+                                            <td class="text-right">{{TotalPotentialMatch?.ClaimRegisterCount}}</td>
+                                            <td class="text-right">{{TotalPotentialMatch?.ReferralClaimCount}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="report" role="tabpanel" aria-labelledby="report-tab">
+
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="cutOff" role="tabpanel" aria-labelledby="cutOff-tab">
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Reporting Month</th>
+                                <th class="w-20">Date & Time</th>
+                                <th class="w-10">Quarter</th>
+                                <th class="w-20">Created By</th>
+                                <th class="w-15">Status</th>
+                                <th class="w-15">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model.CutOff.Count > 0)
+                                {
+                                    foreach (var item in Model.CutOff)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @string.Format("{0} {1}", System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(item.Month), item.Year)
+                                            </td>
+                                            <td>
+                                                @if (item.CutOffDateTime != null)
+                                                {
+                                                    @item.CutOffDateTime.Value.ToString(Shared.Util.GetDateTimeFormat())
+                                                }
+                                            </td>
+                                            <td>@item.Quarter</td>
+                                            <td>@item.CreatedBy</td>
+                                            <td>@BusinessObject.CutOffBo.GetStatusName(item.Status)</td>
+                                            <td>
+                                                @if (item.Status == BusinessObject.CutOffBo.StatusInitiated)
+                                                {
+                                                    using (Html.BeginForm("Edit", "OperationDashboard", FormMethod.Post, new { id = ("editForm" + item.Id) }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        @Html.Hidden("Id", item.Id)
+
+                                                        <input type="button" onclick="SubmitCheck('@item.Quarter', '@item.Id');" class="btn btn-submit float-right" style="width: auto;" value="SUBMIT FOR PROCESSING" />
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @{
+                                ViewBag.CurrentPageNumber = Model.CutOff.PageNumber;
+                                ViewBag.CurrentPageItems = Model.CutOff.Count;
+                                ViewBag.PageSize = Model.CutOff.PageSize;
+                                ViewBag.Total = ViewBag.TotalCutOff;
+                            }
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(Model.CutOff, Page => Url.Action("Index", new
+                            {
+                                SortOrder = ViewBag.SortOrder,
+                                TabIndex = 3,
+                                Page,
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="overviewModal" tabindex="-1" role="dialog" aria-labelledby="overviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="overviewModalLabel">{{OverviewModal.Title}}</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Ceding Company</label>
+                        <input class="form-control" v-model="OverviewModal.CedingCompany" readonly />
+                    </div>
+                    <div class="mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-25">Treaty ID</th>
+                                    <th class="w-25">SOA Quarter</th>
+                                    <th class="w-25">No of Case(s)</th>
+                                    <th class="w-25">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!OverviewModal.OverviewDetail.length">
+                                    <td colspan="2" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(Detail, index) in OverviewModal.OverviewDetail">
+                                    <td>{{ Detail.TreatyBo?.TreatyIdCode }}</td>
+                                    <td>{{ Detail.Quarter }}</td>
+                                    <td class="text-right">{{ Detail.NoOfCase }}</td>
+                                    <td>{{ Detail.StatusName }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="soaTrackingOverviewModal" tabindex="-1" role="dialog" aria-labelledby="soaTrackingOverviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="soaTrackingOverviewModalLabel">SOA Tracking Overview</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Ceding Company</label>
+                        <input class="form-control" v-model="SoaTrackingOverviewModal.CedingCompany" readonly />
+                    </div>
+                    <div class="mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-25">Treaty ID</th>
+                                    <th class="w-25">SOA Quarter</th>
+                                    <th class="w-25">Total Gross Premium (MYR)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!SoaTrackingOverviewModal.OverviewDetail.length">
+                                    <td colspan="2" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(Detail, index) in SoaTrackingOverviewModal.OverviewDetail">
+                                    <td>{{ Detail.TreatyBo?.TreatyIdCode }}</td>
+                                    <td>{{ Detail.Quarter }}</td>
+                                    <td class="text-right">{{ Detail.TotalGrossPremium }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="submitComfirmationModal" tabindex="-1" role="dialog" aria-labelledby="submitComfirmationModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>There are data still pending for approval.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                    <button type="button" class="btn btn-submit" id="submit">SUBMIT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var RiDataOverviews = @Html.Raw(serializer.Serialize(ViewBag.RiDataOverviews));
+        var ClaimDataOverviews = @Html.Raw(serializer.Serialize(ViewBag.ClaimDataOverviews));
+        var SoaDataOverviews = @Html.Raw(serializer.Serialize(ViewBag.SoaDataOverviews));
+        var SoaTrackingOverviews = @Html.Raw(serializer.Serialize(ViewBag.SoaTrackingOverviews));
+        var PendingClarificationClaims = @Html.Raw(serializer.Serialize(ViewBag.PendingClarificationClaims));
+        // Sanction
+        var Summary = @Html.Raw(serializer.Serialize(ViewBag.Summary));
+        var PotentialMatchedCases = @Html.Raw(serializer.Serialize(ViewBag.PotentialMatchedCases));
+        var TotalPotentialMatch = @Html.Raw(serializer.Serialize(ViewBag.TotalPotentialMatch));
+        var Years = @Html.Raw(serializer.Serialize(ViewBag.DropDownYears));
+        var CurrentDate = new Date();
+        var CurrentYear = CurrentDate.getFullYear();
+        // Outstanding Claim Case
+        var OutstandingClaimCases = @Html.Raw(serializer.Serialize(ViewBag.OutstandingClaimCases));
+
+        var ClaimRegisterUrl = '@Url.Action("Edit", "ClaimRegister")?id=';
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                RiDataOverviews: RiDataOverviews ? RiDataOverviews : [],
+                ClaimDataOverviews: ClaimDataOverviews ? ClaimDataOverviews : [],
+                SoaDataOverviews: SoaDataOverviews ? SoaDataOverviews : [],
+                PendingClarificationClaims: PendingClarificationClaims ? PendingClarificationClaims : [],
+                TotalBookedByQuarter: [],
+                TotalBookedByCedant: [],
+                SoaTrackingOverviews: SoaTrackingOverviews ? SoaTrackingOverviews : [],
+                // Sanction
+                Summary: Summary ? Summary : null,
+                PotentialMatchedCases: PotentialMatchedCases ? PotentialMatchedCases : [],
+                TotalPotentialMatch: TotalPotentialMatch ? TotalPotentialMatch : null,
+                TotalBookedByQuarterYear: CurrentYear,
+                TotalBookedByCedantYear: CurrentYear,
+                // Outstanding Claim Case
+                OutstandingClaimCases: OutstandingClaimCases ? OutstandingClaimCases : [],
+
+                RiDataOverviewType: 1,
+                ClaimDataOverviewType: 2,
+                SoaDataOverviewType: 3,
+
+                OverviewModal: {
+                    Titile: "",
+                    CedingCompany: "",
+                    OverviewDetail: [],
+                },
+
+                SoaTrackingOverviewModal: {
+                    CedingCompany: "",
+                    OverviewDetail: [],
+                },
+
+                SoaTrackingOverviews: SoaTrackingOverviews ? SoaTrackingOverviews :[],
+            },
+            methods: {
+                openOverviewModal: function (index, type) {
+                    var cedantId = 0;
+                    switch (type) {
+                        case this.RiDataOverviewType:
+                            this.OverviewModal.Title = "RI Data Overview";
+                            this.OverviewModal.CedingCompany = this.RiDataOverviews[index].CedantBo?.Name;
+                            cedantId = this.RiDataOverviews[index].CedantId;
+                            break;
+                        case this.ClaimDataOverviewType:
+                            this.OverviewModal.Title = "Claim Data Overview";
+                            this.OverviewModal.CedingCompany = this.ClaimDataOverviews[index].CedantBo?.Name;
+                            cedantId = this.ClaimDataOverviews[index].CedantId;
+                            break;
+                        case this.SoaDataOverviewType:
+                            this.OverviewModal.Title = "SOA Data Overview";
+                            this.OverviewModal.CedingCompany = this.SoaDataOverviews[index].CedantBo?.Name;
+                            cedantId = this.SoaDataOverviews[index].CedantId;
+                            break;
+                    }
+
+                    var isError = true;
+                    var OverviewDetail = this.OverviewModal.OverviewDetail;
+                    $.ajax({
+                        url: "@(Url.Action("GetOverviewDetail", "OperationDashboard"))",
+                        type: "POST",
+                        data: {
+                            cedantId: cedantId,
+                            type: type,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            OverviewDetail = data.OverviewDetail;
+                            isError = false;
+                        }
+                    });
+                    this.OverviewModal.OverviewDetail = OverviewDetail;
+                    if (!isError)
+                        $("#overviewModal").modal()
+                    else
+                        alert("Error encountered during retrieving data")
+                },
+                openSoaTrackingOverviewModal: function (index) {
+                    var cedantId = 0;
+                    this.SoaTrackingOverviewModal.CedingCompany = this.SoaTrackingOverviews[index].CedantBo?.Name;
+                    cedantId = this.SoaTrackingOverviews[index].CedantId;
+
+                    var isError = true;
+                    var OverviewDetail = this.SoaTrackingOverviewModal.OverviewDetail;
+                    $.ajax({
+                        url: "@(Url.Action("GetSoaTrackingOverviewDetail", "OperationDashboard"))",
+                        type: "POST",
+                        data: {
+                            cedantId: cedantId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            OverviewDetail = data.OverviewDetail;
+                            isError = false;
+                        }
+                    });
+                    this.SoaTrackingOverviewModal.OverviewDetail = OverviewDetail;
+                    if (!isError)
+                        $("#soaTrackingOverviewModal").modal()
+                    else
+                        alert("Error encountered during retrieving data")
+                },
+                claimRegisterLink: function (index) {
+                    var item = this.PendingClarificationClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ClaimRegisterUrl + item.Id;
+                        return url
+                    }
+                },
+                refreshTotalBookedByQuarter: function () {
+                    var year = this.TotalBookedByQuarterYear;
+                    var TotalBookedByQuarter = this.TotalBookedByQuarter;
+                    $.ajax({
+                        url: "@(Url.Action("GetTotalBookedByQuarter", "OperationDashboard"))",
+                        type: "POST",
+                        data: {
+                            year: year,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            TotalBookedByQuarter = data.TotalBookedByQuarter;
+                        }
+                    });
+                    this.TotalBookedByQuarter = TotalBookedByQuarter;
+                },
+                refreshTotalBookedByCedant: function () {
+                    var year = this.TotalBookedByCedantYear;
+                    var TotalBookedByCedant = this.TotalBookedByCedant;
+                    $.ajax({
+                        url: "@(Url.Action("GetTotalBookedByCedant", "OperationDashboard"))",
+                        type: "POST",
+                        data: {
+                            year: year,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            TotalBookedByCedant = data.TotalBookedByCedant;
+                        }
+                    });
+                    this.TotalBookedByCedant = TotalBookedByCedant;
+                }
+            },
+            created: function () {
+                this.refreshTotalBookedByCedant();
+                this.refreshTotalBookedByQuarter();
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+
+        function SubmitCheck(quarterVal, id) {
+            var notice;
+            $.ajax({
+                url: "@(Url.Action("CheckIfReadyForCutOff", "OperationDashboard"))",
+                type: "POST",
+                data: { quarter: quarterVal },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    notice = data.result;
+                }
+            });
+
+            if (!notice) {
+                $('#submitComfirmationModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                }).on('click', '#submit', function () {
+                    $('#editForm' + id).submit();
+                });
+            }
+            else {
+                $('#editForm' + id).submit();
+            }
+        }
+    </script>
+}

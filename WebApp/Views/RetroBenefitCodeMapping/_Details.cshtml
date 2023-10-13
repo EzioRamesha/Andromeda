@@ -1,0 +1,70 @@
+﻿@model WebApp.Models.RetroBenefitCodeMappingViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="RetroBenefitCodeMappingDetailMaxIndex" name="retroBenefitCodeMappingDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-45">Retro Benefit Code</th>
+                        <th class="w-40">Compute Premium</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!RetroBenefitCodeMappingDetails.length">
+                        <td colspan="5" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in RetroBenefitCodeMappingDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'retroBenefitCodeMappingDetailId[' + index + ']'" class="form-control" :value="detail.Id">
+                        </td>
+                        <td>
+                            <select v-model="detail.RetroBenefitCodeId" class="form-control" ref="select" :id="'retroBenefitCodeId[' + index + ']'" :name="'retroBenefitCodeId[' + index + ']'" data-container="body" disabled="@disabled">
+                                <option v-for="dropDownRetroBenefitCode in DropDownRetroBenefitCodes" :value="dropDownRetroBenefitCode.Value">{{ dropDownRetroBenefitCode.Text }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="detail.IsComputePremium" class="form-control" ref="select" :id="'isComputePremium[' + index + ']'" :name="'isComputePremium[' + index + ']'" data-container="body" disabled="@disabled">
+                                <option v-for="DropDownYn in DropDownYesNo" :value="DropDownYn.Value">{{ DropDownYn.Text }}</option>
+                            </select>
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeRetroBenefitCodeMappingDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var RetroBenefitCodeMappingModel = @Html.Raw(Json.Encode(Model));
+    var RetroBenefitCodeMappingDetails = @Html.Raw(Json.Encode(ViewBag.RetroBenefitCodeMappingDetailBos));
+    var DropDownYesNo = @Html.Raw(Json.Encode(ViewBag.DropDownYesNo));
+    var DropDownRetroBenefitCodes = @Html.Raw(Json.Encode(ViewBag.DropDownRetroBenefitCodes));
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

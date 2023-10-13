@@ -1,0 +1,371 @@
+﻿@{
+    int colspan = 5;
+    bool showFollowUp = ViewData["showFollowUp"] != null ? bool.Parse(ViewData["showFollowUp"].ToString()) : false;
+    bool showPermission = ViewData["showPermission"] != null ? bool.Parse(ViewData["showPermission"].ToString()) : false;
+    bool showDocuments = ViewData["showDocuments"] != null ? bool.Parse(ViewData["showDocuments"].ToString()) : false;
+    bool showVersion = ViewData["showVersion"] != null ? bool.Parse(ViewData["showVersion"].ToString()) : false;
+    bool showSubject = ViewData["showSubject"] != null ? bool.Parse(ViewData["showSubject"].ToString()) : false;
+    bool showStatus = ViewData["showStatus"] != null ? bool.Parse(ViewData["showStatus"].ToString()) : true;
+    bool loadModal = ViewData["loadModal"] != null ? bool.Parse(ViewData["loadModal"].ToString()) : true;
+    string param = ViewData["param"] != null ? ViewData["param"].ToString() : null;
+    string listName = ViewData["listName"] != null ? ViewData["listName"].ToString() : "Remarks";
+
+    List<SelectListItem> dropdownRemarkStatus = ViewData["dropdownRemarkStatus"] != null ? ViewData["dropdownRemarkStatus"] as List<SelectListItem> : new List<SelectListItem> { new SelectListItem { Text = "Please select" } };
+    List<SelectListItem> dropdownVersions = ViewData["dropdownVersions"] != null ? ViewData["dropdownVersions"] as List<SelectListItem> : new List<SelectListItem> { new SelectListItem { Text = "Please select" } };
+
+    if (showFollowUp)
+    {
+        colspan += 2;
+    }
+
+    if (showPermission)
+    {
+        colspan += 1;
+    }
+
+    if (showDocuments)
+    {
+        colspan += 1;
+    }
+
+    if (showStatus)
+    {
+        colspan -= 1;
+    }
+    
+    string FollowUpStatusPendingName = BusinessObject.RemarkFollowUpBo.GetStatusName(BusinessObject.RemarkFollowUpBo.StatusPending);
+    string FollowUpStatusCompletedName = BusinessObject.RemarkFollowUpBo.GetStatusName(BusinessObject.RemarkFollowUpBo.StatusCompleted);
+
+    string PermissionPublic = BusinessObject.ObjectPermissionBo.GetPermissionName(false);
+    string PermissionPrivate = BusinessObject.ObjectPermissionBo.GetPermissionName(true);
+
+    string idPrefix = param == null ? "" : string.Format("{0}_", param);
+}
+
+<div class="text-right">
+    <button id="addRemarkButton" type="button" class="btn btn-add-sub mt-4 prevent-disable" style="width: auto;" onclick="resetRemarkInfo('@param')" data-toggle="modal" data-target="#remarkModal">ADD REMARK</button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover my-3" id="@(idPrefix)RemarkList">
+        <thead>
+            <tr>
+                @if (showVersion)
+                {
+                    <th>Version</th>
+                }
+                <th>Created Date & time</th>
+                <th>Updated By</th>
+                @if (showStatus)
+                {
+                    <th>Status</th>
+                }
+                @if (showSubject)
+                {
+                    <th>Subject</th>
+                }
+                <th>Remarks</th>
+                @if (showDocuments)
+                {
+                    <th>Attachment(s)</th>
+                }
+                @if (showFollowUp)
+                {
+                    <th>Follow Up Date</th>
+                    <th>Follow Up Status</th>
+                }
+                @if (showPermission)
+                {
+                    <th>Permission</th>
+                }
+                <th class="w-5">Action</th>
+            </tr>
+            <tr id="@(idPrefix)RemarkFilterRow">
+                @if (showVersion)
+                {
+                    <th>
+                        <select class="form-control selectpicker prevent-disable" id="@(idPrefix)RemarkFilter-Version">
+                            <option value="null">Please select</option>
+                            @foreach (SelectListItem item in dropdownVersions)
+                            {
+                                <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                            }
+                        </select>
+                    </th>
+                }
+                <th class="w-25">
+                    <input id="@(idPrefix)RemarkFilter-CreatedAt" class="form-control prevent-disable" placeholder="DD MM YYYY" onclick="openDatePicker('@(idPrefix)RemarkFilter-CreatedAt')" />
+                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('@(idPrefix)RemarkFilter-CreatedAt')" />
+                </th>
+                <th class="w-15">
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="@(idPrefix)RemarkFilter-CreatedBy" />
+                </th>
+                @if (showStatus)
+                {
+                    <th class="w-10">
+                        <select class="form-control selectpicker prevent-disable" id="@(idPrefix)RemarkFilter-Status">
+                            @foreach (SelectListItem item in dropdownRemarkStatus)
+                            {
+                                <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                            }
+                        </select>
+                    </th>
+                }
+                @if (showSubject)
+                {
+                    <th>
+                        <input class="form-control prevent-disable" placeholder="Type Here" id="@(idPrefix)RemarkFilter-Subject" />
+                    </th>
+                }
+                <th class="w-20">
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="@(idPrefix)RemarkFilter-Content" />
+                </th>
+                @if (showDocuments)
+                {
+                    <th class="w-15"></th>
+                }
+                @if (showFollowUp)
+                {
+                    <th class="w-10">
+                        <input id="@(idPrefix)RemarkFilter-FollowUpDate" class="form-control prevent-disable" placeholder="DD MM YYYY" onclick="openDatePicker('RemarkFilter-FollowUpDate')" />
+                        <span class="fa fa-calendar-alt field-icon prevent-disable" aria-hidden="true" onclick="focusOnElement('RemarkFilter-FollowUpDate')" />
+                    </th>
+                    <th class="w-10">
+                        <select class="form-control selectpicker prevent-disable" id="@(idPrefix)RemarkFilter-FollowUpStatus">
+                            <option value="null">Please select</option>
+                            <option value="@FollowUpStatusPendingName">@FollowUpStatusPendingName</option>
+                            <option value="@FollowUpStatusCompletedName">@FollowUpStatusCompletedName</option>
+                        </select>
+                    </th>
+                }
+                @if (showPermission)
+                {
+                    <th class="w-10">
+                        <select class="form-control selectpicker prevent-disable" id="@(idPrefix)RemarkFilter-Permission">
+                            <option value="null">Please select</option>
+                            <option value="@PermissionPublic">@PermissionPublic</option>
+                            <option value="@PermissionPrivate">@PermissionPrivate</option>
+                        </select>
+                    </th>
+                }
+                <th class="text-center align-middle">
+                    <div class="btn-row-action">
+                        <button type="button" title="Clear" class="btn-circle prevent-disable"><span class="fas fa-backspace" onclick="clearTableFilters('@listName', '@idPrefix' + 'Remark')" /></button>
+                        <button type="button" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" onclick="filterTable('@listName', '@idPrefix' + 'Remark')" /></button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!@listName || !(@listName).length">
+                <td colspan="@colspan" class="no-data">No available data found.</td>
+            </tr>
+            <tr id="@(idPrefix)RemarkNoData" style="display: none;">
+                <td colspan="@colspan" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(remark, index) in @listName">
+                @if (showVersion)
+                {
+                    <td>
+                        <input type="hidden" v-model="remark.Version" :name="'remark.CreatedAtStr[' + index + ']'" />
+                        <span v-if="remark.Version">{{ remark.Version }}.0</span>
+                    </td>
+                }
+                <td>
+                    <input type="hidden" v-model="remark.CreatedAtStr" :name="'remark.CreatedAtStr[' + index + ']'" />
+                    {{ remark.CreatedAtStr }}
+                </td>
+                <td>
+                    <input type="hidden" v-model="remark.CreatedByName" class="form-control form-control-sm" :name="'remark.CreatedByName[' + index + ']'" />
+                    {{ remark.CreatedByName }}
+                </td>
+                @if (showStatus)
+                {
+                    <td>
+                        <input type="hidden" v-model="remark.Status" :name="'remark.Status[' + index + ']'" />
+                        {{ remark.StatusName }}
+                    </td>
+                }
+                @if (showSubject)
+                {
+                    <td>
+                        <input type="hidden" v-model="remark.Subject" :name="'remark.Subject[' + index + ']'" />
+                        {{ remark.Subject }}
+                    </td>
+                }
+                <td>
+                    <input type="hidden" v-model="remark.Content" class="form-control form-control-sm" :name="'remark.Content[' + index + ']'" />
+                    {{ remark.Content }}
+                </td>
+                @if (showDocuments)
+                {
+                    <td>
+                        <ul style="list-style: none; padding: 0;">
+                            <li v-for="(document, docIndex) in remark.DocumentBos" class="row">
+                                <div class="col-md-1"> <i class="fas fa-paperclip" style="display:inline-block"></i> </div>
+                                <div class="col-md-10 pl-0">
+                                    <a v-if="document.Id != null && document.FileExists === true" v-bind:href="document.DownloadLink"> {{ document.FileName }} </a>
+                                    <span v-else> {{ document.FileName }} </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </td>
+                }
+                @if (showFollowUp)
+                {
+                    <td>
+                        <input type="hidden" v-model="remark.HasFollowUp" :name="'remark.HasFollowUp[' + index + ']'">
+                        <span v-if="remark.HasFollowUp">
+                            <input type="hidden" v-model="remark.RemarkFollowUpBo.FollowUpAtStr" :name="'remark.FollowUpAtStr[' + index + ']'">
+                            <input type="hidden" v-model="remark.RemarkFollowUpBo.FollowUpUserId" :name="'remark.FollowUpUserId[' + index + ']'">
+                            {{ remark.RemarkFollowUpBo.FollowUpAtStr }}
+                        </span>
+                    </td>
+                    <td>
+                        <span v-if="remark.HasFollowUp">
+                            <input type="hidden" v-model="remark.RemarkFollowUpBo.FollowUpStatus" :name="'remark.FollowUpStatus[' + index + ']'">
+                            {{ remark.RemarkFollowUpBo.StatusName }}
+                        </span>
+                    </td>
+                }
+                @if (showPermission)
+                {
+                    <td>
+                        <input type="hidden" v-model="remark.IsPrivate" :name="'remark.IsPrivate[' + index + ']'">
+                        {{ remark.PermissionName }}
+                    </td>
+                }
+                @if (showFollowUp)
+                {
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="fas fa-ellipsis-v dropbtn" />
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" data-dismiss="dropdown" v-if="remark.RemarkFollowUpBo != null && remark.RemarkFollowUpBo.Status == FollowUpStatusPending" v-on:click="completeFollowUp(index)">Mark As Completed</a>
+                            </div>
+                        </div>
+                    </td>
+                } 
+                else
+                {
+                    <td></td>
+                }
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@if (loadModal)
+{
+    @Html.Partial("_AddRemarkModal", new ViewDataDictionary { { "showFollowUp", showFollowUp }, { "showPermission", showPermission }, { "showDocuments", showDocuments }, { "showSubject", showSubject } })
+}
+
+<script>
+    var CreateRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var CompleteFollowUpUrl = "@(Url.Action("CompleteFollowUp", "Remark"))";
+    var SaveDocumentUrl = "@(Url.Action("Save", "Document"))";
+    var SaveTempDocumentUrl = "@(Url.Action("SaveTemp", "Document"))";
+    var DeleteDocumentUrl = "@(Url.Action("Delete", "Document"))";
+    var hideDetail = false;
+
+    // Follow Up
+    var FollowUpStatusPending = @BusinessObject.RemarkFollowUpBo.StatusPending;
+    var FollowUpStatusCompleted = @BusinessObject.RemarkFollowUpBo.StatusCompleted;
+    var FollowUpStatusPendingName = "@FollowUpStatusPendingName";
+    var FollowUpStatusCompletedName = "@FollowUpStatusCompletedName";
+
+    // Others
+    var ShowSubject = @(showSubject.ToString().ToLower());
+    var ListName = "@listName";
+    var IdPrefix = "@idPrefix";
+
+    function resetRemarkInfo(param) {
+        resetAddRemarkError();
+        if (app != null)
+            app.resetRemarkInfo(param);
+    }
+
+    function resetAddRemarkError() {
+        $('#addRemarkError').empty();
+        $('#addRemarkError').hide();
+    }
+
+    function validateRemark() {
+        resetAddRemarkError();
+
+        var errors = [];
+
+        var content = $('#remarkContent').val();
+        if (content == null || content == '')
+            errors.push("Remarks is required");
+
+        if (ShowSubject) {
+            if ((app.RemarkModal.Subject == null || app.RemarkModal.Subject == ''))
+                errors.push("Subject is required");
+        }
+
+        if (errors.length > 0) {
+            $('#addRemarkError').append(arrayToUnorderedList(errors));
+            $('#addRemarkError').show();
+            return;
+        }
+
+        $('#remarkConfirmationModal').modal('show');
+    }
+
+    function validateAddRemark(remarkBo) {
+        resetAddRemarkError();
+
+        var errors = [];
+
+        if (remarkBo.Content == null || remarkBo.Content == '')
+            errors.push("Remarks is required");
+
+        if (ShowSubject && remarkBo.Subject == null || remarkBo.Subject == '')
+            errors.push("Subject is required");
+
+        var fileErrors = validateFiles();
+        errors = errors.concat(fileErrors);
+
+        if (errors.length > 0) {
+            $('#addRemarkError').append(arrayToUnorderedList(errors));
+            $('#addRemarkError').show();
+            return false;
+        }
+
+        return true;
+    }
+
+    function createRemark(remarkBo) {
+        if (!validateAddRemark(remarkBo))
+            return;
+
+        var remark = null;
+        $.ajax({
+            url: CreateRemarkUrl,
+            type: "POST",
+            data: { remarkBo: remarkBo },
+            cache: false,
+            async: false,
+            success: function (data) {
+                remark = data.remarkBo;
+                $('#remarkModal').modal('hide');
+            }
+        });
+
+        return remark;
+    }
+
+    function completeFollowUp(remarkFollowUpId) {
+        $.ajax({
+            url: CompleteFollowUpUrl,
+            type: "POST",
+            data: { remarkFollowUpId: remarkFollowUpId },
+            cache: false,
+            async: false
+        });
+    }
+</script>
+@Scripts.Render("~/Scripts/models/Document.js")

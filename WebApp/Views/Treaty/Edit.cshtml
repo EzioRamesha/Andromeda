@@ -1,0 +1,187 @@
+﻿@model WebApp.Models.TreatyViewModel
+@using WebApp.Models;
+
+@{
+    ViewBag.Title = "Treaty";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="alert alert-danger" id="errorRecordInUsed" style="display: none;"></div>
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TreatyIdCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.TreatyIdCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                        @Html.ValidationMessageFor(model => model.TreatyIdCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        <select v-model="Treaty.CedantId" class="form-control selectpicker" id="CedantId" name="CedantId" v-on:change="getTreatyCode()">
+                            <option v-for="cedant in Cedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.BusinessOriginPickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.BusinessOriginPickListDetailId, (List<SelectListItem>)ViewBag.DropDownBusinessOrigins, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.BusinessOriginPickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.BlockDescription, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.BlockDescription, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.BlockDescription, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="text-right">
+                            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-4">ADD NEW</button>
+                        </div>
+                        <input type="hidden" v-model="SortIndex" name="SortIndex" />
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th style="display:none"></th>
+                                        <th class="w-5">No.</th>
+                                        <th class="w-20">Treaty Code</th>
+                                        <th class="w-20">Old Treaty Code</th>
+                                        <th class="w-20">Account For <span class="sub-label">(Separated by Comma)</span></th>
+                                        <th class="w-20">Treaty Type</th>
+                                        <th class="w-20">Treaty Number</th>
+                                        <th class="w-30">Description</th>
+                                        <th class="w-10">Status</th>
+                                        <th class="w-10">Treaty Status</th>
+                                        <th class="w-20">Line Of Business</th>
+                                        <th class="text-center w-5">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!TreatyCodes.length">
+                                        <td colspan="11" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(treatyCode, index) in TreatyCodes">
+                                        <td>{{ index + 1 }}</td>
+                                        <td style="display:none">
+                                            <input type="hidden" :name="'codeId[' + index + ']'" class="form-control" :value="treatyCode.Id">
+                                        </td>
+                                        <td><input v-model="treatyCode.Code" class="form-control" :name="'code[' + index + ']'" placeholder="Type here" /></td>
+                                        <td>
+                                            <select v-model="treatyCode.OldTreatyCodeId" class="form-control selectpicker" multiple ref="select" :id="'oldCodeId[' + index + ']'" :name="'oldCodeId[' + index + ']'" data-container="body" title="Please select" data-selected-text-format="count > 2" data-live-search="true">
+                                                <option v-for="treatyCode in filterTreatyCode(index)" :value="treatyCode.Id">{{ treatyCode.Code }}</option>
+                                            </select>
+                                        </td>
+                                        <td><input v-model="treatyCode.AccountFor" class="form-control" :name="'account[' + index + ']'" :id="'account' + index + 'TokenField'" placeholder="Type here" /></td>
+                                        <td>
+                                            <select v-model="treatyCode.TreatyTypePickListDetailId" class="form-control selectpicker" ref="select" :id="'treatyType[' + index + ']'" :name="'treatyType[' + index + ']'" data-container="body">
+                                                <option v-for="treatyTypeData in TreatyTypeData" :value="treatyTypeData.Value">{{ treatyTypeData.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td><input v-model="treatyCode.TreatyNo" class="form-control" :name="'treatyNo[' + index + ']'" placeholder="Type here" /></td>
+                                        <td>
+                                            <textarea rows="1" v-on:focus="autoExpandTextarea('description' + index)" v-on:blur="autoCollapseTextarea('description' + index)" v-model.lazy="treatyCode.Description" class="form-control textarea-auto-expand" :id="'description' + index" :name="'description[' + index + ']'" placeholder="Type here"></textarea>
+                                        </td>
+                                        <td>
+                                            <select v-model="treatyCode.Status" class="form-control selectpicker" ref="select" :id="'status[' + index + ']'" :name="'status[' + index + ']'" data-container="body">
+                                                <option v-for="statusData in StatusData" :value="statusData.Value">{{ statusData.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select v-model="treatyCode.TreatyStatusPickListDetailId" class="form-control selectpicker" ref="select" :id="'treatyStatus[' + index + ']'" :name="'treatyStatus[' + index + ']'" data-container="body">
+                                                <option v-for="treatyStatusData in TreatyStatusData" :value="treatyStatusData.Value">{{ treatyStatusData.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select v-model="treatyCode.LineOfBusinessPickListDetailId" class="form-control selectpicker" ref="select" :id="'lineOfBusiness[' + index + ']'" :name="'lineOfBusiness[' + index + ']'" data-container="body">
+                                                <option v-for="lineOfBusinessData in LineOfBusinessData" :value="lineOfBusinessData.Value">{{ lineOfBusinessData.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-on:click="removeTreatyCode(index)"><span class="fas fa-trash-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-xl-12 col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var TreatyModel = @Html.Raw(Json.Encode(Model));
+        var CedantList = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.TreatyCodeBos));
+        var TreatyCodeItems = @Html.Raw(Json.Encode(ViewBag.TreatyCodeItems));
+        var StatusData = @Html.Raw(Json.Encode(ViewBag.DropDownStatus));
+        var TreatyTypeData = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyTypes));
+        var TreatyStatusData = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyStatus));
+        var LineOfBusinessData = @Html.Raw(Json.Encode(ViewBag.DropDownLineOfBusiness));
+        var GetTreatyCodeUrl = "@(Url.Action("GetTreatyCodeByCedant"))";
+        var ValidateTreatyCodeDeleteUrl = "@(Url.Action("ValidateTreatyCodeDelete"))";
+        var GetTreatyOldCodeUrl = "@(Url.Action("GetTreatyOldCodeByTreatyCode"))";
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+                $('.accountTokens').tokenfield('disable');
+            }
+
+            $('#Description').autoResize();
+            $('#Description').trigger('keyup');
+
+            $('#BlockDescription').autoResize();
+            $('#BlockDescription').trigger('keyup');
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/Treaty.js")
+}

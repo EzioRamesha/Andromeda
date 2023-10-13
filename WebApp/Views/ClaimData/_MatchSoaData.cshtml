@@ -1,0 +1,68 @@
+﻿@model WebApp.Models.ClaimDataBatchViewModel
+
+<div class="mt-4">
+    <span class="font-weight-bold">@Html.Label("SOA Data", htmlAttributes: new { @class = "col-form-label" })</span>
+    <div class="form-row">
+        <div class="form-group col-md-6 mid-line-1">
+            @Html.Label("SOA Data Matching Status", htmlAttributes: new { @class = "col-form-label" })
+            @Html.HiddenFor(model => model.SoaDataBatchId)
+            <div class="input-group">
+                <input class="form-control" id="SoaDataMatchStr" value="" readonly />
+                <div class="input-group-append">
+                    <button class="btn btn-generate" type="button" v-on:click="viewSoaDataBatch()" :disabled="!ClaimDataBatch.SoaDataBatchId"><i class="fas fa-search"></i></button>
+                    <input type="button" class="btn btn-generate" id="matchSoaData" data-toggle="modal" data-target="#matchSoaDataModal" value="Match SOA Data" v-on:click="searchSoaDataBatch()" />
+                </div>
+            </div>
+            @Html.ValidationMessageFor(model => model.SoaDataBatchId, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+    </div>
+</div>
+
+<div class="modal fade" id="matchSoaDataModal" tabindex="-1" role="dialog" aria-labelledby="matchSoaDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Match SOA Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="MatchSoaDataBatchesValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in MatchSoaDataBatchesValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="table-responsive my-1" v-if="SoaDataBatches.length != 0">
+                    <table class="table table-hover">
+                        <thead style="width: unset">
+                            <tr>
+                                <th class="w-40">Ceding Company</th>
+                                <th class="w-40">Treaty ID</th>
+                                <th class="w-15">Quarter</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="SoaDataBatches.length == 0">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(soaData, index) in SoaDataBatches">
+                                <td>{{ soaData.CedantBo.Name }}</td>
+                                <td>{{ soaData.TreatyBo.TreatyIdCode }}</td>
+                                <td>{{ soaData.Quarter }}</td>
+                                <td><input type="radio" name="checkedSoadata" :value="index" :checked="soaData.Id == ClaimDataBatch.SoaDataBatchId"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn btn-submit" v-on:click="createSoaDataBatch()">AUTO CREATE</button>
+                <button type="button" class="btn btn-submit" v-on:click="selectSoaDataBatch()" :disabled="SoaDataBatches.length == 0">SELECT</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,233 @@
+﻿@using PagedList.Mvc
+
+@{
+    var IsEnabledAddProduct = ViewBag.IsEnabledAddProduct ? ViewBag.IsEnabledAddProduct : false;
+    var TreatyPricingProducts = ViewBag.TreatyPricingProducts as PagedList.IPagedList<BusinessObject.TreatyPricing.TreatyPricingProductBo>;
+    var TreatyPricingCedantId = ViewBag.TreatyPricingCedantId;
+}
+
+<div class="text-right">
+    @if (IsEnabledAddProduct)
+    {
+        <button type="button" v-on:click="resetAddProductModal(false)" data-toggle="modal" data-target="#addProductModal" class="btn btn-add-sub">ADD NEW</button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-add-sub" disabled="disabled">ADD NEW</button>
+    }
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover mt-3" v-cloak id="productList">
+        <thead>
+            <tr>
+                <th class="w-10">Product ID</th>
+                <th class="w-20">Quotation Name</th>
+                <th class="w-20">Product Name</th>
+                <th class="w-10">Status</th>
+                <th class="w-20">Latest Workflow</th>
+                <th class="w-5 text-center">Action</th>
+            </tr>
+            <tr id="productFilterRow">
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="productFilter-ProductId" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="productFilter-QuotationName" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="productFilter-ProductName" />
+                </th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="productFilter-WorkflowStatus" data-container="body">
+                        @foreach (SelectListItem item in ViewBag.DropDownWorkflowStatus)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Value)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="productFilter-WorkflowCode" />
+                </th>
+                <th class="text-center align-middle">
+                    <div class="btn-row-action">
+                        <button type="button" title="Clear" class="btn-circle prevent-disable"><span class="fas fa-backspace" onclick="clearTableFilters('TreatyPricingProducts', 'product')" /></button>
+                        <button type="button" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" onclick="filterTable('TreatyPricingProducts', 'product')" /></button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!TreatyPricingProducts.length">
+                <td colspan="7" class="no-data">No available data found.</td>
+            </tr>
+            <tr id="productNoData" style="display: none;">
+                <td colspan="7" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(TreatyPricingProduct, index) in TreatyPricingProducts">
+                <td><a href="javascript:void(0);" v-on:click="viewProductSummary(index)">{{ TreatyPricingProduct.Code }}</a></td>
+                <td>{{ TreatyPricingProduct.QuotationName }}</td>
+                <td>{{ TreatyPricingProduct.Name }}</td>
+                <td>
+                    <span v-if="TreatyPricingProduct.LatestWorkflowObjectBo">{{ TreatyPricingProduct.LatestWorkflowObjectBo.WorkflowStatus }}</span>
+                </td>
+                <td>
+                    <span v-if="TreatyPricingProduct.LatestWorkflowObjectBo">
+                        <a href="#" :onclick="'editProductWorkflow(' + index + ')'" class="linkbtn"><i class="fas fa-link"></i> {{ TreatyPricingProduct.LatestWorkflowObjectBo.WorkflowCode }}</a>
+                    </span>
+                </td>
+                <td class="text-center">
+                    <a v-bind:href="editProduct(index)" title="Edit Product">
+                        <span class="fas fa-pencil-alt" />
+                    </a>
+                    @*<a href="javascript:void(0);" v-on:click="cloneProduct(index)" title="Duplicate Product" class="ml-2">
+                            <span class="fas fa-clone" />
+                        </a>*@
+                    <span class="fas fa-clone ml-2" style="cursor:pointer" v-on:click="resetCloneModal('Product', TreatyPricingProduct.Code, index)" data-toggle="modal" data-target="#cloneModal" title="Duplicate Product" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-footer">
+    <div class="row">
+        <div class="col-md-4">
+            @{
+                ViewBag.CurrentPageNumber = TreatyPricingProducts.PageNumber;
+                ViewBag.CurrentPageItems = TreatyPricingProducts.Count;
+                ViewBag.PageSize = TreatyPricingProducts.PageSize;
+                ViewBag.Total = ViewBag.TreatyPricingProductTotal;
+            }
+            @Html.Partial("_PageInfo")
+        </div>
+        <div class="col-md-8" id="contentPager">
+            @Html.PagedListPager(TreatyPricingProducts, Page => Url.Action("Edit", "TreatyPricingCedant", new { id = TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexProduct, Page, }), Shared.Html.GetPagedListRenderOptions())
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addProductError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label">Quotation Name</label>
+                        <input type="text" class="form-control" v-model="ProductModal.QuotationName" placeholder="Type Here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label" for="isDuplicateExisting">Duplicate Existing Product</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="isDuplicateExisting" name="isDuplicateExisting" type="checkbox" v-model="ProductModal.IsDuplicateExisting" v-on:change="resetProductDuplicate()" />
+                                <label class="custom-control-label" for="isDuplicateExisting">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Company</label>
+                        <select v-model="ProductModal.CedantId" class="form-control selectpicker" id="dropDownTreatyPricingCedants" v-on:change="updateDropDownDuplicateObjects(GetProductByCedantUrl, 'Product')">
+                            <option v-for="cedant in DropDownTreatyPricingCedants" :value="cedant.Value">
+                                {{ cedant.Text }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Product</label>
+                        <select v-model="ProductModal.DuplicateTreatyPricingProductId" id="dropDownTreatyPricingProducts" class="form-control selectpicker" v-on:change="updateDropDownDuplicateObjectVersions(GetProductVersionByIdUrl, 'Product')">
+                            <option v-for="product in DropDownTreatyPricingProducts" :value="product.Id">
+                                {{ product.Code }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Version</label>
+                        <select v-model="ProductModal.DuplicateTreatyPricingProductVersionId" id="dropDownTreatyPricingProductVersions" class="form-control selectpicker">
+                            <option v-for="version in DropDownTreatyPricingProductVersions" :value="version.Id">
+                                {{ version.Version }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button v-on:click="saveProduct()" type="button" class="btn btn-submit">ADD</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="productSummaryModal" tabindex="-1" role="dialog" aria-labelledby="productSummaryModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Product Summary</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form" style="max-height: 60vh; overflow: auto;">
+                    <div class="form-group">
+                        <label class="col-form-label">Product ID</label>
+                        <input type="text" class="form-control" v-model="ProductSummaryModal.Code" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Product Name</label>
+                        <input type="text" class="form-control" v-model="ProductSummaryModal.Name" disabled>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Document ID</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!ProductSummaryModal.WorkflowObjects.length">
+                                    <td colspan="3" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(workflowObject, index) in ProductSummaryModal.WorkflowObjects">
+                                    <td>{{ workflowObject.WorkflowCode }}</td>
+                                    <td>{{ workflowObject.WorkflowStatus }}</td>
+                                    <td class="text-center">
+                                        <a href="#" class="linkbtn" :onclick="'editWorkflow(' + index + ')'"><span class="fas fa-eye" /></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var WorkflowObjectType = "@BusinessObject.TreatyPricing.TreatyPricingWorkflowObjectBo.ObjectTypeProduct";
+
+    function editProductWorkflow(index) {
+        var workflowObject = app.TreatyPricingProducts[index].LatestWorkflowObjectBo;
+        var url = '/TreatyPricing' + workflowObject.TypeName + 'Workflow/Edit/' + workflowObject.WorkflowId;
+
+        window.open(url, '_blank');
+
+        return false;
+    }
+</script>

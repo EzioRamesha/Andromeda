@@ -1,0 +1,188 @@
+﻿@using PagedList.Mvc
+
+@{
+    var IsEnabledAddRateTableGroup = ViewBag.IsEnabledAddRateTableGroup ? ViewBag.IsEnabledAddRateTableGroup : false;
+    var TreatyPricingRateTableGroups = ViewBag.TreatyPricingRateTableGroups as PagedList.IPagedList<BusinessObject.TreatyPricing.TreatyPricingRateTableGroupBo>;
+    var TreatyPricingCedantId = ViewBag.TreatyPricingCedantId;
+}
+
+<div class="text-right">
+    @Html.ActionLink("Template", "DownloadTemplate", "TreatyPricingRateTableGroup", null, new { @class = "btn btn-download" })
+    @if (IsEnabledAddRateTableGroup)
+    {
+        <button type="button" v-on:click="resetAddRateTableGroupModal" data-toggle="modal" data-target="#addRateTableGroupModal" class="btn btn-add-sub">ADD NEW</button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-add-sub" disabled="disabled">ADD NEW</button>
+    }
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+        @Html.Label("Search Product Name", htmlAttributes: new { @class = "col-form-label col-md-6 p-0 font-weight-bold" })
+        <div class="input-group mb-2">
+            @Html.Editor("RateTableGroupProduct", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+            <div class="input-group-prepend">
+                <button type="button" class="input-group-text" onclick="SearchRateTableGroup()"><span class="fas fa-search" /></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="rateTableGroupTable table-responsive" style="min-height: 350px;">
+    <table class="table table-hover mt-3" v-cloak id="rateTableGroupList">
+        <thead>
+            <tr>
+                <th class="w-10">Group Rate Table ID</th>
+                <th class="w-15">Group Rate Table Name</th>
+                <th class="w-20">Description</th>
+                <th class="w-10">No of Rate Table</th>
+                <th class="w-10">Uploaded Date & Time</th>
+                <th class="w-10">Uploaded By</th>
+                <th class="w-10">Upload Status</th>
+                <th class="w-10 text-center">Error Message</th>
+                <th class="w-5 text-center">Action</th>
+            </tr>
+            <tr id="rateTableGroupFilterRow">
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="rateTableGroupFilter-RateTableGroupID" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="rateTableGroupFilter-RateTableGroupName" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="rateTableGroupFilter-Description" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="rateTableGroupFilter-RateTableNumber" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="rateTableGroupFilter-UploadDateTime" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="rateTableGroupFilter-UploadUser" />
+                </th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="rateTableGroupFilter-Status">
+                        @foreach (SelectListItem item in ViewBag.DropDownRateTableGroupStatuses)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th></th>
+                <th class="text-center align-middle">
+                    <div class="btn-row-action">
+                        <button type="button" title="Clear" class="btn-circle prevent-disable"><span class="fas fa-backspace" onclick="clearTableFilters('TreatyPricingRateTableGroups', 'rateTableGroup', 'rateTableGroupCodeFilters')" /></button>
+                        <button type="button" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" onclick="filterTable('TreatyPricingRateTableGroups', 'rateTableGroup', 'rateTableGroupCodeFilters')" /></button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!TreatyPricingRateTableGroups.length">
+                <td colspan="8" class="no-data">No available data found.</td>
+            </tr>
+            <tr id="rateTableGroupNoData" style="display: none;">
+                <td colspan="8" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(TreatyPricingRateTableGroup, index) in TreatyPricingRateTableGroups">
+                <td>{{ TreatyPricingRateTableGroup.Code }}</td>
+                <td>{{ TreatyPricingRateTableGroup.Name }}</td>
+                <td>{{ TreatyPricingRateTableGroup.Description }}</td>
+                <td class="text-right">{{ TreatyPricingRateTableGroup.NoOfRateTable }}</td>
+                <td>{{ TreatyPricingRateTableGroup.UploadedAtStr }}</td>
+                <td>{{ TreatyPricingRateTableGroup.UploadedByBo?.FullName }}</td>
+                <td>{{ TreatyPricingRateTableGroup.StatusName }}</td>
+                <td v-if="!TreatyPricingRateTableGroup.Errors"></td>
+                <td class="text-center" v-if="TreatyPricingRateTableGroup.Errors"><span class="fas fa-exclamation-triangle" style="cursor: pointer;" v-on:click="showErrorModal(index)" /></td>
+                <td class="text-center">
+                    <a v-bind:href="editRateTableGroupLink(index)" title="Edit Rate Table Group">
+                        <span class="fas fa-pencil-alt" />
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-footer">
+    <div class="row">
+        <div class="col-md-4">
+            @{
+                ViewBag.CurrentPageNumber = TreatyPricingRateTableGroups.PageNumber;
+                ViewBag.CurrentPageItems = TreatyPricingRateTableGroups.Count;
+                ViewBag.PageSize = TreatyPricingRateTableGroups.PageSize;
+                ViewBag.Total = ViewBag.TreatyPricingRateTableGroupTotal;
+            }
+            @Html.Partial("_PageInfo")
+        </div>
+        <div class="col-md-8" id="contentPager">
+            @Html.PagedListPager(TreatyPricingRateTableGroups, Page => Url.Action("Edit", "TreatyPricingCedant", new { id = TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexRateTableGroup, Page, }), Shared.Html.GetPagedListRenderOptions())
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addRateTableGroupModal" tabindex="-1" role="dialog" aria-labelledby="addRateTableGroupModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Group Rate Table</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addRateTableGroupError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label">Group Rate Table Name</label>
+                        <input type="text" class="form-control" v-model="RateTableGroupModal.Name" placeholder="Type here" maxlength="255">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Description</label>
+                        <textarea rows="3" v-model="RateTableGroupModal.Description" style="resize: none" class="form-control" placeholder="Type here" maxlength="255"></textarea>
+                    </div>
+                    <label class="col-form-label required">File Upload</label>
+                    <div class="file is-boxed">
+                        <label class="file-label">
+                            <input class="form-control-file" type="file" id="rateTableGroupFiles" name="rateTableGroupUpload" accept=".xlsx, .xls" v-on:change="uploadRateTableGroupFile()">
+                            Drag and Drop File Here or <u>Browse your file</u>
+                            <br />
+                            <span class="file-desc">
+                                Allowed file format: .xls .xlsx
+                            </span>
+                            <br />
+                            <span class="file-desc">
+                                File size is up to 2GB
+                            </span>
+                        </label>
+                    </div>
+                    <div id="selectedFiles" class="file-list-display rate-table-group"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button v-on:click="saveRateTableGroup()" type="button" class="btn btn-submit">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Error Message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" rows="5" readonly style="resize: none;">{{RateTableGroupError}}</textarea>
+            </div>
+        </div>
+    </div>
+</div>

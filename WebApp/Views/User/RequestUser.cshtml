@@ -1,0 +1,258 @@
+﻿@model WebApp.Models.UserRequestViewModel
+
+@{
+    ViewBag.Title = "User";
+    ViewBag.Action = "Request New / Modify";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Title</h4>
+        <h4>@ViewBag.Temp</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+
+                @Html.HiddenFor(model => model.Id, new { htmlAttributes = new { @id = "id" } })
+                @Html.HiddenFor(model => model.Download)
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RequestType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RequestType, (List<SelectListItem>)ViewBag.DropDownRequestTypes, htmlAttributes: new { @class = "form-control selectpicker", @id = "requestType", onchange = "changeRequestType()" })
+                        @Html.ValidationMessageFor(model => model.RequestType, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.LoginMethod, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.LoginMethod, (List<SelectListItem>)ViewBag.DropDownLoginMethods, htmlAttributes: new { @class = "form-control selectpicker", @id = "loginMethodInput", onchange = "changeLoginMethod(this.value)" })
+                        @Html.ValidationMessageFor(model => model.LoginMethod, "", new { @class = "text-danger" })
+
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control", @id = "usernameInput", onchange = "changeUsername()", @placeholder = "Type Here" } })
+                            <div class="input-group-append">
+                                <input type="button" class="btn btn-generate" id="findInAD" value="Find in AD" style="display:none;" />
+                            </div>
+                            <div class="input-group-append">
+                                <input type="button" class="btn btn-generate" id="findUser" value="Find" style="display:none;" />
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.FullName, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control", @id = "nameInput", @placeholder = "Type Here" } })
+                        @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control", @id = "emailInput", @placeholder = "Type Here" } })
+                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.DepartmentId, "Department", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.DepartmentId, (List<SelectListItem>)ViewBag.DropDownDepartments, htmlAttributes: new { @class = "form-control selectpicker", @id = "departmentInput", onchange = "getAccessGroups(this.value)" })
+                        @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.AccessGroupId, "Access Group", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.AccessGroupId, (List<SelectListItem>)ViewBag.DropDownAccessGroups, htmlAttributes: new { @class = "form-control selectpicker", @id = "accessGroupInput" })
+                        @Html.ValidationMessageFor(model => model.AccessGroupId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RequestDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" name="RequestDateStr" readonly class="form-control" value="@Model.RequestDateStr">
+                        @Html.ValidationMessageFor(model => model.RequestDateStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RequestUserName, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" name="RequestUserName" readonly class="form-control" value="@ViewBag.AuthUserName">
+                        @Html.ValidationMessageFor(model => model.RequestUserName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right" id="submitButton">SUBMIT</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('input[name="Download"]').val('@Model.Download');
+            if ('@Model.Download' == "True") {
+                $('#submitButton').click();
+            }
+
+            $('select').selectpicker('refresh');
+
+            if (@Model.LoginMethod == @BusinessObject.Identity.UserBo.LoginMethodAD) {
+                $("#findInAD").show();
+                $("#emailInput").prop('readonly', true);
+                $("#nameInput").prop('readonly', true);
+            }
+        });
+
+        function changeRequestType() {
+            changeUsername();
+            var loginMethodInput = $("#loginMethodInput");
+
+            loginMethodInput.val(null);
+            changeLoginMethod(null);
+        }
+
+        function changeUsername() {
+            var requestType = $("#requestType").val();
+            var findUser = $("#findUser");
+
+            findUser.hide();
+            if (requestType == @BusinessObject.Identity.UserBo.RequestTypeAmendment) {
+                findUser.show();
+            }
+        }
+
+        function changeLoginMethod(selected) {
+            var requestType = $("#requestType").val();
+            var findUserButton = $("#findUser");
+            var findInAdButton = $("#findInAD");
+            var emailInput = $("#emailInput");
+            var nameInput = $("#nameInput");
+
+            findUserButton.hide();
+            findInAdButton.hide();
+            emailInput.prop('readonly', false);
+            nameInput.prop('readonly', false);
+            if (selected == @BusinessObject.Identity.UserBo.LoginMethodAD) {
+                findInAdButton.show();
+                emailInput.val('');
+                nameInput.val('');
+                emailInput.prop('readonly', true);
+                nameInput.prop('readonly', true);
+            } else if (requestType == @BusinessObject.Identity.UserBo.RequestTypeAmendment && selected != @BusinessObject.Identity.UserBo.LoginMethodAD) {
+                findUserButton.show();
+            }
+        }
+
+        $("#findInAD").click(function () {
+            var userName = $("#usernameInput").val();
+            var emailInput = $("#emailInput");
+            var nameInput = $("#nameInput");
+
+            $("#findInAD").prop('disabled', true);
+            $.ajax({
+                url: "@(Url.Action("GetActiveDirectoryDetails"))",
+                type: "POST",
+                data: { userName: userName },
+                cache: false,
+                async: true,
+                success: function (data) {
+                    $("#findInAD").prop('disabled', false);
+                    emailInput.val(data.email || '');
+                    nameInput.val(data.name || '');
+
+                    if (data.error) {
+                        alert(data.error);
+                    }
+                },
+            });
+        });
+
+        $("#findUser").click(function () {
+            var userName = $("#usernameInput").val();
+            var emailInput = $("#emailInput");
+            var nameInput = $("#nameInput");
+            var loginMethodInput = $("#loginMethodInput");
+            var departmentInput = $("#departmentInput");
+            var accessGroupInput = $("#accessGroupInput");
+            var findUser = $("#findUser");
+
+            $("#findUser").prop('disabled', true);
+            $.ajax({
+                url: "@(Url.Action("GetUser"))",
+                type: "POST",
+                data: { userName: userName },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    $("#findUser").prop('disabled', false);
+
+                    if (data.error) {
+                        emailInput.val('');
+                        nameInput.val('');
+                        loginMethodInput.val(null);
+                        departmentInput.val(null);
+                        accessGroupInput.val(null);
+                        alert(data.error);
+                    } else {
+                        emailInput.val(data.userBo.Email);
+                        nameInput.val(data.userBo.FullName);
+                        loginMethodInput.val(data.userBo.LoginMethod);
+                        departmentInput.val(data.userBo.DepartmentId);
+                        findUser.hide();
+                        changeLoginMethod(loginMethodInput.val());
+
+
+                        $('select').selectpicker('refresh');
+                        getAccessGroups(departmentInput.val(), data.userBo.UserAccessGroupBos[0].AccessGroupId);
+                    }
+                },
+            });
+
+        });
+
+        function getAccessGroups(departmentId, selectedAccessGroupId = 0) {
+            $.ajax({
+                url: "@(Url.Action("GetList", "AccessGroup"))",
+                type: "POST",
+                data: { departmentId: departmentId },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    var AccessGroups = data.AccessGroupBos;
+                    refreshDropDownItems('accessGroupInput', AccessGroups, selectedAccessGroupId, 'Name')
+
+                    $('#accessGroupInput').selectpicker('refresh');
+                }
+            });
+        }
+
+    </script>
+}

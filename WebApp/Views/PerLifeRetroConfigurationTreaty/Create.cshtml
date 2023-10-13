@@ -1,0 +1,135 @@
+﻿@model WebApp.Models.PerLifeRetroConfigurationTreatyViewModel
+
+@{
+    ViewBag.Title = "Per Life Retro Configuration - Treaty";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index", "PerLifeRetroConfiguration");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TreatyCodeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyCodeId, (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "changeTreatyCode(this.value)" })
+                        @Html.ValidationMessageFor(model => model.TreatyCodeId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyTypePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyTypePickListDetailId, (List<SelectListItem>)ViewBag.DropDownTreatyTypes, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.TreatyTypePickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.FundsAccountingTypePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.FundsAccountingTypePickListDetailId, (List<SelectListItem>)ViewBag.DropDownFundsAccountingTypeCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.FundsAccountingTypePickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReinsEffectiveStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.ReinsEffectiveStartDateStr, new { htmlAttributes = new { id = "ReinsEffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffectiveStartDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ReinsEffectiveStartDateStr, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReinsEffectiveEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.ReinsEffectiveEndDateStr, new { htmlAttributes = new { id = "ReinsEffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffectiveEndDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ReinsEffectiveEndDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RiskQuarterStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.RiskQuarterStartDateStr, new { htmlAttributes = new { id = "RiskQuarterStartDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiskQuarterStartDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.RiskQuarterStartDateStr, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RiskQuarterEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.RiskQuarterEndDateStr, new { htmlAttributes = new { id = "RiskQuarterEndDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiskQuarterEndDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.RiskQuarterEndDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.IsToAggregate, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.IsToAggregate, (List<SelectListItem>)ViewBag.DropDownYesNo, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.IsToAggregate, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Remark, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Remark, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", "PerLifeRetroConfiguration", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var FindTreatyCodeUrl = '@Url.Action("FindTreatyCode")';
+
+        $(document).ready(function () {
+            $('#Remark').autoResize();
+            $('#Remark').trigger('keyup');
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/PerLifeRetroConfigurationTreaty.js")
+}

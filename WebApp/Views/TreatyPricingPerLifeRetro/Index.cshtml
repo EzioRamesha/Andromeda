@@ -1,0 +1,249 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.TreatyPricingPerLifeRetroViewModel>
+
+@{
+    ViewBag.Title = "Per Life Retro";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Title Maintenance</h4></div>
+            <div class="col-md-6 text-right">
+                <button class="btn btn-add" onclick="resetAddPerLifeRetroModal()" data-toggle="modal" data-target="#addPerLifeRetroModal">ADD NEW</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-20">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCode;
+                                @Shared.Html.Sorter(ViewBag, "Per Life Treaty Code", "Code", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-20">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortRetroParty;
+                                @Shared.Html.Sorter(ViewBag, "Retro Party", "RetroPartyId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-25">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortType;
+                                @Shared.Html.Sorter(ViewBag, "Type", "Type", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-45">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
+                        </th>
+                        <th class="w-20">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortRetrocessionaireShare;
+                                @Shared.Html.Sorter(ViewBag, "Retrocessionaire's Share (%)", "RetrocessionaireShare", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+                    <tr>
+                        @using (Html.BeginForm("Index", "TreatyPricingPerLifeRetro", FormMethod.Get))
+                        {
+                            @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+                            <th>
+                                @Html.DropDownList("Code", (List<SelectListItem>)ViewBag.DropDownPerLifeRetroCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("RetroPartyId", (List<SelectListItem>)ViewBag.DropDownRetroParties, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("Type", (List<SelectListItem>)ViewBag.DropDownTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th></th>
+                            <th>
+                                @Html.TextBox("RetrocessionaireShare", null, new { @class = "form-control", placeholder = "Typer Here" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Code)
+                                </td>
+                                <td>
+                                    @if (item.RetroParty != null)
+                                    {
+                                        @(string.Format("{0} - {1}", item.RetroParty.Party, item.RetroParty.Name))
+                                    }
+                                </td>
+                                <td>
+                                    @BusinessObject.TreatyPricing.TreatyPricingPerLifeRetroBo.GetTypeName(item.Type)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RetrocessionaireShare)
+                                </td>
+                                <td class="text-center">
+                                    <a href="@Url.Action("Edit", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-pencil-alt fa-lg"></span></a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="no-data">No available data found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        Code = routeValue["Code"],
+                        RetroPartyId = routeValue["RetroPartyId"],
+                        Type = routeValue["Type"],
+                        RetrocessionaireShare = routeValue["RetrocessionaireShare"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Create", "TreatyPricingPerLifeRetro"))
+{
+    <div class="modal fade" id="addPerLifeRetroModal" tabindex="-1" role="dialog" aria-labelledby="addPerLifeRetroModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Per Life Retro</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="addNewError" style="display:none;"></div>
+
+                    <div class="form">
+                        <div class="form-group">
+                            @Html.Label("Per Life Treaty Code", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.Editor("PerLifeRetroCode", new { htmlAttributes = new { @class = "form-control" } })
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("Duplicate Existing Per Life Retro", htmlAttributes: new { @class = "col-form-label" })
+                            <div class="row m-0 p-0">
+                                <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                <div class="custom-control custom-switch pl-2">
+                                    @Html.CheckBox("IsDuplicateExisting", new { @class = "custom-control-input", id = "IsDuplicateExisting" })
+                                    <label class="custom-control-label" for="IsDuplicateExisting">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("Per Life Treaty ID / Code", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("DuplicatePerLifeRetroId", (List<SelectListItem>)ViewBag.DropDownPerLifeRetroCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-submit" id="saveBtn">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var DropDownPerLifeRetroCodes = @Html.Raw(Json.Encode(ViewBag.DropDownPerLifeRetroCodes));
+        var CurrentYear = new Date().getFullYear();
+
+        function resetAddPerLifeRetroModal() {
+            var currentIndex = (DropDownPerLifeRetroCodes.length).toString().padStart(3, '0');
+            $('#PerLifeRetroCode').val("PL_" + CurrentYear + "_" + currentIndex);
+
+            $('#IsDuplicateExisting').val(false);
+            $('#DuplicatePerLifeRetroId').val('');
+
+            $('#DuplicatePerLifeRetroId').prop('disabled', true);
+            $('#DuplicatePerLifeRetroId').selectpicker('refresh');
+
+            resetModalValidation();
+        }
+
+        function resetModalValidation() {
+            $('#addNewError').empty();
+            $('#addNewError').hide();
+        }
+
+        $(document).ready(function () {
+            $('#saveBtn').on("click", function () {
+                resetModalValidation();
+                var errorList = [];
+
+                if ($('#IsDuplicateExisting').val() == true && !$('#DuplicatePerLifeRetroId').val()) {
+                    errorList.push("Per Life Treaty ID / Code is Required.");
+                }
+
+                if (errorList.length > 0) {
+                    text = "<ul>";
+                    for (i = 0; i < errorList.length; i++) {
+                        text += "<li>" + errorList[i] + "</li>";
+                    }
+                    text += "</ul>";
+                    $('#addNewError').append(text);
+                    $('#addNewError').show();
+                    return false;
+                }
+            });
+
+            $('#IsDuplicateExisting').on('change.bootstrapSwitch', function (e) {
+                console.log(e.target.checked)
+                $('#DuplicatePerLifeRetroId').prop('disabled', !e.target.checked);
+                $('#DuplicatePerLifeRetroId').selectpicker('refresh');
+
+            });
+        });
+
+</script>
+}

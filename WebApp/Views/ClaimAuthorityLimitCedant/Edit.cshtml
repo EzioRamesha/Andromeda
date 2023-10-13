@@ -1,0 +1,144 @@
+﻿@model WebApp.Models.ClaimAuthorityLimitCedantViewModel
+
+@{
+    ViewBag.Title = "Claim Authority Limit - Cedant";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-12"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+        </div>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantBo, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Remarks, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Remarks, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="text-right">
+                            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-4">ADD NEW</button>
+                        </div>
+                        <input type="hidden" v-model="SortIndex" name="SortIndex" />
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th style="display:none"></th>
+                                        <th class="w-30">Claim Code</th>
+                                        <th class="w-10">Type</th>
+                                        <th class="w-15">Amount</th>
+                                        <th class="w-20">Fund Accounting Code</th>
+                                        <th class="w-20">Effective Date</th>
+                                        <th class="text-center w-5">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!CalCedantDetails.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(CalCedantDetail, index) in CalCedantDetails">
+                                        <td style="display:none">
+                                            <input type="hidden" :name="'calCedantDetailId[' + index + ']'" class="form-control" :value="CalCedantDetail.Id">
+                                        </td>
+                                        <td>
+                                            <select v-model="CalCedantDetail.ClaimCodeId" class="form-control selectpicker" ref="select" :id="'claimCodeId[' + index + ']'" :name="'claimCodeId[' + index + ']'" data-container="body" v-on:change="getClaimCodeVal(index)">
+                                                <option v-for="claimCode in ClaimCodes" :value="claimCode.Value">{{ claimCode.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select v-model="CalCedantDetail.Type" class="form-control selectpicker" ref="select" :id="'type[' + index + ']'" :name="'type[' + index + ']'" data-container="body">
+                                                <option v-for="type in DropDownCalCedantTypes" :value="type.Value">{{ type.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="input-group mb-2">
+                                                <div class="input-group-prepend">
+                                                    <div class="input-group-text">MYR</div>
+                                                </div>
+                                                <input v-model="CalCedantDetail.ClaimAuthorityLimitValueStr" class="form-control text-right" :name="'limitValue[' + index + ']'" :id="'limitValue[' + index + ']'" placeholder="0.00" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select v-model="CalCedantDetail.FundsAccountingTypePickListDetailId" class="form-control selectpicker" ref="select" :id="'fundAcctCode[' + index + ']'" :name="'fundAcctCode[' + index + ']'" data-container="body">
+                                                <option v-for="fundAccountingCode in DropDownFundsAccountingTypeCodes" :value="fundAccountingCode.Value">{{ fundAccountingCode.Text }}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input v-model.lazy="CalCedantDetail.EffectiveDateStr" class="form-control" :name="'effectiveDate[' + index + ']'" v-on:click="openDatePicker('CalCedantDetail_EffectiveDateStr_' + index)" :id="'CalCedantDetail_EffectiveDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" />
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-on:click="removeDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var CalCedantModel = @Html.Raw(Json.Encode(Model));
+        var ClaimCodeData = @Html.Raw(Json.Encode(ViewBag.DropDownClaimCodes));
+        var DropDownCalCedantTypes = @Html.Raw(Json.Encode(ViewBag.DropDownCalCedantTypes));
+        var DropDownFundsAccountingTypeCodes = @Html.Raw(Json.Encode(ViewBag.DropDownFundsAccountingTypeCodes));
+        var CALCedantDetailList = @Html.Raw(Json.Encode(ViewBag.CALCedantDetailBos));
+        var GetClaimCodesUrl = "@(Url.Action("GetClaimCodes"))";
+        var TypeBoth = @BusinessObject.ClaimAuthorityLimitCedantDetailBo.TypeBoth;
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+            }
+
+            $('#Remarks').autoResize();
+            $('#Remarks').trigger('keyup');
+        });
+    </script>
+    @Scripts.Render("~/Scripts/models/ClaimAuthorityLimitCedant.js")
+}

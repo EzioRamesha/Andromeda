@@ -1,0 +1,654 @@
+﻿@{
+    ViewBag.Title = "Underwriting Questionnaire Comparison";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Underwriting Questionnaire Comparison</h4>
+            </div>
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="table-responsive my-3 mb-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10 bg-white"></th>
+                                <th v-for="(comparison, index) in Comparisons" class="w-10">
+                                    {{ comparison.Name }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.BenefitCode" class="form-control" v-on:change="changeSearch(index)">
+                                        <option v-for="benefitCodeDropDown in comparison.BenefitCodeDropDowns" :value="benefitCodeDropDown.Value">{{ benefitCodeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.DistributionChannel" class="form-control" v-on:change="changeSearch(index)">
+                                        <option v-for="distributionChannelDropdown in comparison.DistributionChannelDropdowns" :value="distributionChannelDropdown.Value">{{ distributionChannelDropdown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Status" class="form-control" v-on:change="changeSearch(index)">
+                                        <option v-for="statusDropdown in comparison.StatusDropdowns" :value="statusDropdown.Value">{{ statusDropdown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Questionnaire Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.UwQuestionnaireId" class="form-control" v-on:change="changeUwQuestionnaireId(index)">
+                                        <option v-for="uwQuestionnaireDropDown in comparison.UwQuestionnaireDropDowns" :value="uwQuestionnaireDropDown.Value">{{ uwQuestionnaireDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Questionnaire Type</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.QuestionnaireType" class="form-control">
+                                        <option v-for="questionnaireTypeDropDown in comparison.QuestionnaireTypeDropDowns" :value="questionnaireTypeDropDown.Value">{{ questionnaireTypeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10" style="width:200px;">Ceding Company</th>
+                                    <th v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.CedantName}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- #region Comparison header rows -->
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Questionnaire ID</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.UwQuestionnaireId}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Questionnaire Name</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.UwQuestionnaireName}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.BenefitCode}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.DistributionChannel}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.StatusName}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Description</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.Description}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.VersionStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.EffectiveAtStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Questionnaire Type</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.TypeName}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Note</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.Remarks}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product (Linked)</td>
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{uw == null ? null : uw.LinkedProducts}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td :colspan="Comparisons.length">&nbsp;</td>
+                                </tr>
+                                <!-- #region Underwriting Questionnaire -->
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" :colspan="Comparisons.length + 1">Underwritng Questionnaire</td>
+                                </tr>
+
+                                <tr v-for="(category, categoryIndex) in UwQuestionnaireCategorys">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{category.Code}} - {{category.Name}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(uw, index) in UwQuestionnaireVersions">
+                                        {{getComparisonData(index, categoryIndex)}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingCedants));
+        var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Comparison 1", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        UwQuestionnaireDropDowns: DropDownEmpty, UwQuestionnaireId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", UwQuestionnaireVersionId: 0,
+                        QuestionnaireTypeDropDowns: DropDownEmpty, QuestionnaireType: "",
+                    },
+                ],
+                UwQuestionnaireVersions: [],
+                UwQuestionnaireCategorys: [],
+                IsGenerated: false,
+                SumAssuredIntervals: [],
+            },
+            methods: {
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.BenefitCode = "";
+                    comparison.DistributionChannel = "";
+                    comparison.Status = "";
+                    comparison.UwQuestionnaireId = "";
+                    comparison.Version = "";
+                    comparison.UwQuestionnaireVersionId = 0;
+                    comparison.QuestionnaireType = "";
+
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var distributionChannelDropDowns = comparison.DistributionChannelDropdowns;
+                    var statusDropdowns = comparison.StatusDropdowns;
+                    var uwQuestionnaireDropDowns = comparison.UwQuestionnaireDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var questionnaireTypeDropDowns = comparison.QuestionnaireTypeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateUwQuestionnaireData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            distributionChannelDropDowns = data.distributionChannelDropDowns;
+                            statusDropdowns = data.statusDropDowns;
+                            uwQuestionnaireDropDowns = data.uwQuestionnaireDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                            questionnaireTypeDropDowns = data.questionnaireTypeDropDowns;
+                        }
+                    });
+
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.DistributionChannelDropdowns = distributionChannelDropDowns;
+                    comparison.StatusDropdowns = statusDropdowns;
+                    comparison.UwQuestionnaireDropDowns = uwQuestionnaireDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.QuestionnaireTypeDropDowns = questionnaireTypeDropDowns;
+                },
+                changeSearch: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.UwQuestionnaireId = "";
+                    comparison.Version = "";
+                    comparison.UwQuestionnaireVersionId = 0;
+                    comparison.QuestionnaireType = "";
+
+                    var uwQuestionnaireDropDowns = comparison.UwQuestionnaireDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var questionnaireTypeDropDowns = comparison.QuestionnaireTypeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateUwQuestionnaireData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                            distributionChannel: comparison.DistributionChannel,
+                            status: comparison.Status,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            uwQuestionnaireDropDowns = data.uwQuestionnaireDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                            questionnaireTypeDropDowns = data.questionnaireTypeDropDowns;
+                        }
+                    });
+
+                    comparison.UwQuestionnaireDropDowns = uwQuestionnaireDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.QuestionnaireTypeDropDowns = questionnaireTypeDropDowns;
+                },
+                changeUwQuestionnaireId: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Version = "";
+                    comparison.UwQuestionnaireVersionId = 0;
+                    comparison.QuestionnaireType = "";
+
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var questionnaireTypeDropDowns = comparison.QuestionnaireTypeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateUwQuestionnaireData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                            distributionChannel: comparison.DistributionChannel,
+                            status: comparison.Status,
+                            uwQuestionnaireId: comparison.UwQuestionnaireId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versionDropDowns = data.versionDropDowns;
+                            questionnaireTypeDropDowns = data.questionnaireTypeDropDowns;
+                        }
+                    });
+
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.QuestionnaireTypeDropDowns = questionnaireTypeDropDowns;
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.QuestionnaireType = "";
+                    var questionnaireTypeDropDowns = comparison.QuestionnaireTypeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateUwQuestionnaireData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                            distributionChannel: comparison.DistributionChannel,
+                            status: comparison.Status,
+                            uwQuestionnaireId: comparison.UwQuestionnaireId,
+                            uwQuestionnaireVersionId: comparison.Version,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            console.log(data)
+                            questionnaireTypeDropDowns = data.questionnaireTypeDropDowns;
+                        }
+                    });
+
+                    comparison.QuestionnaireTypeDropDowns = questionnaireTypeDropDowns;
+                },
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var versionIds = [];
+
+                    var errorList = [];
+
+                    //Comparison parameters checking
+                    var comparisonsCount = 0;
+                    comparisons.forEach(function (comparison, index) {
+                        if (comparison.Cedant) {
+                            comparisonsCount++;
+
+                            //if (!comparison.BenefitCode) {
+                            //    errorList.push("Please select Benefit Code for " + comparison.Name + ".");
+                            //}
+                            //if (!comparison.DistributionChannel) {
+                            //    errorList.push("Please select Distribution Channel for " + comparison.Name + ".");
+                            //}
+                            //if (!comparison.Status) {
+                            //    errorList.push("Please select Status for " + comparison.Name + ".");
+                            //}
+                            if (!comparison.UwQuestionnaireId) {
+                                errorList.push("Please select Underwriting Questionnaire Id for " + comparison.Name + ".");
+                            }
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+                            if (!comparison.QuestionnaireType) {
+                                errorList.push("Please select Questionaire Type for " + comparison.Name + ".");
+                            }
+                        }
+                    });
+                    if (comparisonsCount < 2)
+                        errorList.push("Please select at least two Underwriting Questionnaires for comparison.");
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    comparisons.forEach(function (comparison) {
+                        versionIds.push(comparison.Version);
+                    });
+
+                    var categorys = this.UwQuestionnaireCategorys;
+                    var versions = this.UwQuestionnaireVersions;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateUnderwritingQuestionnaireComparison", "Report"))",
+                        type: "POST",
+                        data: {
+                            versionIds: versionIds
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versions = data.uwQuestionnaireVersionBos;
+                            categorys = data.uwQuestionnaireCategoryBos;
+                        },
+                    });
+                    this.UwQuestionnaireVersions = versions;
+                    this.UwQuestionnaireCategorys = categorys;
+
+                    this.IsGenerated = true;
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Ceding Company";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "UwQuestionnaire",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                },
+                getComparisonData: function (comparisonIndex, categoryIndex) {
+                    var comparison = this.UwQuestionnaireVersions[comparisonIndex];
+                    var category = this.UwQuestionnaireCategorys[categoryIndex];
+
+                    if (comparison != null) {
+                        if (comparison.TreatyPricingUwQuestionnaireVersionDetailBos != null) {
+                            var result = comparison.TreatyPricingUwQuestionnaireVersionDetailBos.filter((i, n) => i.UwQuestionnaireCategoryId == category.Id);
+                            if (result.length) {
+                                return result[0].Question;
+                            }
+                        }
+                    }
+                    return "";
+                },
+            },
+            created: function () {
+            },
+            updated() {
+            }
+        });
+</script>
+}

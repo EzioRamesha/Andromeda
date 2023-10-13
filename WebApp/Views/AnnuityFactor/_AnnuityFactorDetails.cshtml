@@ -1,0 +1,100 @@
+﻿@model WebApp.Models.AnnuityFactorViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <div id="uploadDetailButton" class="file btn btn-upload mt-2" role="button" data-loading-text="Processing...<span></span>" style="display: inline-flex;" disabled="@disabled">
+                UPLOAD
+                <input type="file" id="DetailFile" :name="'DetailFile'" accept=".csv" onchange="uploadFile(this.form)" />
+            </div>
+            <button type="button" id="btnDownload" class="btn btn-download dropdown-toggle mt-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled="@disabled">
+                DOWNLOAD AS
+            </button>
+            <div class="dropdown-menu" disabled="@disabled">
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadDetail", new { type = 1 } ))" value="All" />
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadDetail", new { type = 2 } ))" value="Template" />
+            </div>
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="AnnuityFactorDetailMaxIndex" name="annuityFactorDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-15">Term Remain</th>
+                        <th class="w-15">Insured Gender Code</th>
+                        <th class="w-15">Insured Tobacco Use</th>
+                        <th class="w-15">Insured Attained Age</th>
+                        <th class="w-15">Policy Term</th>
+                        <th class="w-15">Annuity Factor</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!AnnuityFactorDetails.length">
+                        <td colspan="9" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in AnnuityFactorDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'annuityFactorDetailId[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input min="0" v-model="detail.PolicyTermRemainStr" :name="'policyTermRemainStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.PolicyTermRemainStr">
+                        </td>
+                        <td>
+                            <select v-model="detail.InsuredGenderCodePickListDetailId" class="form-control" ref="select" :id="'genderCode[' + index + ']'" :name="'genderCode[' + index + ']'" data-container="body" disabled="@disabled">
+                                <option v-for="insuredGenderCode in InsuredGenderCodes" :value="insuredGenderCode.Value">{{ insuredGenderCode.Text }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="detail.InsuredTobaccoUsePickListDetailId" class="form-control" ref="select" :id="'insuredTobaccoUse[' + index + ']'" :name="'insuredTobaccoUse[' + index + ']'" data-container="body" disabled="@disabled">
+                                <option v-for="insuredTobaccoUse in InsuredTobaccoUses" :value="insuredTobaccoUse.Value">{{ insuredTobaccoUse.Text }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" min="0" v-model="detail.InsuredAttainedAge" :name="'insuredAttainedAge[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.InsuredAttainedAge">
+                        </td>
+                        <td>
+                            <input v-model="detail.PolicyTermStr" :name="'policyTermStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.PolicyTermStr">
+                        </td>
+                        <td>
+                            <input v-model="detail.AnnuityFactorValueStr" :name="'annuityFactorValueStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.AnnuityFactorValueStr">
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeAnnuityFactorDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var AnnuityFactorModel = @Html.Raw(Json.Encode(Model));
+    var AnnuityFactorDetails = @Html.Raw(serializer.Serialize(ViewBag.AnnuityFactorDetailBos));
+    var InsuredGenderCodes = @Html.Raw(Json.Encode(ViewBag.DropDownInsuredGenderCodes));
+    var InsuredTobaccoUses = @Html.Raw(Json.Encode(ViewBag.DropDownInsuredTobaccoUses));
+    var UploadFileUrl = "@(Url.Action("UploadDetail"))";
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

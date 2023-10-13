@@ -1,0 +1,250 @@
+﻿@model WebApp.Models.DiscountTableViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a class="active underline-tab" data-toggle="tab" href="#riDiscount">RI Discount Rate</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#largeDiscount">Large SA Discount</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#groupDiscount">Group Size Discount</a></li>
+</ul>
+
+<div class="tab-content underline-tab-content">
+    <div class="tab-pane fade show active" id="riDiscount" role="tabpanel" aria-labelledby="riDiscount-tab">
+        <div class="text-right my-4">
+            <div id="btnUploadRiDiscount" class="file btn btn-upload mt-2" role="button" data-loading-text="Processing...<span></span>" style="display: inline-flex;" disabled="@disabled">
+                UPLOAD
+                <input type="file" id="RiDiscountFile" :name="'RiDiscountFile'" accept=".csv" onchange="uploadRiDiscountFile(this.form)" />
+            </div>
+            <button type="button" id="btnDownloadRiDiscount" class="btn btn-download dropdown-toggle mt-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled="@disabled">
+                DOWNLOAD AS
+            </button>
+            <div class="dropdown-menu" disabled="@disabled">
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadRiDiscount", new { type = 1 } ))" value="All" />
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadRiDiscount", new { type = 2 } ))" value="Template" />
+            </div>
+            <button type="button" v-on:click="addRiDiscount" class="btn btn-add-sub mt-2" style="width: auto;" disabled=@disabled>ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="RiDiscountMaxIndex" name="RiDiscount.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-15">Discount Code</th>
+                        <th class="w-15">Reinsurance Effective Start Date</th>
+                        <th class="w-15">Reinsurance Effective End Date</th>
+                        <th class="w-15">Duration From</th>
+                        <th class="w-15">Duration To</th>
+                        <th class="w-15">Discount</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!RiDiscounts.length">
+                        <td colspan="8" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(RiDiscount, index) in RiDiscounts">
+                        <td>
+                            {{ index + 1 }}
+                            <input type="hidden" :name="'RiDiscount.Id[' + index + ']'" class="form-control" :value="RiDiscount.Id" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input v-model.lazy="RiDiscount.DiscountCode" class="form-control" :name="'RiDiscount.DiscountCode[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="RiDiscount.EffectiveStartDateStr" class="form-control" :name="'RiDiscount.EffectiveStartDateStr[' + index + ']'" v-on:click="openDatePicker('RiDiscount_EffectiveStartDateStr_' + index)" :id="'RiDiscount_EffectiveStartDateStr_' + index" placeholder="DD MM YYYY" disabled=@disabled autocomplete="off">
+                        </td>
+                        <td>
+                            <input v-model.lazy="RiDiscount.EffectiveEndDateStr" class="form-control" :name="'RiDiscount.EffectiveEndDateStr[' + index + ']'" v-on:click="openDatePicker('RiDiscount_EffectiveEndDateStr_' + index)" :id="'RiDiscount_EffectiveEndDateStr_' + index" placeholder="DD MM YYYY" disabled=@disabled autocomplete="off">
+                        </td>
+                        <td>
+                            <input v-model.lazy="RiDiscount.DurationFromStr" class="form-control" :name="'RiDiscount.DurationFromStr[' + index + ']'" placeholder="Type here" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input v-model.lazy="RiDiscount.DurationToStr" class="form-control" :name="'RiDiscount.DurationToStr[' + index + ']'" placeholder="Type here" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input v-model.lazy="RiDiscount.DiscountStr" class="form-control" :name="'RiDiscount.DiscountStr[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td class="text-center align-middle">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeRiDiscount(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="largeDiscount" role="tabpanel" aria-labelledby="largeDiscount-tab">
+        <div class="text-right my-4">
+            <div id="btnUploadLargeDiscount" class="file btn btn-upload mt-2" role="button" data-loading-text="Processing...<span></span>" style="display: inline-flex;" disabled="@disabled">
+                UPLOAD
+                <input type="file" id="LargeDiscountFile" :name="'LargeDiscountFile'" accept=".csv" onchange="uploadLargeDiscountFile(this.form)" />
+            </div>
+            <button type="button" id="btnDownloadLargeDiscount" class="btn btn-download dropdown-toggle mt-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled="@disabled">
+                DOWNLOAD AS
+            </button>
+            <div class="dropdown-menu" disabled="@disabled">
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadLargeDiscount", new { type = 1 } ))" value="All" />
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadLargeDiscount", new { type = 2 } ))" value="Template" />
+            </div>
+            <button type="button" v-on:click="addLargeDiscount" class="btn btn-add-sub mt-2" style="width: auto;" disabled=@disabled>ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="LargeDiscountMaxIndex" name="LargeDiscount.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-15">Discount Code</th>
+                        <th class="w-15">Reinsurance Effective Start Date</th>
+                        <th class="w-15">Reinsurance Effective End Date</th>
+                        <th class="w-15">ORI Sum Assured From</th>
+                        <th class="w-15">ORI Sum Assured To</th>
+                        <th class="w-15">Discount</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!LargeDiscounts.length">
+                        <td colspan="8" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(LargeDiscount, index) in LargeDiscounts">
+                        <td>
+                            {{ index + 1 }}
+                            <input type="hidden" :name="'LargeDiscount.Id[' + index + ']'" class="form-control" :value="LargeDiscount.Id" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input v-model.lazy="LargeDiscount.DiscountCode" class="form-control" :name="'LargeDiscount.DiscountCode[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="LargeDiscount.EffectiveStartDateStr" class="form-control" :name="'LargeDiscount.EffectiveStartDateStr[' + index + ']'" v-on:click="openDatePicker('LargeDiscount_EffectiveStartDateStr_' + index)" :id="'LargeDiscount_EffectiveStartDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="LargeDiscount.EffectiveEndDateStr" class="form-control" :name="'LargeDiscount.EffectiveEndDateStr[' + index + ']'" v-on:click="openDatePicker('LargeDiscount_EffectiveEndDateStr_' + index)" :id="'LargeDiscount_EffectiveEndDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="LargeDiscount.AarFromStr" class="form-control" :name="'LargeDiscount.AarFromStr[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="LargeDiscount.AarToStr" class="form-control" :name="'LargeDiscount.AarToStr[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="LargeDiscount.DiscountStr" class="form-control" :name="'LargeDiscount.DiscountStr[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td class="text-center align-middle">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeLargeDiscount(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="groupDiscount" role="tabpanel" aria-labelledby="groupDiscount-tab">
+        <div class="text-right my-4">
+            <div id="btnUploadGroupDiscount" class="file btn btn-upload mt-2" role="button" data-loading-text="Processing...<span></span>" style="display: inline-flex;" disabled="@disabled">
+                UPLOAD
+                <input type="file" id="GroupDiscountFile" :name="'GroupDiscountFile'" accept=".csv" onchange="uploadGroupDiscountFile(this.form)" />
+            </div>
+            <button type="button" id="btnDownloadGroupDiscount" class="btn btn-download dropdown-toggle mt-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled="@disabled">
+                DOWNLOAD AS
+            </button>
+            <div class="dropdown-menu" disabled="@disabled">
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadGroupDiscount", new { type = 1 } ))" value="All" />
+                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadGroupDiscount", new { type = 2 } ))" value="Template" />
+            </div>
+            <button type="button" v-on:click="addGroupDiscount" class="btn btn-add-sub mt-2" style="width: auto;" disabled=@disabled>ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="GroupDiscountMaxIndex" name="GroupDiscount.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-15">Discount Code</th>
+                        <th class="w-15">Reinsurance Effective Start Date</th>
+                        <th class="w-15">Reinsurance Effective End Date</th>
+                        <th class="w-15">Group Size From</th>
+                        <th class="w-15">Group Size To</th>
+                        <th class="w-15">Discount</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!GroupDiscounts.length">
+                        <td colspan="8" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(GroupDiscount, index) in GroupDiscounts">
+                        <td>
+                            {{ index + 1 }}
+                            <input type="hidden" :name="'GroupDiscount.Id[' + index + ']'" class="form-control" :value="GroupDiscount.Id" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input v-model.lazy="GroupDiscount.DiscountCode" class="form-control" :name="'GroupDiscount.DiscountCode[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="GroupDiscount.EffectiveStartDateStr" class="form-control" :name="'GroupDiscount.EffectiveStartDateStr[' + index + ']'" v-on:click="openDatePicker('GroupDiscount_EffectiveStartDateStr_' + index)" :id="'GroupDiscount_EffectiveStartDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model.lazy="GroupDiscount.EffectiveEndDateStr" class="form-control" :name="'GroupDiscount.EffectiveEndDateStr[' + index + ']'" v-on:click="openDatePicker('GroupDiscount_EffectiveEndDateStr_' + index)" :id="'GroupDiscount_EffectiveEndDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input type="number" min="0" v-model.lazy="GroupDiscount.GroupSizeFromStr" class="form-control" :name="'GroupDiscount.GroupSizeFromStr[' + index + ']'" placeholder="Type here" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input type="number" min="0" v-model.lazy="GroupDiscount.GroupSizeToStr" class="form-control" :name="'GroupDiscount.GroupSizeToStr[' + index + ']'" placeholder="Type here" disabled=@disabled />
+                        </td>
+                        <td>
+                            <input v-model.lazy="GroupDiscount.DiscountStr" class="form-control" :name="'GroupDiscount.DiscountStr[' + index + ']'" placeholder="Type here" disabled=@disabled>
+                        </td>
+                        <td class="text-center align-middle">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeGroupDiscount(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var DiscountTableModel = @Html.Raw(Json.Encode(Model));
+    var RiDiscounts = @Html.Raw(Json.Encode(ViewBag.RiDiscountBos));
+    var LargeDiscounts = @Html.Raw(Json.Encode(ViewBag.LargeDiscountBos));
+    var GroupDiscounts = @Html.Raw(Json.Encode(ViewBag.GroupDiscountBos));
+    var RiDiscountValidateDeleteUrl = "@(Url.Action("ValidateDelete", "RiDiscount"))";
+    var LargeDiscountValidateDeleteUrl = "@(Url.Action("ValidateDelete", "LargeDiscount"))";
+    var GroupDiscountValidateDeleteUrl = "@(Url.Action("ValidateDelete", "GroupDiscount"))";
+    var UploadRiDiscountFileUrl = "@(Url.Action("UploadRiDiscount"))";
+    var UploadLargeDiscountFileUrl = "@(Url.Action("UploadLargeDiscount"))";
+    var UploadGroupDiscountFileUrl = "@(Url.Action("UploadGroupDiscount"))";
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

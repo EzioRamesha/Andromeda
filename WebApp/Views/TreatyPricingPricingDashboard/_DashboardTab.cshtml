@@ -1,0 +1,150 @@
+﻿<div class="card-body">
+        <div class="card">
+            <div class="card-header">
+                <h4>Outstanding Pricing Overview <span class="small">&bull; {{TotalQuotationCaseByPricingStatus}} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="row m-0">
+                    <div class="col-md-2 col-sm-4 py-2" v-for="(QuotationCase, index) in QuotationCaseByPricingStatus">
+                        <div class="dashboard-clickable-wrapper" v-on:click="redirectByPricingStatus(index)">
+                            <span class="col-form-label font-weight-bold">{{QuotationCase.PricingStatusName}}</span>
+                            <br />
+                            <span class="col-form-label small">Pricing Status Category</span>
+                            <br />
+                            <div class="text-right">
+                                <span class="col-form-label font-weight-bold font-xl">{{QuotationCase.NoOfCase}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Person In-Charge</th>
+                                <th class="w-15" v-for="(QuotationCase, index) in QuotationCaseByPricingStatus">{{QuotationCase.PricingStatusName}}</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!QuotationCaseByPics.length">
+                                <td colspan="8" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(QuotationCaseByPic, index) in QuotationCaseByPics">
+                                <td class="w-20 font-weight-bold">{{ QuotationCaseByPic.UserName }}</td>
+                                <td class="w-15" v-for="(QuotationCase, pricingStatusIndex) in QuotationCaseByPricingStatus">
+                                    {{ QuotationCaseByPic.TreatyPricingQuotationWorkflowBos[pricingStatusIndex].NoOfCase }}
+                                </td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectByPersonInCharge(index, 1)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Due Date Overview <span class="small">&bull; {{TotalQuotationCaseByDueDateOverview}} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="row m-0">
+                    <div class="col-md-4 col-sm-6 py-2">
+                        <div class="dashboard-clickable-wrapper" v-on:click="redirectByDueDateOverview(1)">
+                            <span class="col-form-label font-weight-bold">&le; 5 days</span>
+                            <br />
+                            <span class="col-form-label small">Case Due Day</span>
+                            <br />
+                            <div class="text-right" v-if="DueDateOverviews[0]">
+                                <span class="col-form-label font-weight-bold font-xl">{{ DueDateOverviews[0].NoOfCase }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2">
+                        <div class="dashboard-clickable-wrapper" v-on:click="redirectByDueDateOverview(2)">
+                            <span class="col-form-label font-weight-bold">6 to 10 days</span>
+                            <br />
+                            <span class="col-form-label small">Case Due Day</span>
+                            <br />
+                            <div class="text-right" v-if="DueDateOverviews[1]">
+                                <span class="col-form-label font-weight-bold font-xl">{{ DueDateOverviews[1].NoOfCase }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2">
+                        <div class="dashboard-clickable-wrapper" v-on:click="redirectByDueDateOverview(3)">
+                            <span class="col-form-label font-weight-bold">> 10 days</span>
+                            <br />
+                            <span class="col-form-label small">Case Due Day</span>
+                            <br />
+                            <div class="text-right" v-if="DueDateOverviews[2]">
+                                <span class="col-form-label font-weight-bold font-xl">{{ DueDateOverviews[2].NoOfCase }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Person In-Charge</th>
+                                <th class="w-25">&le; 5 days</th>
+                                <th class="w-25">6 to 10 days</th>
+                                <th class="w-20">> 10 days</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!DueDateOverviews.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DueDateOverviewPic, index) in DueDateOverviewsPics">
+                                <td class="w-25 font-weight-bold">{{ DueDateOverviewPic.UserName }}</td>
+                                <td class="w-25">{{ DueDateOverviewPic.NoOfCaseDueDateBelow5 }}</td>
+                                <td class="w-25">{{ DueDateOverviewPic.NoOfCaseDueDate6To10 }}</td>
+                                <td class="w-20">{{ DueDateOverviewPic.NoOfCaseDueDateExceed10 }}</td>
+                                <td class="w-5 text-center"><span class="fas fa-eye" v-on:click="redirectByPersonInCharge(index, 2)"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Quoting Case <span class="small">&bull; {{TotalQuotationCaseByStatusQuoting}} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Ceding Company</th>
+                                <th class="w-20 text-left">No of Quoting Case</th>
+                                <th class="w-25 text-right">Average Expected RI Premium Receivable</th>
+                                <th class="w-10"></th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!QuotingCases.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(QuotingCase, index) in QuotingCases">
+                                <td class="w-20 font-weight-bold">{{ QuotingCase.CedantName }}</td>
+                                <td class="w-20 text-left">{{ QuotingCase.TotalCase }}</td>
+                                <td class="w-25 text-right">{{ QuotingCase.ExpectedRIPremiumReceivable }}</td>
+                                <td class="w-10"></td>
+                                <td class="w-5 text-center"><span class="fas fa-eye" v-on:click="redirectByCompany(index)" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>

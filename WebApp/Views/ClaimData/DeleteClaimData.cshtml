@@ -1,0 +1,99 @@
+﻿@model WebApp.Models.ClaimDataViewModel
+
+@{
+    ViewBag.Title = "Claims Data Details";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "Claim Data Batch";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", new { id = Model.ClaimDataBatchId });
+
+    ViewBag.Prev2Title = "Claim Data";
+    ViewBag.Prev2Action = "Edit";
+    ViewBag.EditDetailsPageUrl = Url.Action("EditClaimData", new { id = Model.Id });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayName("Ceding Company")</td>
+                            <td>@string.Format("{0} - {1}", Model.ClaimDataBatchBo.CedantBo.Code, Model.ClaimDataBatchBo.CedantBo.Name)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PolicyNumber)</td>
+                            <td>@Html.DisplayFor(model => model.PolicyNumber)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyCode)</td>
+                            <td>@Html.DisplayFor(model => model.TreatyCode)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PolicyTerm)</td>
+                            <td>@Html.DisplayFor(model => model.PolicyTerm)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ClaimTransactionType)</td>
+                            <td>@Html.DisplayFor(model => model.ClaimTransactionType)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ClaimRecoveryAmtStr)</td>
+                            <td>@Html.DisplayFor(model => model.ClaimRecoveryAmtStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.MappingStatus)</td>
+                            <td>@BusinessObject.Claims.ClaimDataBo.GetMappingStatusName(Model.MappingStatus)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PreComputationStatus)</td>
+                            <td>@BusinessObject.Claims.ClaimDataBo.GetPreComputationStatusName(Model.PreComputationStatus)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PreValidationStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetPreValidationStatusName(Model.PreValidationStatus)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Details", new { id = Model.Id, ridataBatchId = Model.ClaimDataBatchId }, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

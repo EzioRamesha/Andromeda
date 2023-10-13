@@ -1,0 +1,170 @@
+﻿@using BusinessObject.Identity
+
+@using Services.Identity
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        @ViewBag.Title - @ConfigurationManager.AppSettings["AppName"]
+    </title>
+    <link rel="icon" type="image/png" href="~/Image/MLRe-favicon.png" />
+
+    @Styles.Render("~/Content/font-face.css")
+
+    @Styles.Render("~/Content/font-awesome/css/all.min.css")
+
+    @Styles.Render("~/Content/chosen.min.css")
+
+    @Styles.Render("~/bundles/css")
+
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+
+@if (ViewBag.IsHideSideBar is null || !ViewBag.IsHideSideBar)
+{
+    <body class="app header-fixed sidebar-fixed aside-menu-fixed sidebar-lg-show">
+        <header class="app-header navbar">
+            <div class="sidebar-brand d-md-down-none">
+                <a href="@Url.Action("Index", "Home")">
+                    <img src="~/Image/MLRe-Logo-91x76.png" padding: 5px 0;" />
+                </a>
+            </div>
+            <div class="header-wrapper">
+                <div class="subheader justify-content-between">
+                    <button class="navbar-toggler sidebar-toggler d-lg-none mr-auto" type="button" data-toggle="sidebar-show">
+                        <span class="fas fa-bars"></span>
+                    </button>
+                    <a class="header-brand d-lg-none header-brand-sm-up-center" href="@Url.Action("Index", "Home")">
+                        <img src="~/Image/MLRe-logo-small.png" />
+                    </a>
+                    <button class="navbar-toggler sidebar-toggler d-md-down-none" type="button" data-toggle="sidebar-lg-show">
+                        <span class="fas fa-bars"></span>
+                    </button>
+
+                    <ul class="nav navbar-nav d-md-down-none">
+                    </ul>
+
+                    @Html.Partial("_LoginPartial")
+                </div>
+                <div class="subheader-breadcrumb justify-content-between">
+                    @RenderSection("breadcrumb", required: false)
+                </div>
+            </div>
+        </header>
+
+        <div class="app-body">
+            <div class="sidebar">
+                <nav class="sidebar-nav">
+                    @Html.Partial("_SideNav")
+                </nav>
+                <div class="text-center my-2">
+                    @*<img src="~/Image/Artboard 1.png" class="img-fluid" />*@
+                    @*<a href="http://www.enrii.com" target="_blank"><img src="<?php _p(__PROJECT_IMAGES_ASSETS__ .'/enrii-logo.png'); ?>" style="padding: 15px 0;"></a>*@
+                </div>
+            </div>
+            <main class="main" style="margin-bottom: 100px">
+                <div class="container-fluid mt-1">
+                    @Html.Partial("_Message")
+
+                    @RenderBody()
+                </div>
+                @Html.Partial("_SessionTimeout")
+            </main>
+        </div>
+
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/Scripts/chosen.jquery.min.js")
+        @Scripts.Render("~/bundles/bootstrap")
+        @Scripts.Render("~/bundles/vue")
+        @Scripts.Render("~/Scripts/timepicker.js")
+        @Scripts.Render("~/Scripts/ckeditor.js")
+        @Scripts.Render("~/Scripts/chart.min.js")
+
+        <script>
+        var DateFormatDatePickerJs = "@System.Configuration.ConfigurationManager.AppSettings["DateFormatDatePickerJs"]";
+        </script>
+
+        @RenderSection("scripts", required: false)
+    </body>
+}
+else
+{
+    <body class="app sidebar-fixed aside-menu-fixed">
+        <div class="app-body">
+            <main class="main" style="margin-bottom: 100px">
+                <div class="container-fluid mt-1">
+                    @Html.Partial("_Message")
+
+                    @RenderBody()
+                </div>
+                @Html.Partial("_SessionTimeout")
+            </main>
+        </div>
+
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/Scripts/chosen.jquery.min.js")
+        @Scripts.Render("~/bundles/bootstrap")
+        @Scripts.Render("~/bundles/vue")
+        @Scripts.Render("~/Scripts/timepicker.js")
+        @Scripts.Render("~/Scripts/ckeditor.js")
+        @Scripts.Render("~/Scripts/chart.min.js")
+
+        <script>
+            var DateFormatDatePickerJs = "@System.Configuration.ConfigurationManager.AppSettings["DateFormatDatePickerJs"]";
+
+        $(document).ready(function () {
+            $('input:text, textarea').on('keypress', function (e) {
+                var currentValue = this.value;
+                var lastChar = currentValue[currentValue.length - 1];
+                var charCode = e.keyCode;
+
+                var parent = $('#' + this.id).parent();
+                return validateCharacter(charCode, lastChar, parent);
+            });
+
+            function validateCharacter(charCode, lastChar, parent) {
+                var isCheckArrowLeft = ((charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122) || charCode == 33 || charCode == 47 || charCode == 63);
+                var isCheckAnd = charCode == 35;
+
+                if ((isCheckArrowLeft && lastChar == '<') || (isCheckAnd && lastChar == '&')) {
+                    var error = parent.find('.invalid-char-error');
+                    var valError = parent.find('.field-validation-error');
+                    if (!error.length) {
+                        var msg = 'Invalid character / symbol entered';
+                        if (valError.length)
+                            msg = '<br />' + msg;
+                        parent.append('<span class="invalid-char-error text-danger">' + msg + '</span>');
+                    }
+                    return false;
+                }
+                parent.find('.invalid-char-error').remove();
+                return true;
+            }
+
+            @* $('input:text, textarea').on('keyup', function (e) {
+                if (e.ctrlKey == true && e.which == 86) {
+                    var parent = $('#' + this.id).parent();
+                    console.log(parent);
+                    var value = this.value;
+                    var lastChar = '';
+                    for (var i = 0; i < value.length; i++) {
+                        var charCode = value.charCodeAt(i);
+                        if (!validateCharacter(charCode, lastChar, parent)) {
+                            $('#' + this.id).val(value.substring(0, i));
+                        }
+                        lastChar = value[i];
+                    }
+                }
+            });*@
+        });
+
+        </script>
+
+        @RenderSection("scripts", required: false)
+    </body>
+}
+
+</html>

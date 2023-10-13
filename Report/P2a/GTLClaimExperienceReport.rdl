@@ -1,0 +1,850 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="ClaimExperienceReportDataSource">
+      <DataSourceReference>/Andromeda2aDataSource</DataSourceReference>
+      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:DataSourceID>2148c69e-a194-4ea9-8f49-8f8b5b6c5085</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="TreatyPricingGroupReferralGtlTables">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Cedant">
+            <Value>=Parameters!Cedant.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@InsuredGroupName">
+            <Value>=Parameters!InsuredGroupName.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ClaimType">
+            <Value>=Parameters!ClaimType.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CoverageStartDate">
+            <Value>=Parameters!CoverageStartDate.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>--Claim category 1
+SELECT RowLabel, ColumnLabel, SUM(GrossClaim) AS GrossClaim, SUM(RiClaim) AS RiClaim, CategoryValue, RowCategory FROM
+(SELECT 
+	'Claimant/ID' AS RowLabel,
+	1 AS RowCategory,
+	'no longer in use' AS ColumnLabel,
+	ISNULL(CAST(t.GrossClaim AS FLOAT),0) AS GrossClaim,
+	ISNULL(CAST(t.RiClaim AS FLOAT),0) AS RiClaim,
+	t.ClaimantsName AS CategoryValue
+FROM TreatyPricingGroupReferralGtlTables t
+LEFT JOIN TreatyPricingGroupReferrals g ON g.Id = t.TreatyPricingGroupReferralId
+WHERE g.CedantId IN (@Cedant)
+AND g.InsuredGroupNameId IN (@InsuredGroupName)
+AND ClaimType IN (@ClaimType)
+AND (t.CoverageStartDate IN(@CoverageStartDate))) t1
+GROUP BY t1.RowLabel, t1.ColumnLabel, t1.CategoryValue, t1.RowCategory
+
+UNION ALL
+
+--Claim category 2
+SELECT RowLabel, ColumnLabel, SUM(GrossClaim) AS GrossClaim, SUM(RiClaim) AS RiClaim, CategoryValue, RowCategory FROM
+(SELECT 
+	'Coverage Start Date' AS RowLabel,
+	2 AS RowCategory,
+	'no longer in use' AS ColumnLabel,
+	ISNULL(CAST(t.GrossClaim AS FLOAT),0) AS GrossClaim,
+	ISNULL(CAST(t.RiClaim AS FLOAT),0) AS RiClaim,
+	FORMAT(t.CoverageStartDate, 'dd-MMM-yyyy') AS CategoryValue
+FROM TreatyPricingGroupReferralGtlTables t
+LEFT JOIN TreatyPricingGroupReferrals g ON g.Id = t.TreatyPricingGroupReferralId
+WHERE g.CedantId IN (@Cedant)
+AND g.InsuredGroupNameId IN (@InsuredGroupName)
+AND ClaimType IN (@ClaimType)) t1
+GROUP BY t1.RowLabel, t1.ColumnLabel, t1.CategoryValue, t1.RowCategory
+
+UNION ALL
+
+--Claim category 3
+SELECT RowLabel, ColumnLabel, SUM(GrossClaim) AS GrossClaim, SUM(RiClaim) AS RiClaim, CategoryValue, RowCategory FROM
+(SELECT 
+	'Cause of Claim' AS RowLabel,
+	3 AS RowCategory,
+	'no longer in use' AS ColumnLabel,
+	ISNULL(CAST(t.GrossClaim AS FLOAT),0) AS GrossClaim,
+	ISNULL(CAST(t.RiClaim AS FLOAT),0) AS RiClaim,
+	t.CauseOfClaim AS CategoryValue
+FROM TreatyPricingGroupReferralGtlTables t
+LEFT JOIN TreatyPricingGroupReferrals g ON g.Id = t.TreatyPricingGroupReferralId
+WHERE g.CedantId IN (@Cedant)
+AND g.InsuredGroupNameId IN (@InsuredGroupName)
+AND ClaimType IN (@ClaimType)
+AND (t.CoverageStartDate IN(@CoverageStartDate))) t1
+GROUP BY t1.RowLabel, t1.ColumnLabel, t1.CategoryValue, t1.RowCategory</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="RowLabel">
+          <DataField>RowLabel</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ColumnLabel">
+          <DataField>ColumnLabel</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="GrossClaim">
+          <DataField>GrossClaim</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="RiClaim">
+          <DataField>RiClaim</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="CategoryValue">
+          <DataField>CategoryValue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="RowCategory">
+          <DataField>RowCategory</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Month">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <CommandText>SELECT 1 AS 'Month', 'Jan' AS 'MonthName'
+UNION
+SELECT 2 AS 'Month', 'Feb' AS 'MonthName'
+UNION
+SELECT 3 AS 'Month', 'Mar' AS 'MonthName'
+UNION
+SELECT 4 AS 'Month', 'Apr' AS 'MonthName'
+UNION
+SELECT 5 AS 'Month', 'May' AS 'MonthName'
+UNION
+SELECT 6 AS 'Month', 'Jun' AS 'MonthName'
+UNION
+SELECT 7 AS 'Month', 'Jul' AS 'MonthName'
+UNION
+SELECT 8 AS 'Month', 'Aug' AS 'MonthName'
+UNION
+SELECT 9 AS 'Month', 'Sep' AS 'MonthName'
+UNION
+SELECT 10 AS 'Month', 'Oct' AS 'MonthName'
+UNION
+SELECT 11 AS 'Month', 'Nov' AS 'MonthName'
+UNION
+SELECT 12 AS 'Month', 'Dec' AS 'MonthName'</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Month">
+          <DataField>Month</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="MonthName">
+          <DataField>MonthName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Cedant">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <CommandText>SELECT Id,
+Code + ' - ' + [Name] AS CedingCompany
+FROM Cedants</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Id">
+          <DataField>Id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CedingCompany">
+          <DataField>CedingCompany</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="InsuredGroupNames">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Cedant">
+            <Value>=Parameters!Cedant.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT DISTINCT i.Id, i.[Name]
+FROM TreatyPricingGroupReferrals g
+LEFT JOIN InsuredGroupNames i ON i.Id = g.InsuredGroupNameId
+WHERE g.CedantId IN (@Cedant) AND i.[Status] = 1 --Active
+ORDER BY i.[Name]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Id">
+          <DataField>Id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="GrossRiClaim">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <CommandText>SELECT 1 AS Id, 'Gross Claim Paid' AS [Text]
+UNION
+SELECT 2 AS Id, 'RI Claim Paid' AS [Text]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Id">
+          <DataField>Id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Text">
+          <DataField>Text</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="ClaimCategory">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <CommandText>SELECT '1' AS Id, 'Claimant/ID' AS [Text]
+UNION
+SELECT '2' AS Id, 'Coverage Start Date' AS [Text]
+UNION
+SELECT '3' AS Id, 'Cause of Claim' AS [Text]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Id">
+          <DataField>Id</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Text">
+          <DataField>Text</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="ClaimType">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Cedant">
+            <Value>=Parameters!Cedant.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@InsuredGroupName">
+            <Value>=Parameters!InsuredGroupName.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT DISTINCT t.ClaimType
+FROM TreatyPricingGroupReferralGtlTables t
+LEFT JOIN TreatyPricingGroupReferrals g ON g.Id = t.TreatyPricingGroupReferralId
+WHERE g.CedantId IN (@Cedant)
+AND g.InsuredGroupNameId IN (@InsuredGroupName)
+ORDER BY t.ClaimType</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ClaimType">
+          <DataField>ClaimType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="CoverageStartDate">
+      <Query>
+        <DataSourceName>ClaimExperienceReportDataSource</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@Cedant">
+            <Value>=Parameters!Cedant.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@InsuredGroupName">
+            <Value>=Parameters!InsuredGroupName.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT DISTINCT
+CAST(t.CoverageStartDate AS NVARCHAR(20)) AS CoverageStartDateStrValue, 
+FORMAT(t.CoverageStartDate, 'dd-MMM-yyyy') AS CoverageStartDateStrLabel,
+t.CoverageStartDate
+FROM TreatyPricingGroupReferralGtlTables t
+LEFT JOIN TreatyPricingGroupReferrals g ON g.Id = t.TreatyPricingGroupReferralId
+WHERE g.CedantId IN (@Cedant)
+AND g.InsuredGroupNameId IN (@InsuredGroupName)
+ORDER BY CoverageStartDate</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="CoverageStartDateStrValue">
+          <DataField>CoverageStartDateStrValue</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CoverageStartDateStrLabel">
+          <DataField>CoverageStartDateStrLabel</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CoverageStartDate">
+          <DataField>CoverageStartDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix6">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>2.02751in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.06916in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.52749in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.52749in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox10">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Category</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Gross Claim Paid</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>RI Claim Paid</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox30">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Iif(Fields!RowLabel.Value = Previous(Fields!RowLabel.Value), "", Fields!RowLabel.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="CategoryValue">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!CategoryValue.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>CategoryValue</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox18">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!GrossClaim.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>#,0</Format>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox19">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!RiClaim.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>#,0</Format>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>#f3f8fe</Color>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                  <Visibility>
+                    <Hidden>=Iif(Array.IndexOf(Parameters!ClaimCategory.Value, "1") &lt;= -1 And Fields!RowCategory.Value = 1, true, 
+Iif(Array.IndexOf(Parameters!ClaimCategory.Value, "2") &lt;= -1 And Fields!RowCategory.Value = 2, true, 
+Iif(Array.IndexOf(Parameters!ClaimCategory.Value, "3") &lt;= -1 And Fields!RowCategory.Value = 3, true, 
+false
+)
+)
+)</Hidden>
+                  </Visibility>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <FixedColumnHeaders>true</FixedColumnHeaders>
+            <FixedRowHeaders>true</FixedRowHeaders>
+            <DataSetName>TreatyPricingGroupReferralGtlTables</DataSetName>
+            <Top>0.26042in</Top>
+            <Left>0.21041in</Left>
+            <Height>0.5in</Height>
+            <Width>9.15165in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>0.94792in</Height>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Body>
+      <Width>10.43123in</Width>
+      <Page>
+        <PageHeight>8.27in</PageHeight>
+        <PageWidth>11.69in</PageWidth>
+        <LeftMargin>0in</LeftMargin>
+        <RightMargin>0in</RightMargin>
+        <TopMargin>0in</TopMargin>
+        <BottomMargin>0in</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="Cedant">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>Cedant</DataSetName>
+          <ValueField>Id</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Ceding Company</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Cedant</DataSetName>
+          <ValueField>Id</ValueField>
+          <LabelField>CedingCompany</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+      <cl:ComponentMetadata>
+        <cl:HideUpdateNotifications>true</cl:HideUpdateNotifications>
+      </cl:ComponentMetadata>
+    </ReportParameter>
+    <ReportParameter Name="InsuredGroupName">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>InsuredGroupNames</DataSetName>
+          <ValueField>Id</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Insured Group Name</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>InsuredGroupNames</DataSetName>
+          <ValueField>Id</ValueField>
+          <LabelField>Name</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+      <cl:ComponentMetadata>
+        <cl:HideUpdateNotifications>true</cl:HideUpdateNotifications>
+      </cl:ComponentMetadata>
+    </ReportParameter>
+    <ReportParameter Name="CoverageStartDate">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>CoverageStartDate</DataSetName>
+          <ValueField>CoverageStartDate</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Coverage Start Date (selected category is not Coverage Start Date)</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>CoverageStartDate</DataSetName>
+          <ValueField>CoverageStartDate</ValueField>
+          <LabelField>CoverageStartDateStrLabel</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+      <cl:ComponentMetadata>
+        <cl:HideUpdateNotifications>true</cl:HideUpdateNotifications>
+      </cl:ComponentMetadata>
+    </ReportParameter>
+    <ReportParameter Name="ClaimCategory">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>ClaimCategory</DataSetName>
+          <ValueField>Id</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>GTL Claim Category</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>ClaimCategory</DataSetName>
+          <ValueField>Id</ValueField>
+          <LabelField>Text</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+      <cl:ComponentMetadata>
+        <cl:HideUpdateNotifications>true</cl:HideUpdateNotifications>
+      </cl:ComponentMetadata>
+    </ReportParameter>
+    <ReportParameter Name="ClaimType">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>ClaimType</DataSetName>
+          <ValueField>ClaimType</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Type of Claim</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>ClaimType</DataSetName>
+          <ValueField>ClaimType</ValueField>
+          <LabelField>ClaimType</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+      <cl:ComponentMetadata>
+        <cl:HideUpdateNotifications>true</cl:HideUpdateNotifications>
+      </cl:ComponentMetadata>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Cedant</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>InsuredGroupName</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ClaimCategory</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>CoverageStartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ClaimType</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportServerUrl>http://desktop-7jkooe0/ReportServer</rd:ReportServerUrl>
+  <rd:ReportID>bd1a38f1-8f75-425c-a04b-3bb26d8d6560</rd:ReportID>
+</Report>

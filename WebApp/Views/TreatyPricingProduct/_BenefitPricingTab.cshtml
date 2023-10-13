@@ -1,0 +1,183 @@
+﻿@model WebApp.Models.TreatyPricingProductViewModel
+
+<div class="table-responsive" style="overflow-x: auto; white-space: nowrap;">
+    <table class="table table-hover my-3 vertical-table" style="width:auto;" v-cloak>
+        <thead>
+            <tr>
+                <th v-for="(benefit, index) in Benefits" style="width: 25vw; position:relative;">
+                    {{ benefit.BenefitCode }}
+                    <a href="javascript:void(0);" v-on:click="removeBenefit(index)"><span class="fas fa-trash-alt" style="position:absolute; right: 20px; top: 9px;" /></a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td v-for="(benefit, index) in Benefits" style="width: 25vw;">
+                    <div class="form-group">
+                        <label class="col-form-label">Benefit Marketing Name</label>
+                        <input v-model="benefit.Name" class="form-control force-disable" placeholder="Type Here" disabled>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Basic / Rider</label>
+                        <select v-model="benefit.BasicRiderPickListDetailId" class="form-control force-disable" style="display:block;" disabled>
+                            <option v-for="basicRider in Mfrs17BasicRiders" :value="basicRider.Value">{{ basicRider.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label required">Reinsurance Type of Arrangement</label>
+                        <select v-model="benefit.PricingArrangementReinsuranceTypePickListDetailId" class="form-control selectpicker">
+                            <option v-for="reinsuranceType in ArrangementReinsuranceTypes" :value="reinsuranceType.Value">{{ reinsuranceType.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Benefit Payout</label>
+                        <textarea v-model="benefit.BenefitPayout" class="form-control textarea-auto-expand" placeholder="Type Here" rows="1"></textarea>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Cedant's Retention</label>
+                        <input v-model="benefit.CedantRetention" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Reinsurance's Share</label>
+                        <input v-model="benefit.ReinsuranceShare" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group mt-5 mb-0">
+                        <span class="font-weight-bold">
+                            <label class="col-form-label">For Group Only</label>
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Coinsurance Cedant's Retention</label>
+                        <input v-model="benefit.CoinsuranceCedantRetention" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Coinsurance Reinsurance's Share</label>
+                        <input v-model="benefit.CoinsuranceReinsuranceShare" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Coinsurance RI Discount</label>
+                        <input v-model="benefit.RequestedCoinsuranceRiDiscount" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Profit Margin</label>
+                        <input v-model="benefit.ProfitMargin" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Expense Margin</label>
+                        <input v-model="benefit.ExpenseMargin" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Commission Margin</label>
+                        <input v-model="benefit.CommissionMargin" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Group Profit Commission Loading</label>
+                        <input v-model="benefit.GroupProfitCommissionLoading" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group mt-5 mb-0">
+                        <span class="font-weight-bold">
+                            <label class="col-form-label">Takaful Only</label>
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Tabarru Loading</label>
+                        <input v-model="benefit.TabarruLoading" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group mt-5 group-block-select">
+                        <label class="col-form-label required">Sum at Risk Pattern</label>
+                        <select v-model="benefit.RiskPatternSumPickListDetailId" class="form-control selectpicker">
+                            <option v-for="riskPatternSum in RiskPatternSums" :value="riskPatternSum.Value">{{ riskPatternSum.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Upload</label>
+                        <div class="file is-boxed" style="height: 75px; padding: 5px 30px;">
+                            <label class="file-label">
+                                <input class="form-control-file" type="file" :id="'pricing'+index+'files'" name="upload" v-on:change="uploadPricingFile(index)">
+                                Drag and Drop File Here or <u>Browse your file</u>
+                                <br />
+                                <span class="file-desc">
+                                    Allowed file format: .csv, .txt, .xls, .xlsx, .pro, .rpt, .xlsb, .xlsm
+                                </span>
+                                <br />
+                                <span class="file-desc">
+                                    File size is up to 2GB
+                                </span>
+                            </label>
+                        </div>
+                        <div :id="'pricing'+index+'selectedFiles'" class="file-list-display">
+                            <ul v-if="benefit.PricingUploadFileName != null">
+                                <li>
+                                    <a v-bind:href="benefit.CanDownloadFile ? DownloadBenefitPricingFileUrl+'/'+benefit.Id : null" target="_blank">
+                                        {{benefit.PricingUploadFileName}}
+                                    </a>
+                                    <a href="javascript:void(0);" v-on:click="removePricingFile(index)"><span class="fas fa-trash-alt float-right" style="margin-right: 20px; margin-top: 8px;" /></a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <input type="hidden" v-model="benefit.PricingUploadFileName" />
+                        <input type="hidden" v-model="benefit.PricingUploadHashFileName" />
+                        <input type="hidden" v-model="benefit.CanDownloadFile" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Profit Commission</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" :id="'isProfitCommission_' + index" type="checkbox" v-model="benefit.IsProfitCommission" />
+                                <label class="custom-control-label" :for="'isProfitCommission_' + index">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Advantage Program</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" :id="'isAdvantageProgram_' + index" type="checkbox" v-model="benefit.IsAdvantageProgram" />
+                                <label class="custom-control-label" :for="'isAdvantageProgram_' + index">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Rate Table</label>
+                        <select v-model="benefit.TreatyPricingRateTableSelect" class="form-control selectpicker">
+                            <option v-for="rateTable in RateTables" :value="rateTable.Value">{{ rateTable.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Requested Rate Guarantee</label>
+                        <input v-model="benefit.RequestedRateGuarantee" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Requested Reinsurance Discount</label>
+                        <input v-model="benefit.RequestedReinsuranceDiscount" class="form-control" placeholder="Type Here">
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

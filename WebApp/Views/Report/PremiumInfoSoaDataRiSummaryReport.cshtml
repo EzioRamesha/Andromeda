@@ -1,0 +1,334 @@
+﻿@{
+    ViewBag.Title = "Premium Info (SOA Data - RI Summary) Report";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>@ViewBag.Title</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div for="typeOfReport" class="col-form-label"> Report</div>
+                            <select class="form-control selectpicker" name="typeOfReport" id="TypeOfReport" v-on:change="resetToDefaultSelection()" v-model="ReportParams.TypeOfReport" ref="select">
+                                <option value="1">Premium Info by Risk Quarter (Treaty Type)</option>
+                                <option value="2">Premium Info by Risk Quarter</option>
+                                <option value="3">Premium Info by Treaty Type</option>
+                                <option value="4">Premium Info by Ceding Company</option>
+                                <option value="5">DM Premium by Plan & Month</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Fields Type</div>
+                            <select class="form-control selectpicker" name="typeOfField" id="TypeOfField" v-on:change="getSumOfByFieldType(true)" v-model="ReportParams.TypeOfField" ref="select">
+                                <option value="">Please Select</option>
+                                <option value="1">Individual</option>
+                                <option value="2">Group</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Sum Of</div>
+                            <select class="form-control selectpicker" name="sumOf" id="SumOf" v-model="ReportParams.SumOf" ref="select">
+                                <option value="">Please Select</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Business Origin</div>
+                            <select class="form-control selectpicker" multiple name="businessOrigin" id="BusinessOrigin" v-model="ReportParams.BusinessOrigin" data-actions-box="true" ref="select">
+                                <option value="OM">OM</option>
+                                <option value="WM">WM</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Company Name</div>
+                            <select class="form-control selectpicker" multiple name="cedant" id="Cedant" v-model="ReportParams.Cedant" data-actions-box="true" ref="select">
+                                <option v-for="cedant in Cedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Treaty No</div>
+                            <select class="form-control selectpicker" multiple name="treatyCode" id="TreatyCode" v-model="ReportParams.TreatyCode" data-actions-box="true" ref="select">
+                                <option v-for="treatyCode in TreatyCodes" :value="treatyCode.Value">{{ treatyCode.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Treaty Type</div>
+                            <select class="form-control selectpicker" multiple name="treatyType" id="TreatyType" v-model="ReportParams.TreatyType" data-actions-box="true" ref="select">
+                                <option v-for="treatyType in TreatyTypes" :value="treatyType.Value">{{ treatyType.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Treaty Mode</div>
+                            <select class="form-control selectpicker" multiple name="treatyMode" id="TreatyMode" v-model="ReportParams.TreatyMode" data-actions-box="true" ref="select">
+                                <option v-for="treatyMode in TreatyModes" :value="treatyMode.Value">{{ treatyMode.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Risk Quarter</div>
+                            <select class="form-control selectpicker" multiple name="riskQuarter" id="RiskQuarter" v-model="ReportParams.RiskQuarter" data-actions-box="true" ref="select">
+                                <option v-for="riskQuarter in RiskQuarters" :value="riskQuarter.Value">{{ riskQuarter.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">SOA Quarter</div>
+                            <select class="form-control selectpicker" multiple name="soaQuarter" id="SoaQuarter" v-model="ReportParams.SoaQuarter" data-actions-box="true" ref="select">
+                                <option v-for="soaQuarter in SoaQuarters" :value="soaQuarter.Value">{{ soaQuarter.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Plan/Block</div>
+                            <select class="form-control selectpicker" multiple name="planBlock" id="PlanBlock" v-model="ReportParams.PlanBlock" data-actions-box="true" ref="select">
+                                <option v-for="planBlock in PlanBlocks" :value="planBlock.Value">{{ planBlock.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">&nbsp;</div>
+                    </div>
+
+                    <div class="w-100 text-right">
+                        <button type="button" class="btn btn-download" v-on:click="generate()">GENERATE</button>
+                    </div>
+
+                    <div id="reportBody">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var Cedants = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataBatchCedants));
+        var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataTreatyCodes));
+        var TreatyTypes = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataTreatyTypes));
+        var RiskQuarters = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataRiskQuarters));
+        var SoaQuarters = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataSoaQuarters));
+        var TreatyModes = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataTreatyModes));
+        var PlanBlocks = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataPlans));
+
+        var IndividualSumOfs = @Html.Raw(Json.Encode(ViewBag.DropdownIndividualSumOfs));
+        var GroupSumOfs = @Html.Raw(Json.Encode(ViewBag.DropdownGroupSumOfs));
+
+        $(document).ready(function () {
+
+            //$('.selectpicker').selectpicker('selectAll');
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                ReportParams: {
+                    TypeOfReport: 1,
+                    TypeOfField: 1,
+                    SumOf: "",
+                    BusinessOrigin: "",
+                    Cedant: "",
+                    TreatyCode: "",
+                    TreatyType: "",
+                    TreatyMode: "",
+                    RiskQuarter: "",
+                    SoaQuarter: "",
+                    PlanBlock: "",
+                },
+                // Dropdownlists
+                Cedants: Cedants,
+                TreatyCodes: TreatyCodes,
+                TreatyTypes: TreatyTypes,
+                TreatyModes: TreatyModes,
+                RiskQuarters: RiskQuarters,
+                SoaQuarters: SoaQuarters,
+                PlanBlocks: PlanBlocks,
+                IndividualSumOfs: IndividualSumOfs,
+                GroupSumOfs: GroupSumOfs,
+            },
+            methods: {
+                resetToDefaultSelection: function () {
+                    if (this.ReportParams.TypeOfReport == 5) this.ReportParams.TypeOfField = "";
+                    else this.ReportParams.TypeOfField = 1;
+                    if (this.ReportParams.TypeOfReport != 1 && this.ReportParams.TypeOfReport != 5) this.ReportParams.SumOf = "0";
+                    else this.ReportParams.SumOf = "";
+
+                    this.getSumOfByFieldType(false);
+                    this.disabledByReport();
+
+                    this.$nextTick(function () {
+                        $('#TypeOfField').selectpicker('refresh');
+                        $('#SumOf').selectpicker('refresh');
+                        
+                        $('#BusinessOrigin').selectpicker('selectAll');
+                        $('#Cedant').selectpicker('selectAll');
+                        $('#TreatyCode').selectpicker('selectAll');
+                        $('#TreatyType').selectpicker('selectAll');
+                        $('#TreatyMode').selectpicker('selectAll');
+                        $('#RiskQuarter').selectpicker('selectAll');
+                        $('#SoaQuarter').selectpicker('selectAll');
+                        $('#PlanBlock').selectpicker('selectAll');
+                    });
+                },
+                getSumOfByFieldType: function (refresh) {
+                    if (refresh) {
+                        if (this.ReportParams.TypeOfReport != 1 && this.ReportParams.TypeOfReport != 5) this.ReportParams.SumOf = "0";
+                        else this.ReportParams.SumOf = "";
+                    }
+
+                    if (this.ReportParams.TypeOfReport == 1) {
+                        if (this.ReportParams.TypeOfField == 1) {
+                            this.updateDropDownItems('SumOf', this.IndividualSumOfs, refresh);
+                        }
+                        else if (this.ReportParams.TypeOfField == 2) {
+                            this.updateDropDownItems('SumOf', this.GroupSumOfs, refresh);
+                        }
+                        else {
+                            this.updateDropDownItems('SumOf', [], refresh);
+                        }
+                    }
+                    else if (this.ReportParams.TypeOfReport != 1 && this.ReportParams.TypeOfReport != 5) {
+                        if (this.ReportParams.TypeOfField == 1) {
+                            this.updateDropDownItems('SumOf', this.IndividualSumOfs, refresh, false, true);
+                        }
+                        else if (this.ReportParams.TypeOfField == 2) {
+                            this.updateDropDownItems('SumOf', this.GroupSumOfs, refresh, false, true);
+                        }
+                        else {
+                            this.updateDropDownItems('SumOf', [], refresh);
+                        }
+                    }
+                    else if (this.ReportParams.TypeOfReport == 5) {
+                        if (this.ReportParams.TypeOfField == null || this.ReportParams.TypeOfField == "") {
+                            this.updateDropDownItems('SumOf', [], refresh);
+                        }
+                    }
+                },
+                disabledByReport: function () {
+                    if (this.ReportParams.TypeOfReport == 5) {
+                        $('#TypeOfField').prop('disabled', true);
+                        $('#SumOf').prop('disabled', true);
+                    }
+                    else {
+                        $('#TypeOfField').prop('disabled', false);
+                        $('#SumOf').prop('disabled', false);
+                    }
+                },
+                generate: function () {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                    var errorList = [];
+
+                    if (this.ReportParams.TypeOfReport != 5) {
+                        if (this.ReportParams.TypeOfField == null || this.ReportParams.TypeOfField == "") {
+                            errorList.push("Fields Type is required.");
+                        }
+                        if (this.ReportParams.SumOf == null || this.ReportParams.SumOf == "") {
+                            errorList.push("Sum Of is required.");
+                        }
+                    }
+
+                    if (this.ReportParams.BusinessOrigin == null || this.ReportParams.BusinessOrigin == "") {
+                        errorList.push("Business Origin is required.");
+                    }
+                    if (this.ReportParams.Cedant == null || this.ReportParams.Cedant == "") {
+                        errorList.push("Company Name is required.");
+                    }
+                    if (this.ReportParams.TreatyCode == null || this.ReportParams.TreatyCode == "") {
+                        errorList.push("Treaty Code is required.");
+                    }
+                    if (this.ReportParams.TreatyType == null || this.ReportParams.TreatyType == "") {
+                        errorList.push("Treaty Type is required.");
+                    }
+                    if (this.ReportParams.TreatyMode == null || this.ReportParams.TreatyMode == "") {
+                        errorList.push("Treaty Mode is required.");
+                    }
+                    if (this.ReportParams.RiskQuarter == null || this.ReportParams.RiskQuarter == "") {
+                        errorList.push("Risk Quarter is required.");
+                    }
+                    if (this.ReportParams.SoaQuarter == null || this.ReportParams.SoaQuarter == "") {
+                        errorList.push("SOA Quarter is required.");
+                    }
+                    if (this.ReportParams.PlanBlock == null || this.ReportParams.PlanBlock == "") {
+                        errorList.push("Plan/Block is required.");
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    } else {
+
+                        var obj = {
+                            typeOfReport: this.ReportParams.TypeOfReport,
+                            typeOfField: this.ReportParams.TypeOfField,
+                            sumOf: this.ReportParams.SumOf,
+                            businessOrigin: this.ReportParams.BusinessOrigin.join(","),
+                            cedant: this.ReportParams.Cedant.join(","),
+                            treatyCode: this.ReportParams.TreatyCode.join(","),
+                            treatyType: this.ReportParams.TreatyType.join(","),
+                            treatyMode: this.ReportParams.TreatyMode.join(","),
+                            riskQuarter: this.ReportParams.RiskQuarter.join(","),
+                            soaQuarter: this.ReportParams.SoaQuarter.join(","),
+                            planBlock: this.ReportParams.PlanBlock.join(","),
+                        };
+                        console.log(obj)
+                        $.ajax({
+                            url: "@(Url.Action("GeneratePremiumInfoSoaDataRiSummaryReport", "Report"))",
+                            type: "POST",
+                            data: obj,
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                            }
+                        }).done(function (result) {
+                            $("#reportBody").html(result);
+                        });
+                    }
+                },
+                // Sum Of Dropdownlist
+                updateDropDownItems(id, items, style = true, displaySelect = true, displayAllSelect = false) {
+                    $('#' + id + ' option').remove();
+                    if (displaySelect) {
+                        $('#' + id).append(new Option("Please select", ""));
+                    }
+                    if (displayAllSelect) {
+                        $('#' + id).append(new Option("(All)", "0"));
+                    }
+                    items.forEach(function (obj) {
+                        var text = obj["Text"];
+                        $('#' + id).append(new Option(text, obj["Value"], false));
+                    });
+                    if (style) {
+                        $('#' + id).selectpicker('refresh');
+                    }
+                }
+            },
+            created: function () {
+                this.resetToDefaultSelection();
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

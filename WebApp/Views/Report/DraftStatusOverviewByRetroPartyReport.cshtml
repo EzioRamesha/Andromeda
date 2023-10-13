@@ -1,0 +1,276 @@
+﻿@{
+    ViewBag.Title = "Draft Status Overview (by Retro Party)";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Draft Status Overview (by Retro Party)</h4>
+            </div>
+
+            <div class="card-body card-body-dashboard">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <div class="col-form-label">
+                            Effective Start Date
+                        </div>
+                        <div class="input-w-icon">
+                            <input id="EffectiveStartDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" />
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveStartDate')" />
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="col-form-label">
+                            Effective End Date
+                        </div>
+                        <div class="input-w-icon">
+                            <input id="EffectiveEndDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" />
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveEndDate')" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <td></td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">TREATY</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">ADDENDUM</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retro Company</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                </tr>
+                                <tr v-for="treatyWorkflowDraftStatuses in TreatyWorkflowDraftStatuses">
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.InwardRetroPartyName }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.SignedCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan6MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan12MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.MoreThan12MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.TotalCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.SignedCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan6MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan12MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.MoreThan12MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.TotalCountInAddendum }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#EffectiveStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#EffectiveEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                TreatyWorkflowDraftStatuses: "",
+                EffectiveStartDate: "",
+                EffectiveEndDate: "",
+                IsGenerated: false,
+            },
+            methods: {
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+
+                    var errorList = [];
+                    var treatyWorkflowDraftStatuses = this.TreatyWorkflowDraftStatuses;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateDraftStatusOverviewByRetroParty", "Report"))",
+                        type: "POST",
+                        data: {
+                            effStartDate: $("#EffectiveStartDate").val(),
+                            effEndDate: $("#EffectiveEndDate").val(),
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            treatyWorkflowDraftStatuses = data.treatyWorkflowDraftStatuses;
+                            error = data.error;
+                        }
+                    });
+
+                    if (error != null) {
+                        errorList.push(error);
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    this.TreatyWorkflowDraftStatuses = treatyWorkflowDraftStatuses;
+                    this.IsGenerated = true;
+
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Campaign ID";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "DraftStatusOverviewByRetroParty",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                }
+            }
+        })
+
+</script>
+
+}

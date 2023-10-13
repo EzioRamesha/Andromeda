@@ -1,0 +1,1166 @@
+﻿@{
+    ViewBag.Title = "Underwriting Medical Table Comparison";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Underwriting Medical Table Comparison</h4>
+            </div>
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="table-responsive my-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10 bg-white"></th>
+                                <th v-for="(comparison, index) in Comparisons" class="w-10">
+                                    {{ comparison.Name }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.BenefitCode" class="form-control" v-on:change="changeBenefitCode(index)">
+                                        <option v-for="benefitCodeDropDown in comparison.BenefitCodeDropDowns" :value="benefitCodeDropDown.Value">{{ benefitCodeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.DistributionChannel" class="form-control" v-on:change="changeDistributionChannel(index)">
+                                        <option v-for="distributionChannelDropdown in comparison.DistributionChannelDropdowns" :value="distributionChannelDropdown.Value">{{ distributionChannelDropdown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Status" class="form-control" v-on:change="changeStatus(index)">
+                                        <option v-for="statusDropdown in comparison.StatusDropdowns" :value="statusDropdown.Value">{{ statusDropdown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Medical Table ID & Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.MedicalTableId" class="form-control" v-on:change="changeMedicalTableId(index)">
+                                        <option v-for="medicalTableIdDropDown in comparison.MedicalTableIdDropDowns" :value="medicalTableIdDropDown.Value">{{ medicalTableIdDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Tier</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.DistributionTier" class="form-control">
+                                        <option v-for="distributionTierDropDown in comparison.DistributionTierDropDowns" :value="distributionTierDropDown.Value">{{ distributionTierDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mt-4 mb-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Age Banded</th>
+                                <th class="w-40">Minimum</th>
+                                <th class="w-40">Maximum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(ageRange, index) in AgeRanges">
+                                <td>
+                                    <input v-model="ageRange.Name" type="hidden" class="form-control">
+                                    {{ ageRange.Name }}
+                                </td>
+                                <td>
+                                    <input v-model="ageRange.Minimum" class="form-control" placeholder="Type here" type="number" min="0">
+                                </td>
+                                <td>
+                                    <input v-model="ageRange.Maximum" class="form-control" placeholder="Type here" type="number" min="0">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10" style="width:200px;">Ceding Company</th>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20 font-weight-bold" style="background-color: #f3f8fe;">
+                                        {{medicalTable.CedantInfo}}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- #region Comparison header rows -->
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Medical Table ID</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableId}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Medical Table Name</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.Name}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.BenefitCode}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.DistributionChannel}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.StatusName}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Description</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.Description}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Currency</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.CurrencyCode}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Age Definition</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.AgeDefinitionPickListDetailBo.Code}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.VersionBo.Version}}.0
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.VersionBo.EffectiveAtStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Note</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.VersionBo.Remarks}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Aggregation Notes</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.VersionBo.AggregationNote}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Tier</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.DetailBo.Description}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product (Linked)</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.LinkedProducts}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 1 -->
+                                <tr v-if="AgeRanges[0].Minimum && AgeRanges[0].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 0">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[0].Minimum && AgeRanges[0].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[0].Minimum && AgeRanges[0].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[0].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 2 -->
+                                <tr v-if="AgeRanges[1].Minimum && AgeRanges[1].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 1">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[1].Minimum && AgeRanges[1].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[1].Minimum && AgeRanges[1].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[1].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 3 -->
+                                <tr v-if="AgeRanges[2].Minimum && AgeRanges[2].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 2">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[2].Minimum && AgeRanges[2].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[2].Minimum && AgeRanges[2].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[2].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 4 -->
+                                <tr v-if="AgeRanges[3].Minimum && AgeRanges[3].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 3">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[3].Minimum && AgeRanges[3].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[3].Minimum && AgeRanges[3].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[3].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 5 -->
+                                <tr v-if="AgeRanges[4].Minimum && AgeRanges[4].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 4">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[4].Minimum && AgeRanges[4].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[4].Minimum && AgeRanges[4].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[4].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 6 -->
+                                <tr v-if="AgeRanges[5].Minimum && AgeRanges[5].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 5">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[5].Minimum && AgeRanges[5].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[5].Minimum && AgeRanges[5].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[5].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 7 -->
+                                <tr v-if="AgeRanges[6].Minimum && AgeRanges[6].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 6">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[6].Minimum && AgeRanges[6].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[6].Minimum && AgeRanges[6].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[6].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 8 -->
+                                <tr v-if="AgeRanges[7].Minimum && AgeRanges[7].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 7">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[7].Minimum && AgeRanges[7].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[7].Minimum && AgeRanges[7].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[7].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 9 -->
+                                <tr v-if="AgeRanges[8].Minimum && AgeRanges[8].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 8">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[8].Minimum && AgeRanges[8].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[8].Minimum && AgeRanges[8].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[8].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Age Range 10 -->
+                                <tr v-if="AgeRanges[9].Minimum && AgeRanges[9].Maximum">
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(ageRange, ageIndex) in AgeRanges" v-if="ageRange.Minimum && ageRange.Maximum && ageIndex == 9">
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{ageRange.Name}} - {{ageRange.Minimum}}-{{ageRange.Maximum}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr v-if="AgeRanges[9].Minimum && AgeRanges[9].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum Assured</td>
+                                </tr>
+
+                                <tr v-for="(sumAssuredRange, sumAssuredIndex) in SumAssuredIntervals" v-if="AgeRanges[9].Minimum && AgeRanges[9].Maximum">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            {{sumAssuredRange.Start}} - {{sumAssuredRange.End}}
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        {{medicalTable.MedicalTableDetailComparisons[9].Items[sumAssuredIndex]}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Legends -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(medicalTable, index) in MedicalTables" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap">
+                                            Legends
+                                        </div>
+                                    </td>
+
+                                    <td v-for="(comparison, comparisonIndex) in Comparisons" class="font-weight-bold" style="background-color: #d9e5f1;"></td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"></td>
+                                    <td v-for="(medicalTable, index) in MedicalTables">
+                                        <span style="white-space: pre-line;">
+                                            {{medicalTable.Legends}}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingCedants));
+        var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Comparison 1", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        DistributionChannelDropdowns: DropDownEmpty, DistributionChannel: "",
+                        StatusDropdowns: DropDownEmpty, Status: "",
+                        MedicalTableIdDropDowns: DropDownEmpty, MedicalTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", MedicalTableVersionId: 0,
+                        DistributionTierDropDowns: DropDownEmpty, DistributionTier: "",
+                    },
+                ],
+                AgeRanges: [
+                    { Name: "Age Range 1", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 2", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 3", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 4", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 5", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 6", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 7", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 8", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 9", Minimum: "", Maximum: "" },
+                    { Name: "Age Range 10", Minimum: "", Maximum: "" },
+                ],
+                MedicalTables: [
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                    { MedicalTableDetailComparisons: [], Legends: [] },
+                ],
+                IsGenerated: false,
+                SumAssuredIntervals: [],
+            },
+            methods: {
+                //Parameter value changes
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.BenefitCode = "";
+                    comparison.DistributionChannel = "";
+                    comparison.Status = "";
+                    comparison.MedicalTableId = "";
+                    comparison.Version = "";
+                    comparison.MedicalTableVersionId = 0;
+                    comparison.DistributionTier = "";
+
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var distributionChannelDropDowns = comparison.DistributionChannelDropdowns;
+                    var statusDropdowns = comparison.StatusDropdowns;
+                    var medicalTableIdDropDowns = comparison.MedicalTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var distributionTierDropDowns = comparison.DistributionTierDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateMedicalTableData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            distributionChannelDropDowns = data.distributionChannelDropDowns;
+                            statusDropdowns = data.statusDropdowns;
+                            medicalTableIdDropDowns = data.medicalTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                            distributionTierDropDowns = data.distributionTierDropDowns;
+                        }
+                    });
+
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.DistributionChannelDropdowns = distributionChannelDropDowns;
+                    comparison.StatusDropdowns = statusDropdowns;
+                    comparison.MedicalTableIdDropDowns = medicalTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.DistributionTierDropDowns = distributionTierDropDowns;
+                },
+                changeBenefitCode: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.DistributionChannel = "";
+                    comparison.Status = "";
+                    comparison.MedicalTableId = "";
+                    comparison.Version = "";
+                    comparison.MedicalTableVersionId = 0;
+                    comparison.DistributionTier = "";
+
+                    var distributionChannelDropDowns = comparison.DistributionChannelDropdowns;
+                    var statusDropdowns = comparison.StatusDropdowns;
+                    var medicalTableIdDropDowns = comparison.MedicalTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var distributionTierDropDowns = comparison.DistributionTierDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateMedicalTableData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            distributionChannelDropDowns = data.distributionChannelDropDowns;
+                            statusDropdowns = data.statusDropdowns;
+                            medicalTableIdDropDowns = data.medicalTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                            distributionTierDropDowns = data.distributionTierDropDowns;
+                        }
+                    });
+
+                    comparison.DistributionChannelDropdowns = distributionChannelDropDowns;
+                    comparison.StatusDropdowns = statusDropdowns;
+                    comparison.MedicalTableIdDropDowns = medicalTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.DistributionTierDropDowns = distributionTierDropDowns;
+                },
+                changeDistributionChannel: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Status = "";
+                    comparison.MedicalTableId = "";
+                    comparison.Version = "";
+                    comparison.MedicalTableVersionId = 0;
+                    comparison.DistributionTier = "";
+
+                    var statusDropdowns = comparison.StatusDropdowns;
+                    var medicalTableIdDropDowns = comparison.MedicalTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var distributionTierDropDowns = comparison.DistributionTierDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateMedicalTableData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                            distributionChannel: comparison.DistributionChannel,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            statusDropdowns = data.statusDropdowns;
+                            medicalTableIdDropDowns = data.medicalTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                            distributionTierDropDowns = data.distributionTierDropDowns;
+                        }
+                    });
+
+                    comparison.StatusDropdowns = statusDropdowns;
+                    comparison.MedicalTableIdDropDowns = medicalTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.DistributionTierDropDowns = distributionTierDropDowns;
+                },
+                changeStatus: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.MedicalTableId = "";
+                    comparison.Version = "";
+                    comparison.MedicalTableVersionId = 0;
+                    comparison.DistributionTier = "";
+
+                    var medicalTableIdDropDowns = comparison.MedicalTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var distributionTierDropDowns = comparison.DistributionTierDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateMedicalTableData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                            distributionChannel: comparison.DistributionChannel,
+                            status: comparison.Status,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            medicalTableIdDropDowns = data.medicalTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                            distributionTierDropDowns = data.distributionTierDropDowns;
+                        }
+                    });
+
+                    comparison.MedicalTableIdDropDowns = medicalTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.DistributionTierDropDowns = distributionTierDropDowns;
+                },
+                changeMedicalTableId: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Version = "";
+                    comparison.MedicalTableVersionId = 0;
+                    comparison.DistributionTier = "";
+
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var distributionTierDropDowns = comparison.DistributionTierDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateMedicalTableData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            benefitCode: comparison.BenefitCode,
+                            distributionChannel: comparison.DistributionChannel,
+                            status: comparison.Status,
+                            medicalTableId: comparison.MedicalTableId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versionDropDowns = data.versionDropDowns;
+                            distributionTierDropDowns = data.distributionTierDropDowns;
+                        }
+                    });
+
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.DistributionTierDropDowns = distributionTierDropDowns;
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.DistributionTier = "";
+                    var distributionTierDropDowns = comparison.DistributionTierDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("GetMedicalTableComparisonDistributionTiers", "Report"))",
+                        type: "POST",
+                        data: {
+                            versionId: comparison.Version,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            distributionTierDropDowns = data.distributionTierDropDowns;
+                        }
+                    });
+
+                    comparison.DistributionTierDropDowns = distributionTierDropDowns;
+                },
+
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var versionIds = [];
+                    var distributionTierIds = [];
+
+                    var errorList = [];
+
+                    //Comparison parameters checking
+                    var comparisonsCount = 0;
+                    comparisons.forEach(function (comparison, index) {
+                        if (comparison.Cedant) {
+                            comparisonsCount++;
+
+                            //if (!comparison.BenefitCode) {
+                            //    errorList.push("Please select Benefit Code for " + comparison.Name + ".");
+                            //}
+                            //if (!comparison.DistributionChannel) {
+                            //    errorList.push("Please select Distribution Channel for " + comparison.Name + ".");
+                            //}
+                            //if (!comparison.Status) {
+                            //    errorList.push("Please select Status for " + comparison.Name + ".");
+                            //}
+                            if (!comparison.MedicalTableId) {
+                                errorList.push("Please select Medical Table Id for " + comparison.Name + ".");
+                            }
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+                            if (!comparison.DistributionTier) {
+                                errorList.push("Please select Distribution Tier for " + comparison.Name + ".");
+                            }
+                        }
+                    });
+                    if (comparisonsCount < 2)
+                        errorList.push("Please select at least two Medical Tables for comparison.");
+
+                    //Age range parameters checking
+                    var isAgeRangeEmpty = true;
+                    this.AgeRanges.forEach(function (ageRange) {
+                        if (!ageRange.Minimum && ageRange.Maximum) {
+                            errorList.push("Please fill in Minimum Age for " + ageRange.Name + ".");
+                            isAgeRangeEmpty = false;
+                        } else if (ageRange.Minimum && !ageRange.Maximum) {
+                            errorList.push("Please fill in Maximum Age for " + ageRange.Name + ".");
+                            isAgeRangeEmpty = false;
+                        } else if (ageRange.Minimum && ageRange.Maximum) {
+                            isAgeRangeEmpty = false;
+                            if (parseInt(ageRange.Minimum) >= parseInt(ageRange.Maximum))
+                                errorList.push("Maximum Age must be greater than Minimum Age for " + ageRange.Name + ".");
+                        }
+                    });
+                    if (isAgeRangeEmpty)
+                        errorList.push("Please fill in at least one Age Range.");
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    comparisons.forEach(function (comparison) {
+                        versionIds.push(comparison.Version);
+                        distributionTierIds.push(comparison.DistributionTier);
+                    });
+
+                    var sumAssuredIntervals = [];
+                    var medicalTables = this.MedicalTables;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateMedicalTableComparison", "Report"))",
+                        type: "POST",
+                        data: {
+                            versionIds: versionIds,
+                            distributionTierIds: distributionTierIds,
+                            ageRanges: this.AgeRanges,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            medicalTables = data.medicalTables;
+                            sumAssuredIntervals = data.sumAssuredIntervals;
+                        },
+                    });
+
+                    this.MedicalTables = medicalTables;
+                    this.SumAssuredIntervals = sumAssuredIntervals;
+
+                    this.IsGenerated = true;
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Ceding Company";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "MedicalTable",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                },
+            },
+            created: function () {
+            },
+            updated() {
+            }
+        });
+</script>
+}

@@ -1,0 +1,306 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.Mfrs17CellMappingViewModel>
+
+@{
+    ViewBag.Title = "MFRS17 Cell Mapping";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right btn-row-inline">
+                <div class="file btn btn-upload" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                    <label>UPLOAD</label>
+                    @using (Html.BeginForm("Upload", "Mfrs17CellMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="file" id="dataFile" name="upload" accept=".csv" onchange="this.form.submit()" />
+                    }
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DOWNLOAD AS
+                    </button>
+                    <div class="dropdown-menu">
+                        @Html.ActionLink("All", "Download", new { type = 1 }, new { @class = "dropdown-item" })
+                        @Html.ActionLink("Filtered", "Download", new
+                        {
+                            type = 2,
+                            TreatyCode = routeValue["TreatyCode"],
+                            ReinsEffDatePolStartDate = routeValue["ReinsEffDatePolStartDate"],
+                            ReinsEffDatePolEndDate = routeValue["ReinsEffDatePolEndDate"],
+                            ReinsBasisCodePickListDetailId = routeValue["ReinsBasisCodePickListDetailId"],
+                            CedingPlanCode = routeValue["CedingPlanCode"],
+                            BenefitCode = routeValue["BenefitCode"],
+                            ProfitCommPickListDetailId = routeValue["ProfitCommPickListDetailId"],
+                            RateTable = routeValue["RateTable"],
+                            BasicRiderPickListDetailId = routeValue["BasicRiderPickListDetailId"],
+                            CellName = routeValue["CellName"],
+                            Mfrs17ContractCodeDetailId = routeValue["Mfrs17ContractCodeDetailId"],
+                            LoaCode = routeValue["LoaCode"],
+                        }, new { @class = "dropdown-item" })
+                        @Html.ActionLink("Template", "Download", new { type = 3 }, new { @class = "dropdown-item" })
+                    </div>
+                </div>
+                <a href="@Url.Action("Create")" class="btn btn-add">
+                    ADD MFRS17 CELL MAPPING
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().TreatyCode)
+                        </th>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().ReinsEffDatePolStartDate)
+                        </th>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().ReinsEffDatePolEndDate)
+                        </th>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().ReinsBasisCodePickListDetailId)
+                        </th>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().CedingPlanCode)
+                        </th>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().BenefitCode)
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortProfitCommPickListDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Profit Commission", "ProfitCommPickListDetailId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortRateTable;
+                                @Shared.Html.Sorter(ViewBag, "Rate Table", "RateTable", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().BasicRiderPickListDetailId)
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCellName;
+                                @Shared.Html.Sorter(ViewBag, "Cell Name", "CellName", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortMfrs17ContractCodeDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Mfrs17 Contract Code", "Mfrs17ContractCodeDetailId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortLoaCode;
+                                @Shared.Html.Sorter(ViewBag, "Loa Code", "LoaCode", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "Mfrs17CellMapping", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.TextBox("TreatyCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("ReinsEffDatePolStartDate", null, new { id = "ReinsEffDatePolStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolStartDate')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("ReinsEffDatePolEndDate", null, new { id = "ReinsEffDatePolEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolEndDate')" />
+                            </th>
+                            <th>
+                                @Html.DropDownList("ReinsBasisCodePickListDetailId", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CedingPlanCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("BenefitCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ProfitCommPickListDetailId", (List<SelectListItem>)ViewBag.DropDownProfitComms, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("RateTable", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("BasicRiderPickListDetailId", (List<SelectListItem>)ViewBag.DropDownMfrs17BasicRiders, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CellName", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("Mfrs17ContractCodeDetailId", (List<SelectListItem>)ViewBag.DropDownMfrs17ContractCodeDetails, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("LoaCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Shared.Util.GetTruncatedValue(item.TreatyCode)
+                            </td>
+                            <td>
+                                @if (item.ReinsEffDatePolStartDate.HasValue)
+                                {
+                                    @item.ReinsEffDatePolStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.ReinsEffDatePolEndDate.HasValue)
+                                {
+                                    @item.ReinsEffDatePolEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.ReinsBasisCodePickListDetail != null)
+                                {
+                                    @item.ReinsBasisCodePickListDetail.ToString()
+                                }
+                            </td>
+                            <td>
+                                @Shared.Util.GetTruncatedValue(item.CedingPlanCode)
+                            </td>
+                            <td>
+                                @Shared.Util.GetTruncatedValue(item.BenefitCode)
+                            </td>
+                            <td>
+                                @if (item.ProfitCommPickListDetail != null)
+                                {
+                                    @item.ProfitCommPickListDetail.ToString()
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.RateTable)
+                            </td>
+                            <td>
+                                @if (item.BasicRiderPickListDetail != null)
+                                {
+                                    @item.BasicRiderPickListDetail.ToString()
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CellName)
+                            </td>
+                            <td>
+                                @if (item.Mfrs17ContractCodeDetail != null)
+                                {
+                                    @item.Mfrs17ContractCodeDetail.ContractCode
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LoaCode)
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fas fa-ellipsis-v dropbtn" />
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="11" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        TreatyCode = routeValue["TreatyCode"],
+                        ReinsEffDatePolStartDate = routeValue["ReinsEffDatePolStartDate"],
+                        ReinsEffDatePolEndDate = routeValue["ReinsEffDatePolEndDate"],
+                        ReinsBasisCodePickListDetailId = routeValue["ReinsBasisCodePickListDetailId"],
+                        CedingPlanCode = routeValue["CedingPlanCode"],
+                        BenefitCode = routeValue["BenefitCode"],
+                        ProfitCommPickListDetailId = routeValue["ProfitCommPickListDetailId"],
+                        RateTable = routeValue["RateTable"],
+                        BasicRiderPickListDetailId = routeValue["BasicRiderPickListDetailId"],
+                        CellName = routeValue["CellName"],
+                        Mfrs17ContractCodeDetailId = routeValue["Mfrs17ContractCodeDetailId"],
+                        LoaCode = routeValue["LoaCode"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#ReinsEffDatePolStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReinsEffDatePolEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+    </script>
+}

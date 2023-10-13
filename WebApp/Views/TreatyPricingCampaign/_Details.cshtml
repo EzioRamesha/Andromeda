@@ -1,0 +1,652 @@
+﻿@model WebApp.Models.TreatyPricingCampaignViewModel
+
+<div class="form-row mt-4">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#version" class="active underline-tab">Version</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#product">Product</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarks">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelog">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="version" role="tabpanel" aria-labelledby="version-tab">
+
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Version Details", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.Label("Version", htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="input-group">
+                                        @if (ViewBag.IsHideSideBar is null || !ViewBag.IsHideSideBar)
+                                        {
+                                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            <div class="input-group-prepend">
+                                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal">CREATE NEW VERSION</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @Html.HiddenFor(model => model.CurrentVersion)
+                                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker", @disabled = true })
+                                            <div class="input-group-prepend">
+                                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal" disabled>CREATE NEW VERSION</button>
+                                            </div>
+                                        }
+                                    </div>
+                                    @*@Html.ValidationMessageFor(model => model.Version, "", new { @class = "text-danger" })*@
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                                    @Html.HiddenFor(model => model.PersonInChargeId)
+                                    @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Campaign Benefits and Terms", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerBenefit, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerBenefit, new { @class = "custom-control-input", id = "IsPerBenefit", @v_model = "ModelVersion.IsPerBenefit" })
+                                            <label class="custom-control-label" for="IsPerBenefit">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerBenefit, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.BenefitRemark, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.BenefitRemark, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerBenefit" } })
+                                    @Html.ValidationMessageFor(model => model.BenefitRemark, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerCedantRetention, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerCedantRetention, new { @class = "custom-control-input", id = "IsPerCedantRetention", @v_model = "ModelVersion.IsPerCedantRetention" })
+                                            <label class="custom-control-label" for="IsPerCedantRetention">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerCedantRetention, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.CedantRetention, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.CedantRetention, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerCedantRetention" } })
+                                    @Html.ValidationMessageFor(model => model.CedantRetention, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMlreShare, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMlreShare, new { @class = "custom-control-input", id = "IsPerMlreShare", @v_model = "ModelVersion.IsPerMlreShare" })
+                                            <label class="custom-control-label" for="IsPerMlreShare">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMlreShare, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.MlreShare, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.MlreShare, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMlreShare" } })
+                                    @Html.ValidationMessageFor(model => model.MlreShare, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerDistributionChannel, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerDistributionChannel, new { @class = "custom-control-input", id = "IsPerDistributionChannel", @v_model = "ModelVersion.IsPerDistributionChannel", @v_onchange = "changeIsEnabledToken(ModelVersion.IsPerDistributionChannel, 'DistributionChannel')" })
+                                            <label class="custom-control-label" for="IsPerDistributionChannel">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerDistributionChannel, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <label class="col-form-label">If Others <span class="sub-label">(Separated by Comma)</span></label>
+                                    @Html.EditorFor(model => model.DistributionChannel, new { htmlAttributes = new { id = "DistributionChannel", @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.DistributionChannel, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerAgeBasis, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerAgeBasis, new { @class = "custom-control-input", id = "IsPerAgeBasis", @v_model = "ModelVersion.IsPerAgeBasis", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerAgeBasis, 'AgeBasisPickListDetailId')" })
+                                            <label class="custom-control-label" for="IsPerAgeBasis">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerAgeBasis, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.AgeBasisPickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.DropDownListFor(model => model.AgeBasisPickListDetailId, (List<SelectListItem>)ViewBag.DropDownAgeBasis, new Dictionary<string, object>() { { "class", "form-control selectpicker" } }) @*, { @":disabled", @"changeIsEnabledDrpDwn(ModelVersion.IsPerAgeBasis, 'AgeBasisPickListDetailId')" }*@
+                                    @Html.ValidationMessageFor(model => model.AgeBasisPickListDetailId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMinEntryAge, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMinEntryAge, new { @class = "custom-control-input", id = "IsPerMinEntryAge", @v_model = "ModelVersion.IsPerMinEntryAge" })
+                                            <label class="custom-control-label" for="IsPerMinEntryAge">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMinEntryAge, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.MinEntryAge, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.MinEntryAge, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMinEntryAge" } })
+                                    @Html.ValidationMessageFor(model => model.MinEntryAge, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMaxEntryAge, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMaxEntryAge, new { @class = "custom-control-input", id = "IsPerMaxEntryAge", @v_model = "ModelVersion.IsPerMaxEntryAge" })
+                                            <label class="custom-control-label" for="IsPerMaxEntryAge">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMaxEntryAge, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.MaxEntryAge, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.MaxEntryAge, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMaxEntryAge" } })
+                                    @Html.ValidationMessageFor(model => model.MaxEntryAge, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMaxExpiryAge, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMaxExpiryAge, new { @class = "custom-control-input", id = "IsPerMaxExpiryAge", @v_model = "ModelVersion.IsPerMaxExpiryAge" })
+                                            <label class="custom-control-label" for="IsPerMaxExpiryAge">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMaxExpiryAge, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.MaxExpiryAge, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.MaxExpiryAge, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMaxExpiryAge" } })
+                                    @Html.ValidationMessageFor(model => model.MaxExpiryAge, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMinSumAssured, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMinSumAssured, new { @class = "custom-control-input", id = "IsPerMinSumAssured", @v_model = "ModelVersion.IsPerMinSumAssured" })
+                                            <label class="custom-control-label" for="IsPerMinSumAssured">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMinSumAssured, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.MinSumAssured, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.MinSumAssured, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMinSumAssured" } })
+                                    @Html.ValidationMessageFor(model => model.MinSumAssured, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMaxSumAssured, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMaxSumAssured, new { @class = "custom-control-input", id = "IsPerMaxSumAssured", @v_model = "ModelVersion.IsPerMaxSumAssured" })
+                                            <label class="custom-control-label" for="IsPerMaxSumAssured">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMaxSumAssured, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.MaxSumAssured, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.MaxSumAssured, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMaxSumAssured" }})
+                                    @Html.ValidationMessageFor(model => model.MaxSumAssured, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerReinsuranceRate, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerReinsuranceRate, new { @class = "custom-control-input", id = "IsPerReinsuranceRate", @v_model = "ModelVersion.IsPerReinsuranceRate", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerReinsuranceRate, 'ReinsRateTreatyPricingRateTableSelect')" })
+                                            <label class="custom-control-label" for="IsPerReinsuranceRate">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerReinsuranceRate, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.ReinsRateTreatyPricingRateTableSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.ReinsRateTreatyPricingRateTableSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingRateTables, new Dictionary<string, object>() { { "class", "form-control selectpicker" }, { "ref", "select" } })
+                                            @Html.ValidationMessageFor(model => model.ReinsRateTreatyPricingRateTableSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.ReinsRateNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.ReinsRateNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerReinsuranceRate" } })
+                                            @Html.ValidationMessageFor(model => model.ReinsRateNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerReinsuranceDiscount, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerReinsuranceDiscount, new { @class = "custom-control-input", id = "IsPerReinsuranceDiscount", @v_model = "ModelVersion.IsPerReinsuranceDiscount", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerReinsuranceDiscount, 'ReinsDiscountTreatyPricingRateTableSelect')" })
+                                            <label class="custom-control-label" for="IsPerReinsuranceDiscount">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerReinsuranceDiscount, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.ReinsDiscountTreatyPricingRateTableSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.ReinsDiscountTreatyPricingRateTableSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingRateTables, new Dictionary<string, object>() { { "class", "form-control selectpicker" }, { "ref", "select" } })
+                                            @Html.ValidationMessageFor(model => model.ReinsDiscountTreatyPricingRateTableSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.ReinsDiscountNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.ReinsDiscountNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerReinsuranceDiscount" } })
+                                            @Html.ValidationMessageFor(model => model.ReinsDiscountNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerProfitComm, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerProfitComm, new { @class = "custom-control-input", id = "IsPerProfitComm", @v_model = "ModelVersion.IsPerProfitComm", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerProfitComm, 'TreatyPricingProfitCommissionSelect')" })
+                                            <label class="custom-control-label" for="IsPerProfitComm">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerProfitComm, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.TreatyPricingProfitCommissionSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.TreatyPricingProfitCommissionSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingProfitCommissions, new Dictionary<string, object>() { { "class", "form-control selectpicker" }, { "ref", "select" } })
+                                            @Html.ValidationMessageFor(model => model.TreatyPricingProfitCommissionSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.ProfitCommNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.ProfitCommNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerProfitComm" } })
+                                            @Html.ValidationMessageFor(model => model.ProfitCommNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.CampaignFundByMlre, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.CampaignFundByMlre, new { @class = "form-control", placeholder = "Type here" })
+                                    @Html.ValidationMessageFor(model => model.CampaignFundByMlre, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.ComplimentarySumAssured, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.ComplimentarySumAssured, new { @class = "form-control", placeholder = "Type here" })
+                                    @Html.ValidationMessageFor(model => model.ComplimentarySumAssured, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Campaign Underwriting Parameters", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerUnderwritingMethod, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerUnderwritingMethod, new { @class = "custom-control-input", id = "IsPerUnderwritingMethod", @v_model = "ModelVersion.IsPerUnderwritingMethod", @v_onchange = "changeIsEnabledToken(ModelVersion.IsPerUnderwritingMethod, 'UnderwritingMethod')" })
+                                            <label class="custom-control-label" for="IsPerUnderwritingMethod">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerUnderwritingMethod, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <label class="col-form-label">If Others <span class="sub-label">(Separated by Comma)</span></label>                                   
+                                    @Html.EditorFor(model => model.UnderwritingMethod, new { htmlAttributes = new { id = "UnderwritingMethod", @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.UnderwritingMethod, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerUnderwritingQuestion, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerUnderwritingQuestion, new { @class = "custom-control-input", id = "IsPerUnderwritingQuestion", @v_model = "ModelVersion.IsPerUnderwritingQuestion", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerUnderwritingQuestion, 'TreatyPricingUwQuestionnaireSelect')" })
+                                            <label class="custom-control-label" for="IsPerUnderwritingQuestion">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerUnderwritingQuestion, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.TreatyPricingUwQuestionnaireSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.TreatyPricingUwQuestionnaireSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingUwQuestionnaires, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            @Html.ValidationMessageFor(model => model.TreatyPricingUwQuestionnaireSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.UnderwritingQuestionNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.UnderwritingQuestionNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerUnderwritingQuestion" } })
+                                            @Html.ValidationMessageFor(model => model.UnderwritingQuestionNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerMedicalTable, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerMedicalTable, new { @class = "custom-control-input", id = "IsPerMedicalTable", @v_model = "ModelVersion.IsPerMedicalTable", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerMedicalTable, 'TreatyPricingMedicalTableSelect')" })
+                                            <label class="custom-control-label" for="IsPerMedicalTable">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerMedicalTable, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.TreatyPricingMedicalTableSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.TreatyPricingMedicalTableSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingMedicalTables, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            @Html.ValidationMessageFor(model => model.TreatyPricingMedicalTableSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.MedicalTableNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.MedicalTableNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerMedicalTable" } })
+                                            @Html.ValidationMessageFor(model => model.MedicalTableNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerFinancialTable, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerFinancialTable, new { @class = "custom-control-input", id = "IsPerFinancialTable", @v_model = "ModelVersion.IsPerFinancialTable", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerFinancialTable, 'TreatyPricingFinancialTableSelect')" })
+                                            <label class="custom-control-label" for="IsPerFinancialTable">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerFinancialTable, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.TreatyPricingFinancialTableSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.TreatyPricingFinancialTableSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingFinancialTables, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            @Html.ValidationMessageFor(model => model.TreatyPricingFinancialTableSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.FinancialTableNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.FinancialTableNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerFinancialTable" } })
+                                            @Html.ValidationMessageFor(model => model.FinancialTableNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerAggregationNotes, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerAggregationNotes, new { @class = "custom-control-input", id = "IsPerAggregationNotes", @v_model = "ModelVersion.IsPerAggregationNotes" })
+                                            <label class="custom-control-label" for="IsPerAggregationNotes">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerAggregationNotes, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.AggregationNotes, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.AggregationNotes, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerAggregationNotes" } })
+                                    @Html.ValidationMessageFor(model => model.AggregationNotes, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerAdvantageProgram, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerAdvantageProgram, new { @class = "custom-control-input", id = "IsPerAdvantageProgram", @v_model = "ModelVersion.IsPerAdvantageProgram", @v_onchange = "changeIsEnabledDrpDwn(ModelVersion.IsPerAdvantageProgram, 'TreatyPricingAdvantageProgramSelect')" })
+                                            <label class="custom-control-label" for="IsPerAdvantageProgram">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerAdvantageProgram, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            @Html.LabelFor(model => model.TreatyPricingAdvantageProgramSelect, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.DropDownListFor(model => model.TreatyPricingAdvantageProgramSelect, (List<SelectListItem>)ViewBag.DropDownTreatyPricingAdvantagePrograms, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            @Html.ValidationMessageFor(model => model.TreatyPricingAdvantageProgramSelect, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-7">
+                                            @Html.LabelFor(model => model.AdvantageProgramNote, htmlAttributes: new { @class = "col-form-label" })
+                                            @Html.TextBoxFor(model => model.AdvantageProgramNote, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerAdvantageProgram" } })
+                                            @Html.ValidationMessageFor(model => model.AdvantageProgramNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Miscellaneous", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerWaitingPeriod, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerWaitingPeriod, new { @class = "custom-control-input", id = "IsPerWaitingPeriod", @v_model = "ModelVersion.IsPerWaitingPeriod" })
+                                            <label class="custom-control-label" for="IsPerWaitingPeriod">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerWaitingPeriod, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.WaitingPeriod, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.WaitingPeriod, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerWaitingPeriod" } })
+                                    @Html.ValidationMessageFor(model => model.WaitingPeriod, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsPerSurvivalPeriod, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Others</p> </div>
+                                        <div class="custom-control custom-switch pl-3">
+                                            @Html.CheckBoxFor(model => model.IsPerSurvivalPeriod, new { @class = "custom-control-input", id = "IsPerSurvivalPeriod", @v_model = "ModelVersion.IsPerSurvivalPeriod" })
+                                            <label class="custom-control-label" for="IsPerSurvivalPeriod">As Per Existing</label>
+                                        </div>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.IsPerSurvivalPeriod, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.SurvivalPeriod, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.SurvivalPeriod, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { @":readonly", @"ModelVersion.IsPerSurvivalPeriod" } })
+                                    @Html.ValidationMessageFor(model => model.SurvivalPeriod, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.OtherCampaignCriteria, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextBoxFor(model => model.OtherCampaignCriteria, new { @class = "form-control", placeholder = "Type here" })
+                                    @Html.ValidationMessageFor(model => model.OtherCampaignCriteria, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.AdditionalRemark, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextAreaFor(model => model.AdditionalRemark, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.RemarkMaxLength })
+                                    @Html.ValidationMessageFor(model => model.AdditionalRemark, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+
+                @Html.Partial("_LinkTreatyPricingProductModal", new ViewDataDictionary { { "DropDownProductTypes", ViewBag.DropDownProductTypes }, { "hideCedingCompany", true },
+                    { "defaultCedantId", Model.TreatyPricingCedantId }, { "controllerName", "TreatyPricingCampaignProduct" }, { "listName", "CampaignProducts" } })
+                <input type="hidden" v-model="CampaignProductsMaxIndex" name="CampaignProductsMaxIndex" />
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Product ID</th>
+                                <th class="w-25">Product Name</th>
+                                <th class="w-45">Description</th>
+                                <th class="text-center w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!CampaignProducts || !CampaignProducts.length">
+                                <td colspan="3" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(CampaignProduct, index) in CampaignProducts">
+                                <td>
+                                    <input type="hidden" :name="'campaignId[' + index + ']'" class="form-control" :value="CampaignProduct.TreatyPricingCampaignId">
+                                    <input type="hidden" :name="'productId[' + index + ']'" class="form-control" :value="CampaignProduct.TreatyPricingProductId">
+                                    {{ CampaignProduct.TreatyPricingProductBo?.Code }}
+                                </td>
+                                <td>{{ CampaignProduct.TreatyPricingProductBo?.Name }}</td>
+                                <td>{{ CampaignProduct.TreatyPricingProductBo?.Summary }}</td>
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" :onclick="'unlinkProduct(' + index + ')'"><span class="fas fa-trash-alt" /></a>
+                                    <a href="javascript:void(0);" :onclick="'editProduct(' + index + ')'" class="ml-1">
+                                        <span class="fas fa-pencil-alt" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="remarks" role="tabpanel" aria-labelledby="remarks-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showDocuments", true }, { "showStatus", false }, { "showVersion", true }, { "showSubject", true }, { "dropdownVersions", ViewBag.DropDownVersions } })
+            </div>
+
+            <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+                @Html.Partial("_Changelog")
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newVersionModal" tabindex="-1" role="dialog" aria-labelledby="newVersionModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Version</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Person In-Charge (Business Development)</label>
+                        <input type="text" readonly class="form-control" id="userName" value="@ViewBag.AuthUserName">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Previous Version</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="duplicatePreviousVersion" name="duplicatePreviousVersion" type="checkbox" />
+                                <label class="custom-control-label" for="duplicatePreviousVersion">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" onclick="createVersion()" class="btn btn-submit" data-dismiss="modal">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+     // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+    var ModelVersion = @Html.Raw(Json.Encode(Model.CurrentVersionObject));
+   
+    // Url
+    var CreateVersionUrl = "@(Url.Action("CreateVersion"))";
+    var ProductsUrl = '@Url.Action("GetProductData")';
+
+    // List
+    var CampaignProducts = @Html.Raw(Json.Encode(ViewBag.CampaignProducts));
+    var CampaignTypeCodes = @Html.Raw(Json.Encode(ViewBag.CampaignTypeCodes));
+    var TargetSegmentCodes = @Html.Raw(Json.Encode(ViewBag.TargetSegmentCodes));
+    var DistributionChannelCodes = @Html.Raw(Json.Encode(ViewBag.DistributionChannelCodes));
+    var UnderwritingMethodCodes = @Html.Raw(Json.Encode(ViewBag.UnderwritingMethodCodes));
+    var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+    var DropDownProductTypes = @Html.Raw(Json.Encode(ViewBag.DropDownProductTypes));
+    var DropDownProducts = @Html.Raw(Json.Encode(ViewBag.DropDownProducts));
+    var DropDownProductQuotations = @Html.Raw(Json.Encode(ViewBag.DropDownProductQuotations));
+    var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+    var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+    var Changelogs = @Html.Raw(Json.Encode(ViewBag.ObjectVersionChangelogs));
+
+    var DropDownAgeBasis = @Html.Raw(Json.Encode(ViewBag.DropDownAgeBasis));
+
+    // Other
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.TreatyPricingCampaign.ToString()';
+</script>
+

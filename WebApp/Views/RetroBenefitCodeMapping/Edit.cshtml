@@ -1,0 +1,115 @@
+﻿@model WebApp.Models.RetroBenefitCodeMappingViewModel
+
+@{
+    ViewBag.Title = "Retro Benefit Code Mapping";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly != null && ViewBag.ReadOnly);
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @Html.Partial("_LoadingSpinner")
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.BenefitId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.BenefitId, (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.BenefitId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.IsPerAnnum, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch">
+                                @Html.EditorFor(model => model.IsPerAnnum, new { htmlAttributes = new { @class = "custom-control-input", placeholder = "Type here", maxlength = @ViewBag.CodeMaxLength } })
+                                <label class="custom-control-label" for="IsPerAnnum">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <div class="form-row" id="TreatyCodeDiv">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="TreatyCode">Treaty Code <span class="sub-label">(Separated by Comma)</span></label>
+                        @Html.EditorFor(model => model.TreatyCode, new { htmlAttributes = new { id = "TreatyCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                        @Html.ValidationMessageFor(model => model.TreatyCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        &nbsp;
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.TreatyCodes));
+        var treatyCodeCount = 0;
+
+        var tokenfieldReady = {
+            treatyCode: false,
+        };
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True' || '@disabled' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('.selectpicker').selectpicker('refresh');
+                $('#TreatyCodeTokenField').tokenfield('disable');
+            }
+
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $('button').prop("disabled", true);
+            } else {
+                $("[name='__RequestVerificationToken']").prop("disabled", false);
+            }
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/RetroBenefitCodeMapping.js")
+}

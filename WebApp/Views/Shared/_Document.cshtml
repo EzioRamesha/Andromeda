@@ -1,0 +1,187 @@
+﻿@{
+    int colspan = 6;
+    bool showPermission = ViewData["showPermission"] != null ? bool.Parse(ViewData["showPermission"].ToString()) : false;
+    bool hideDetail = ViewData["hideDetail"] != null ? bool.Parse(ViewData["hideDetail"].ToString()) : false;
+    bool hideAddButton = ViewData["hideAddButton"] != null ? bool.Parse(ViewData["hideAddButton"].ToString()) : false;
+    bool showName = ViewData["showName"] != null ? bool.Parse(ViewData["showName"].ToString()) : false;
+
+    if (showPermission)
+    {
+        colspan += 1;
+    }
+
+    if (hideDetail)
+    {
+        colspan -= 2;
+    }
+}
+
+@if (!hideAddButton)
+{
+    <div class="text-right">
+        <button type="button" onclick="resetDocumentModal()" data-toggle="modal" data-target="#documentModal" class="btn btn-add-sub mt-4" style="width: auto;">ADD DOCUMENT</button>
+    </div>
+}
+
+<input type="hidden" v-model="DocumentMaxIndex" name="document.MaxIndex" />
+<div class="table-responsive">
+    <table class="table table-hover table-sm my-3">
+        <thead>
+            <tr>
+                <th class="w-10">Upload Date & Time</th>
+                <th class="w-15">Filename</th>
+                @if (!hideDetail)
+                {
+                    <th class="w-10">Type</th>
+                }
+                <th class="w-10">Uploaded By</th>
+                @if (showPermission)
+                {
+                    <th class="w-20">Permission</th>
+                }
+                @if (!hideDetail)
+                {
+                    <th class="w-20">Description</th>
+                }
+                @if (showName)
+                {
+                    <th class="w-20">Document Name</th>
+                }
+                <th class="text-center w-5">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!Documents.length">
+                <td colspan="@colspan" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(document, index) in Documents">
+                <td>
+                    <input type="hidden" v-model="document.Id" :name="'document.Id[' + index + ']'" />
+                    <input type="hidden" v-model="document.RemarkIndex" :name="'document.RemarkIndex[' + index + ']'" />
+                    <input type="hidden" v-model="document.CreatedAtStr" :name="'document.CreatedAtStr[' + index + ']'" />
+                    {{ document.CreatedAtStr }}
+                </td>
+                <td>
+                    <input type="hidden" v-model="document.FileName" :name="'document.Filename[' + index + ']'" />
+                    <input type="hidden" v-model="document.TempFilePath" :name="'document.TempFilePath[' + index + ']'" />
+                    <input type="hidden" v-model="document.HashFileName" :name="'document.HashFileName[' + index + ']'" />
+                    {{ document.FileName }}
+                </td>
+                @if (!hideDetail)
+                {
+                    <td>
+                        <input type="hidden" v-model="document.Type" :name="'document.Type[' + index + ']'" />
+                        <span v-if="document.Type != 0">{{ document.TypeName }}</span>
+                    </td>
+                }
+                <td>
+                    <input type="hidden" v-model="document.CreatedByName" :name="'document.CreatedByName[' + index + ']'" />
+                    {{ document.CreatedByName }}
+                </td>
+                @if (showPermission)
+                {
+                    <td>
+                        <input type="hidden" v-model="document.IsPrivate" :name="'document.IsPrivate[' + index + ']'" />
+                        {{ document.PermissionName }}
+                    </td>
+                }
+                @if (!hideDetail || showName)
+                {
+                    <td>
+                        <input type="hidden" v-model="document.Description" :name="'document.Description[' + index + ']'" />
+                        {{ document.Description }}
+                    </td>
+                }
+                <td class="text-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-action prevent-disable" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="fas fa-ellipsis-v dropbtn" />
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" data-dismiss="dropdown" v-on:click="removeDocument(index)">Remove</a>
+                            <a class="dropdown-item" v-if="document.Id != null && document.FileExists === true" data-dismiss="dropdown" v-bind:href="document.DownloadLink">Download</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="fileContainer" style="display: none;"></div>
+
+@if (!hideAddButton)
+{
+    <div class="modal fade" id="documentModal" tabindex="-1" role="dialog" aria-labelledby="documentModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Document</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="addDocumentError" style="display:none;"></div>
+
+                    <div class="form">
+                        <div class="form-group">
+                            <label class="col-form-label">Your Name</label>
+                            <input type="text" readonly class="form-control" v-model="DocumentModal.CreatedByName" value="@ViewBag.AuthUserName">
+                        </div>
+                        @if (showName)
+                        {
+                            <div class="form-group">
+                                <label class="col-form-label" name="description">Document Name</label>
+                                <input v-model="DocumentModal.Description" class="form-control" name="description" placeholder="Type here" />
+                            </div>
+                        }
+                        <label class="col-form-label">File Upload</label>
+                        <div class="file is-boxed">
+                            <label class="file-label">
+                                <input class="form-control-file" type="file" id="files" name="upload" accept=".pdf,.docx,.xlsx,.xls,.jpg,.jpeg" onchange="uploadFile()">
+                                Drag and Drop File Here or <u>Browse your file</u>
+                                <br />
+                                <span class="file-desc">
+                                    Allowed file format: .pdf, .docx, .xlsx, .xls, .jpg, .jpeg
+                                </span>
+                                <br />
+                                <span class="file-desc">
+                                    File size is up to 10MB
+                                </span>
+                            </label>
+                        </div>
+                        <div id="selectedFiles" class="file-list-display"></div>
+                        @if (!hideDetail)
+                        {
+                            <div class="form-group">
+                                <label class="col-form-label" name="documentType">Type</label>
+                                <select v-model="DocumentModal.Type" class="form-control selectpicker" ref="select">
+                                    <option v-for="(documentType, documentTypeId) in DocumentTypeItems" :value="documentTypeId">{{ documentType }}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-form-label" name="description">Description</label>
+                                <textarea rows="1" v-on:focus="autoExpandTextarea('descContent')" v-on:blur="autoCollapseTextarea('descContent')" v-model="DocumentModal.Description" class="form-control textarea-auto-expand" id="descContent" name="description" placeholder="Type here"></textarea>
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button v-on:click="saveDocument()" type="button" class="btn btn-submit">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    var SaveDocumentUrl = "@(Url.Action("Save", "Document"))";
+    var SaveTempDocumentUrl = "@(Url.Action("SaveTemp", "Document"))";
+    var DeleteDocumentUrl = "@(Url.Action("Delete", "Document"))";
+    var hideDocumentDetail = @hideDetail.ToString().ToLower();
+    var showDocumentName = @showName.ToString().ToLower();
+</script>
+@Scripts.Render("~/Scripts/models/Document.js")

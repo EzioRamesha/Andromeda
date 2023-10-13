@@ -1,0 +1,49 @@
+﻿@model WebApp.Models.ReferralClaimViewModel
+
+@{
+    ViewBag.Title = "Referral Claim";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Status)
+
+            <div class="form-horizontal">
+                @Html.Partial("_Details")
+            </div>
+
+            <div class="form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    <button type="submit" onclick="submitForAssessment()" class="btn btn-submit float-right mr-2">SUBMIT</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/Scripts/models/ReferralClaim.js")
+}

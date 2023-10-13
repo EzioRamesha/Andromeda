@@ -1,0 +1,381 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.PerLifeSoaDataRetroOutputViewModel>
+
+@{
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    string policyName = "";
+    if (routeValue["Category"].ToString() == "2")
+    { policyName = "InforcePolicy"; }
+    else
+    { policyName = "RetroOutput"; }
+}
+
+<div class="form-horizontal">
+    <div class="form-row">
+        <div class="form-group col-md-12 text-right">
+            <div class="btn-group">
+                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    DOWNLOAD AS
+                </button>
+                <div class="dropdown-menu">
+                    @Html.ActionLink("All", "DownloadPerLifeSoaRiData", new { type = 1, id = routeValue["Id"], Category = routeValue["Category"] }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                    @Html.ActionLink("Filtered", "DownloadPerLifeSoaRiData", new
+                        {
+                            type = 2,
+                            id = routeValue["Id"],
+                            Category = routeValue["Category"],
+                        }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-row mt-2">
+        <div class="from-group col-md-12">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="w-10">Treaty Code</th>
+                            <th class="w-10">Reins Basis Code</th>
+                            <th class="w-10">Funds Accounting Type Code</th>
+                            <th class="w-10">Premium Frequency Code</th>
+                            <th class="w-10">Report Period Month</th>
+                            <th class="w-10">Report Period Year</th>
+                            <th class="w-10">Risk Period Month</th>
+                            <th class="w-10">Risk Period Year</th>
+                            <th class="w-10">Transaction Type Code</th>
+                            <th class="w-10">Policy Number</th>
+                            <th class="w-10">Issue Date Pol</th>
+                            <th class="w-10">Issue Date Ben</th>
+                            <th class="w-10">Reins Eff Date Pol</th>
+                            <th class="w-10">Reins Eff Date Ben</th>
+                            <th class="w-10">Ceding Plan Code</th>
+                            <th class="w-10">Ceding Benefit Type Code</th>
+                            <th class="w-10">Ceding Benefit Risk Code</th>
+                            <th class="w-10">MLRe Benefit Code</th>
+                            <th class="w-10">Ori Sum Assured</th>
+                            <th class="w-10">Curr SUm Assured</th>
+                            <th class="w-10">Amount Ceded B4 MLRe Share</th>
+                            <th class="w-10">Retention Amount</th>
+                            <th class="w-10">Aar Ori</th>
+                            <th class="w-10">Aar</th>
+                            <th class="w-10">Insured Name</th>
+                            <th class="w-10">Insured Gender Code</th>
+                            <th class="w-10">Insured Tobacco Use</th>
+                            <th class="w-10">Insured Date Of Birth</th>
+                            <th class="w-10">Insured Occupation Code</th>
+                            <th class="w-10">Insured Register No</th>
+                            <th class="w-10">Insured Attained Age</th>
+                            <th class="w-10">Insured New IC No</th>
+                            <th class="w-10">Insured Old IC No</th>
+                            <th class="w-10">Reins Issue Age</th>
+                            <th class="w-10">Policy Term</th>
+                            <th class="w-10">Policy Expiry Date</th>
+                            <th class="w-10">Duration Year</th>
+                            <th class="w-10">Duration Day</th>
+                            <th class="w-10">Duration Month</th>
+                            <th class="w-10">Premium Cal Type</th>
+                            <th class="w-10">Loading Type</th>
+                            <th class="w-10">Underwriter Rating</th>
+                            <th class="w-10">Flat Extra Amount</th>
+                            <th class="w-10">Flat Extra Unit</th>
+                            <th class="w-10">Flat Extra Term</th>
+                            <th class="w-10">Standard Premium</th>
+                            <th class="w-10">Substandard Premium</th>
+                            <th class="w-10">Total Discount</th>
+                            <th class="w-10">Net Premium</th>
+                            <th class="w-10">Annual RI Premium</th>
+                            <th class="w-10">Old Policy Number</th>
+                            <th class="w-10">Policy Status Code</th>
+                            <th class="w-10">Policy Gross Premium</th>
+                            <th class="w-10">Policy Standard Premium</th>
+                            <th class="w-10">Policy Substandard Premium</th>
+                            <th class="w-10">Policy Term Remain</th>
+                            <th class="w-10">Policy Life Number</th>
+                            <th class="w-10">Fund Code</th>
+                            <th class="w-10">Line Of Business</th>
+                            <th class="w-10">AP Loading</th>
+                            <th class="w-10">Rider Number</th>
+                            <th class="w-10">Campaign Code</th>
+                            <th class="w-10">Nationality</th>
+                            <th class="w-10">Teritory of Issue Code</th>
+                            <th class="w-10">Currency Code</th>
+                            <th class="w-10">Staff Plan Indicator</th>
+                            <th class="w-10">Old Ceding Plan Code</th>
+                            <th class="w-10">Ceding Basic Plan Code</th>
+                            <th class="w-10">Group Policy Number</th>
+                            <th class="w-10">Group Policy Name</th>
+                            <th class="w-10">No Of Employee</th>
+                            <th class="w-10">Policy Total Live</th>
+                            <th class="w-10">Group Subsidiary Name</th>
+                            <th class="w-10">Group Subsidiary No</th>
+                            <th class="w-10">Group Employee Basic Salary</th>
+                            <th class="w-10">Group Employee Job Type</th>
+                            <th class="w-10">Group Employee Basic Salary Revise</th>
+                            <th class="w-10">Group Employee Basic Salary Multiplier</th>
+                            <th class="w-10">2nd Ceding Plan Code</th>
+                            <th class="w-10">Dependant Indicator</th>
+                            <th class="w-10">GHS Room Board</th>
+                            <th class="w-10">Policy Amount Substandard</th>
+                            <th class="w-10">Special Indicator 1</th>
+                            <th class="w-10">Special Indicator 2</th>
+                            <th class="w-10">Special Indicator 3</th>
+                            <th class="w-10">Indicator Joint Life</th>
+                            <th class="w-10">GST Indicator</th>
+                            <th class="w-10">GST Gross Premium</th>
+                            <th class="w-10">GST Total Discount</th>
+                            <th class="w-10">GST Vitality</th>
+                            <th class="w-10">GST Amount</th>
+                            <th class="w-10">Mfrs17 Basic Rider</th>
+                            <th class="w-10">Mfrs17 Cell Name</th>
+                            <th class="w-10">Mfrs17 Contract Code</th>
+                            <th class="w-10">Loa Code</th>
+                            <th class="w-10">Risk Period Start Date</th>
+                            <th class="w-10">Risk Period End Date</th>
+                            <th class="w-10">Mfrs17 Annual Cohort</th>
+                            <th class="w-10">Brokerage Fee</th>
+                            <th class="w-10">AP Loading</th>
+                            <th class="w-10">Effective Date</th>
+                            <th class="w-10">Annuity Factor</th>
+                            <th class="w-10">Currency Rate</th>
+                            <th class="w-10">Ending Policy Status</th>
+                            <th class="w-10">Last Updated Date</th>
+                            <th class="w-10">Treaty Type</th>
+                            <th class="w-10">Treaty Number</th>
+                            <th class="w-10">Retro Premium Frequency</th>
+                            <th class="w-10">Life Benefit Flag</th>
+                            <th class="w-10">Risk Quarter</th>
+                            <th class="w-10">Risk Month</th>
+                            <th class="w-10">Processing Date</th>
+                            <th class="w-10">Per Life Unique Key</th>
+                            <th class="w-10">Retro Benefit Code</th>
+                            <th class="w-10">Retro Ratio</th>
+                            <th class="w-10">Accumulative Retain Amount</th>
+                            <th class="w-10">Retro Retain Amount</th>
+                            <th class="w-10">Retro Amount</th>
+                            <th class="w-10">Retro Gross Premium</th>
+                            <th class="w-10">Retro Net Premium</th>
+                            <th class="w-10">Retro Discount</th>
+                            <th class="w-10">Retro Extra Premium</th>
+                            <th class="w-10">Retro Extra Comm</th>
+                            <th class="w-10">Retro GST</th>
+                            <th class="w-10">Retro Treaty</th>
+                            <th class="w-10">Retro Claim ID</th>
+                            <th class="w-10">Retro SOA</th>
+                            <th class="w-10">Retro Indicator</th>
+                            <th class="text-center w-5">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Count > 0)
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.TreatyCode</td>
+                                    <td>@item.ReinsBasisCode</td>
+                                    <td>@item.FundsAccountingTypeCode</td>
+                                    <td>@item.PremiumFrequencyCode</td>
+                                    <td>@item.ReportPeriodMonth</td>
+                                    <td>@item.ReportPeriodYear</td>
+                                    <td>@item.RiskPeriodMonth</td>
+                                    <td>@item.RiskPeriodYear</td>
+                                    <td>@item.TransactionTypeCode</td>
+                                    <td>@item.PolicyNumber</td>
+                                    <td>
+                                        @if (item.IssueDatePol.HasValue)
+                                        {
+                                            @item.IssueDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.IssueDateBen.HasValue)
+                                        {
+                                            @item.IssueDateBen.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.ReinsEffDatePol.HasValue)
+                                        {
+                                            @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.ReinsEffDateBen.HasValue)
+                                        {
+                                            @item.ReinsEffDateBen.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>@item.CedingPlanCode</td>
+                                    <td>@item.CedingBenefitTypeCode</td>
+                                    <td>@item.CedingBenefitRiskCode</td>
+                                    <td>@item.MlreBenefitCode</td>
+                                    <td>@item.OriSumAssured</td>
+                                    <td>@item.CurrSumAssured</td>
+                                    <td>@item.AmountCededB4MlreShare</td>
+                                    <td>@item.RetentionAmount</td>
+                                    <td>@item.AarOri</td>
+                                    <td>@item.Aar</td>
+                                    <td>@item.InsuredName</td>
+                                    <td>@item.InsuredGenderCode</td>
+                                    <td>@item.InsuredTobaccoUse</td>
+                                    <td>
+                                        @if (item.InsuredDateOfBirth.HasValue)
+                                        {
+                                            @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>@item.InsuredOccupationCode</td>
+                                    <td>@item.InsuredRegisterNo</td>
+                                    <td>@item.InsuredAttainedAge</td>
+                                    <td>@item.InsuredNewIcNumber</td>
+                                    <td>@item.InsuredOldIcNumber</td>
+                                    <td>@item.ReinsuranceIssueAge</td>
+                                    <td>@item.PolicyTerm</td>
+                                    <td>
+                                        @if (item.PolicyExpiryDate.HasValue)
+                                        {
+                                            @item.PolicyExpiryDate.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>@item.DurationYear</td>
+                                    <td>@item.DurationDay</td>
+                                    <td>@item.DurationMonth</td>
+                                    <td>@item.PremiumCalType</td>
+                                    <td>@item.LoadingType</td>
+                                    <td>@item.UnderwriterRating</td>
+                                    <td>@item.FlatExtraAmount</td>
+                                    <td>@item.FlatExtraUnit</td>
+                                    <td>@item.FlatExtraTerm</td>
+                                    <td>@item.StandardPremium</td>
+                                    <td>@item.SubstandardPremium</td>
+                                    <td>@item.TotalDiscount</td>
+                                    <td>@item.NetPremium</td>
+                                    <td>@item.AnnualRiPrem</td>
+                                    <td>@item.PolicyNumberOld</td>
+                                    <td>@item.PolicyStatusCode</td>
+                                    <td>@item.PolicyGrossPremium</td>
+                                    <td>@item.PolicyStandardPremium</td>
+                                    <td>@item.PolicySubstandardPremium</td>
+                                    <td>@item.PolicyTermRemain</td>
+                                    <td>@item.PolicyLifeNumber</td>
+                                    <td>@item.FundCode</td>
+                                    <td>@item.LineOfBusiness</td>
+                                    <td>@item.ApLoading</td>
+                                    <td>@item.RiderNumber</td>
+                                    <td>@item.CampaignCode</td>
+                                    <td>@item.Nationality</td>
+                                    <td>@item.TerritoryOfIssueCode</td>
+                                    <td>@item.CurrencyCode</td>
+                                    <td>@item.StaffPlanIndicator</td>
+                                    <td>@item.CedingPlanCodeOld</td>
+                                    <td>@item.CedingBasicPlanCode</td>
+                                    <td>@item.GroupPolicyNumber</td>
+                                    <td>@item.GroupPolicyName</td>
+                                    <td>@item.NoOfEmployee</td>
+                                    <td>@item.PolicyTotalLive</td>
+                                    <td>@item.GroupSubsidiaryName</td>
+                                    <td>@item.GroupSubsidiaryNo</td>
+                                    <td>@item.GroupEmployeeBasicSalary</td>
+                                    <td>@item.GroupEmployeeJobType</td>
+                                    <td>@item.GroupEmployeeBasicSalaryRevise</td>
+                                    <td>@item.GroupEmployeeBasicSalaryMultiplier</td>
+                                    <td>@item.CedingPlanCode2</td>
+                                    <td>@item.DependantIndicator</td>
+                                    <td>@item.GhsRoomBoard</td>
+                                    <td>@item.PolicyAmountSubstandard</td>
+                                    <td>@item.SpecialIndicator1</td>
+                                    <td>@item.SpecialIndicator2</td>
+                                    <td>@item.SpecialIndicator3</td>
+                                    <td>@item.IndicatorJointLife</td>
+                                    <td>@item.GstIndicator</td>
+                                    <td>@item.GstGrossPremium</td>
+                                    <td>@item.GstTotalDiscount</td>
+                                    <td>@item.GstVitality</td>
+                                    <td>@item.GstAmount</td>
+                                    <td>@item.Mfrs17BasicRider</td>
+                                    <td>@item.Mfrs17CellName</td>
+                                    <td>@item.Mfrs17TreatyCode</td>
+                                    <td>@item.LoaCode</td>
+                                    <td>
+                                        @if (item.RiskPeriodStartDate.HasValue)
+                                        {
+                                            @item.RiskPeriodStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.RiskPeriodEndDate.HasValue)
+                                        {
+                                            @item.RiskPeriodEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>@item.Mfrs17AnnualCohort</td>
+                                    <td>@item.BrokerageFee</td>
+                                    <td>@item.ApLoading</td>
+                                    <td>
+                                        @if (item.EffectiveDate.HasValue)
+                                        {
+                                            @item.EffectiveDate.Value.ToString(Shared.Util.GetDateFormat())
+                                        }
+                                    </td>
+                                    <td>@item.AnnuityFactor</td>
+                                    <td>@item.CurrencyRate</td>
+                                    <td>@item.EndingPolicyStatus</td>
+                                    <td>@item.LastUpdatedDate.ToString(Shared.Util.GetDateFormat())</td>
+                                    <td>@item.TreatyType</td>
+                                    <td>@item.TreatyNumber</td>
+                                    <td>@item.RetroPremFreq</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>@item.RiskMonth</td>
+                                    <td></td>
+                                    <td>@item.UniqueKeyPerLife</td>
+                                    <td>@item.RetroBenefitCode</td>
+                                    <td></td>
+                                    <td>@item.AccumulativeRetainAmount</td>
+                                    <td></td>
+                                    <td>@item.RetroAmount</td>
+                                    <td>@item.RetroGrossPremium</td>
+                                    <td>@item.RetroNetPremium</td>
+                                    <td>@item.RetroDiscount</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>@item.RetroIndicator</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="133" class="no-data">No available data found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-footer">
+                <div class="row">
+                    <div class="col-md-4">
+                        @Html.Partial("_PageInfo")
+                    </div>
+                    <div class="col-md-8" id="@(policyName)Pager">
+                        @Html.PagedListPager(Model, Page => Url.Action("PerLifeSoaRiData", new
+                        {
+                            id = routeValue["Id"],
+                            Category = routeValue["Category"],
+                            SortOrder = ViewBag.SortOrder,
+                            Page,
+                        }), Shared.Html.GetPagedListRenderOptions())
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

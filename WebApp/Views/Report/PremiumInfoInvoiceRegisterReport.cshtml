@@ -1,0 +1,378 @@
+﻿@{
+    ViewBag.Title = "Premium Info (Invoice Register) Report";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>@ViewBag.Title</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div for="typeOfReport" class="col-form-label"> Report</div>
+                            <select class="form-control selectpicker" name="typeOfReport" id="TypeOfReport" v-on:change="resetToDefaultSelection()" v-model="ReportParams.TypeOfReport" ref="select">
+                                <option value="1">Premium Info by Risk Quarter (Treaty Type)</option>
+                                <option value="2">Premium Info by Risk Quarter</option>
+                                <option value="3">Premium Info by Treaty Type</option>
+                                <option value="4">Premium Info by Ceding Company</option>
+                                <option value="5">Premium Info by Benefits</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Fields Type</div>
+                            <select class="form-control selectpicker" name="typeOfField" id="TypeOfField" v-on:change="getSumOfByFieldType(true)" v-model="ReportParams.TypeOfField" ref="select">
+                                <option value="1">Individual</option>
+                                <option value="2">Group</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Sum Of</div>
+                            <select class="form-control selectpicker" name="sumOf" id="SumOf" v-model="ReportParams.SumOf" ref="select">
+                                <option value="">Please Select</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Invoice Type</div>
+                            <select class="form-control selectpicker" multiple name="invoiceType" id="InvoiceType" v-model="ReportParams.InvoiceType" data-actions-box="true" ref="select">
+                                <option v-for="invoiceType in InvoiceTypes" :value="invoiceType.Value">{{ invoiceType.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Invoice CN/DN Start Date</div>
+                            <div class="input-w-icon">
+                                <input v-model="ReportParams.InvoiceStartDate" id="InvoiceStartDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" v-on:click="openDatePicker('InvoiceStartDate')" />
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InvoiceStartDate')" />
+                            </div>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Invoice CN/DN End Date</div>
+                            <div class="input-w-icon">
+                                <input v-model="ReportParams.InvoiceEndDate" id="InvoiceEndDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" v-on:click="openDatePicker('InvoiceEndDate')" />
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InvoiceEndDate')" />
+                            </div>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Ceding Company</div>
+                            <select class="form-control selectpicker" multiple name="cedant" id="Cedant" v-model="ReportParams.Cedant" data-actions-box="true" ref="select">
+                                <option v-for="cedant in Cedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Treaty No</div>
+                            <select class="form-control selectpicker" multiple name="treatyCode" id="TreatyCode" v-model="ReportParams.TreatyCode" data-actions-box="true" ref="select">
+                                <option v-for="treatyCode in TreatyCodes" :value="treatyCode.Value">{{ treatyCode.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Treaty Type</div>
+                            <select class="form-control selectpicker" multiple name="treatyType" id="TreatyType" v-model="ReportParams.TreatyType" data-actions-box="true" ref="select">
+                                <option v-for="treatyType in TreatyTypes" :value="treatyType.Value">{{ treatyType.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Risk Quarter</div>
+                            <select class="form-control selectpicker" multiple name="riskQuarter" id="RiskQuarter" v-model="ReportParams.RiskQuarter" data-actions-box="true" ref="select">
+                                <option v-for="riskQuarter in RiskQuarters" :value="riskQuarter.Value">{{ riskQuarter.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">SOA Quarter</div>
+                            <select class="form-control selectpicker" multiple name="soaQuarter" id="SoaQuarter" v-model="ReportParams.SoaQuarter" data-actions-box="true" ref="select">
+                                <option v-for="soaQuarter in SoaQuarters" :value="soaQuarter.Value">{{ soaQuarter.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Frequency</div>
+                            <select class="form-control selectpicker" multiple name="frequency" id="Frequency" v-model="ReportParams.Frequency" data-actions-box="true" ref="select">
+                                <option v-for="frequency in Frequencys" :value="frequency.Value">{{ frequency.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="w-100 text-right">
+                        <button type="button" class="btn btn-download" v-on:click="generate()">GENERATE</button>
+                    </div>
+
+                    <div id="reportBody">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var InvoiceTypes = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterInvoiceTypes));
+        var Cedants = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterCedants));
+        var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterTreatyCodes));
+        var TreatyTypes = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterTreatyTypes));
+        var RiskQuarters = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterRiskQuarters));
+        var SoaQuarters = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterSoaQuarters));
+        var Frequencys = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterFrequencys));
+
+        var IndividualSumOfs = @Html.Raw(Json.Encode(ViewBag.DropdownIndividualSumOfs));
+        var GroupSumOfs = @Html.Raw(Json.Encode(ViewBag.DropdownGroupSumOfs));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                ReportParams: {
+                    TypeOfReport: 1,
+                    TypeOfField: 1,
+                    SumOf: "",
+                    InvoiceType: "",
+                    InvoiceStartDate: "",
+                    InvoiceEndDate: "",
+                    Cedant: "",
+                    TreatyCode: "",
+                    TreatyType: "",
+                    RiskQuarter: "",
+                    SoaQuarter: "",
+                    Frequency: "",
+                },
+                // Dropdownlists
+                InvoiceTypes: InvoiceTypes,
+                Cedants: Cedants,
+                TreatyCodes: TreatyCodes,
+                TreatyTypes: TreatyTypes,
+                RiskQuarters: RiskQuarters,
+                SoaQuarters: SoaQuarters,
+                Frequencys: Frequencys,
+                IndividualSumOfs: IndividualSumOfs,
+                GroupSumOfs: GroupSumOfs,
+            },
+            methods: {
+                resetToDefaultSelection: function () {
+                    if (this.ReportParams.TypeOfReport == 5) this.ReportParams.TypeOfField = "";
+                    else this.ReportParams.TypeOfField = 1;
+                    if (this.ReportParams.TypeOfReport != 1 && this.ReportParams.TypeOfReport != 5) this.ReportParams.SumOf = "0";
+                    else this.ReportParams.SumOf = "";
+                    this.ReportParams.InvoiceStartDate = "";
+                    this.ReportParams.InvoiceEndDate = "";
+
+                    this.getSumOfByFieldType(false);
+                    this.disabledByReport();
+
+                    this.$nextTick(function () {
+                        $('#TypeOfField').selectpicker('refresh');
+                        $('#SumOf').selectpicker('refresh');
+
+                        $('#InvoiceType').selectpicker('selectAll');
+                        $('#Cedant').selectpicker('selectAll');
+                        $('#TreatyCode').selectpicker('selectAll');
+                        $('#TreatyType').selectpicker('selectAll');
+                        $('#RiskQuarter').selectpicker('selectAll');
+                        $('#SoaQuarter').selectpicker('selectAll');
+                        $('#Frequency').selectpicker('selectAll');
+                    });
+                },
+                getSumOfByFieldType: function (refresh) {
+                    if (refresh) {
+                        if (this.ReportParams.TypeOfReport != 1 && this.ReportParams.TypeOfReport != 5) this.ReportParams.SumOf = "0";
+                        else this.ReportParams.SumOf = "";
+                    }
+
+                    if (this.ReportParams.TypeOfReport == 1) {
+                        if (this.ReportParams.TypeOfField == 1) {
+                            this.updateDropDownItems('SumOf', this.IndividualSumOfs, refresh);
+                        }
+                        else if (this.ReportParams.TypeOfField == 2) {
+                            this.updateDropDownItems('SumOf', this.GroupSumOfs, refresh);
+                        }
+                        else {
+                            this.updateDropDownItems('SumOf', [], refresh);
+                        }
+                    }
+                    else if (this.ReportParams.TypeOfReport != 1 && this.ReportParams.TypeOfReport != 5) {
+                        if (this.ReportParams.TypeOfField == 1) {
+                            this.updateDropDownItems('SumOf', this.IndividualSumOfs, refresh, false, true);
+                        }
+                        else if (this.ReportParams.TypeOfField == 2) {
+                            this.updateDropDownItems('SumOf', this.GroupSumOfs, refresh, false, true);
+                        }
+                        else {
+                            this.updateDropDownItems('SumOf', [], refresh);
+                        }
+                    }
+                    else if (this.ReportParams.TypeOfReport == 5) {
+                        if (this.ReportParams.TypeOfField == null || this.ReportParams.TypeOfField == "") {
+                            this.updateDropDownItems('SumOf', [], refresh);
+                        }
+                    }
+                },
+                disabledByReport: function () {
+                    if (this.ReportParams.TypeOfReport == 5) {
+                        $('#TypeOfField').prop('disabled', true);
+                        $('#SumOf').prop('disabled', true);
+                    }
+                    else {
+                        $('#TypeOfField').prop('disabled', false);
+                        $('#SumOf').prop('disabled', false);
+                    }
+                },
+                generate: function () {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                    var errorList = [];
+                    console.log(this.ReportParams.Frequency)
+                    if (this.ReportParams.TypeOfReport != 5) {
+                        if (this.ReportParams.TypeOfField == null || this.ReportParams.TypeOfField == "") {
+                            errorList.push("Fields Type is required.");
+                        }
+                        if (this.ReportParams.SumOf == null || this.ReportParams.SumOf == "") {
+                            errorList.push("Sum Of is required.");
+                        }
+                    }
+
+                    if (this.ReportParams.InvoiceType == null || this.ReportParams.InvoiceType == "") {
+                        errorList.push("Invoice Type is required.");
+                    }
+                    if (this.ReportParams.InvoiceStartDate == null || this.ReportParams.InvoiceStartDate == "") {
+                        errorList.push("Invoice CN/DN Start Date is required.");
+                    }                    
+                    if (this.ReportParams.InvoiceEndDate == null || this.ReportParams.InvoiceEndDate == "") {
+                        errorList.push("Invoice CN/DN End Date is required.");
+                    }
+                    if ((this.ReportParams.InvoiceStartDate != null || this.ReportParams.InvoiceStartDate != "") && (this.ReportParams.InvoiceEndDate != null || this.ReportParams.InvoiceEndDate != "")) {
+                        if (Date.parse(this.ReportParams.InvoiceEndDate) <= Date.parse(this.ReportParams.InvoiceStartDate)) {
+                            errorList.push("Invoice CN/DN Start Date must be ealier than Invoice CN/DN End Date");
+                            errorList.push("Invoice CN/DN End Date must be later than Invoice CN/DN Start Date");
+                        }
+                    }
+                    if (this.ReportParams.Cedant == null || this.ReportParams.Cedant == "") {
+                        errorList.push("Ceding Company is required.");
+                    }
+                    if (this.ReportParams.TreatyCode == null || this.ReportParams.TreatyCode == "") {
+                        errorList.push("Treaty No is required.");
+                    }
+                    if (this.ReportParams.TreatyType == null || this.ReportParams.TreatyType == "") {
+                        errorList.push("Treaty Type is required.");
+                    }
+                    if (this.ReportParams.RiskQuarter == null || this.ReportParams.RiskQuarter == "") {
+                        errorList.push("Risk Quarter is required.");
+                    }
+                    if (this.ReportParams.SoaQuarter == null || this.ReportParams.SoaQuarter == "") {
+                        errorList.push("SOA Quarter is required.");
+                    }
+                    if (this.ReportParams.Frequency == null || this.ReportParams.Frequency == "") {
+                        errorList.push("Frequency is required.");
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    } else {
+
+                        var obj = {
+                            typeOfReport: this.ReportParams.TypeOfReport,
+                            typeOfField: this.ReportParams.TypeOfField,
+                            sumOf: this.ReportParams.SumOf,
+                            invoiceType: this.ReportParams.InvoiceType.join(","),
+                            invoiceStartDate: this.ReportParams.InvoiceStartDate,
+                            invoiceEndDate: this.ReportParams.InvoiceEndDate,
+                            cedant: this.ReportParams.Cedant.join(","),
+                            treatyCode: this.ReportParams.TreatyCode.join(","),
+                            treatyType: this.ReportParams.TreatyType.join(","),
+                            riskQuarter: this.ReportParams.RiskQuarter.join(","),
+                            soaQuarter: this.ReportParams.SoaQuarter.join(","),
+                            frequency: this.ReportParams.Frequency.join(","),
+                        };
+                        
+                        $.ajax({
+                            url: "@(Url.Action("GeneratePremiumInfoInvoiceRegisterReport", "Report"))",
+                            type: "POST",
+                            data: obj,
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                            }
+                        }).done(function (result) {
+                            $("#reportBody").html(result);
+                        });
+                    }
+                },
+                // Date Picker
+                openDatePicker: function (currentId) {
+
+                    var id = "#" + currentId;
+                    if ($(id).data("datepicker") != null) {
+                        $(id).datepicker("destroy");
+                    }
+
+                    $(id).datepicker({
+                        format: DateFormatDatePickerJs,
+                        autoclose: true,
+                    });
+
+                    var updateDateValue = this.updateDateValue;
+                    $(id).on('changeDate', function () {
+                        updateDateValue(currentId, $(id).val());
+                    });
+
+                    $(id).focus();
+                },
+                updateDateValue: function (field, value) {
+                    var typeStr = "ReportParams";
+                    this[typeStr][field] = value;
+                },
+                // Sum Of Dropdownlist
+                updateDropDownItems(id, items, style = true, displaySelect = true, displayAllSelect = false) {
+                    $('#' + id + ' option').remove();
+                    if (displaySelect) {
+                        $('#' + id).append(new Option("Please select", ""));
+                    }
+                    if (displayAllSelect) {
+                        $('#' + id).append(new Option("(All)", "0"));
+                    }
+                    items.forEach(function (obj) {
+                        var text = obj["Text"];
+                        $('#' + id).append(new Option(text, obj["Value"], false));
+                    });
+                    if (style) {
+                        $('#' + id).selectpicker('refresh');
+                    }
+                }
+            },
+            created: function () {
+                this.resetToDefaultSelection();
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

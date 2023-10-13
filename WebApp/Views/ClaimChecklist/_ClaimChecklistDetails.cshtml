@@ -1,0 +1,65 @@
+﻿@model WebApp.Models.ClaimChecklistViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="DetailMaxIndex" name="detailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center w-5">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-40">Claim Checklist Name</th>
+                        <th class="w-40">Remark</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!Details.length">
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in Details">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'detailId[' + index + ']'" class="form-control" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input v-model="detail.Name" :name="'name[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.Name" maxlength="255">
+                        </td>
+                        <td>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('Remark' + index)" v-on:blur="autoCollapseTextarea('Remark' + index)" :id="'Remark' + index"
+                                      v-model="detail.Remark" class="form-control textarea-auto-expand" :name="'remark[' + index + ']'" placeholder="Type here" disabled=@disabled maxlength="255"></textarea>
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                            <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                            <a href="javascript:void(0);" v-on:click="removeDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var ClaimChecklistModel = @Html.Raw(Json.Encode(Model));
+    var Details = @Html.Raw(Json.Encode(ViewBag.ClaimChecklistDetailBos));
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

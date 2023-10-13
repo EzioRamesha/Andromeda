@@ -1,0 +1,167 @@
+﻿@model WebApp.Models.ClaimRegisterViewModel
+
+@{
+    ViewBag.Title = "Claim Register";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.ClaimStatus)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBoxFor(model => model.SoaQuarter, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "YYYY MM" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('SoaQuarter')" }, { @"v-model.lazy", @"ClaimRegister.SoaQuarter" } })
+                        @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CedingCompany, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedingCompany, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getRelatedDropDown(this.value)", @v_model = "ClaimRegister.CedingCompany" })
+                        @Html.ValidationMessageFor(model => model.CedingCompany, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.IsReferralCase, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch  pl-2">
+                                @Html.EditorFor(model => model.IsReferralCase, new { htmlAttributes = new { @class = "custom-control-input", @disabled = "disabled" } })
+                                <label class="custom-control-label" for="IsReferralCase">Yes</label>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.IsReferralCase, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyCode, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.TreatyCode" })
+                        @Html.ValidationMessageFor(model => model.TreatyCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ClaimDataConfigId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ClaimDataConfigId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.ClaimDataConfigId" })
+                        @Html.ValidationMessageFor(model => model.ClaimDataConfigId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ClaimTransactionType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ClaimTransactionType, (List<SelectListItem>)ViewBag.DropDownClaimTransactionTypes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.ClaimTransactionType" })
+                        @Html.ValidationMessageFor(model => model.ClaimTransactionType, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    @*<div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantClaimType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CedantClaimType, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ClaimRegister.CedantClaimType" } })
+                        @Html.ValidationMessageFor(model => model.CedantClaimType, "", new { @class = "text-danger" })
+                    </div>*@
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedingClaimType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CedingClaimType, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @v_model = "ClaimRegister.CedingClaimType" } })
+                        @Html.ValidationMessageFor(model => model.CedingClaimType, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CedingEventCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CedingEventCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ClaimRegister.CedingEventCode" } })
+                        @Html.ValidationMessageFor(model => model.CedingEventCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row"></div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PicClaimId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.PicClaimBo.FullName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        @Html.ValidationMessageFor(model => model.PicClaimId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.PicDaaId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.PicDaaId, (List<SelectListItem>)ViewBag.DropDownPicDaas, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.PicDaaId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row"></div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.MlreEventCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.MlreEventCode, (List<SelectListItem>)ViewBag.DropDownEventCodes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.MlreEventCode" })
+                        @Html.ValidationMessageFor(model => model.MlreEventCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row"></div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <div class="col-form-label pb-0 font-weight-bold">Claims Data</div>
+                        @Html.Label("Claims Data Mapping Status", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.HiddenFor(model => model.OriginalClaimRegisterId)
+                        <div class="input-group mb-2">
+                            <input class="form-control" id="ClaimRegisterStr" readonly value="" />
+                            <div class="input-group-prepend">
+                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="resetMatchClaimData()" data-target="#matchClaimsDataModal">MATCH CLAIMS DATA</button>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.OriginalClaimRegisterId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="col-form-label pb-0 font-weight-bold">SOA Data</div>
+                        @Html.Label("SOA Data Mapping Status", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.HiddenFor(model => model.SoaDataBatchId)
+                        <div class="input-group mb-2">
+                            <input class="form-control" id="SoaDataStr" readonly value="" />
+                            <div class="input-group-prepend">
+                                <button class="btn btn-generate" type="button" v-on:click="viewSoaDataBatch()" :disabled="!ClaimRegister.SoaDataBatchId"><i class="fas fa-search"></i></button>
+                                <input type="button" class="btn btn-generate" id="matchSoaData" data-toggle="modal" data-target="#matchSoaDataModal" value="Match SOA Data" v-on:click="searchSoaDataBatch()" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SUBMIT</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/Scripts/models/ClaimRegister.js")
+}

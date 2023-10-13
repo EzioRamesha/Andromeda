@@ -1,0 +1,315 @@
+﻿@using PagedList.Mvc
+@model WebApp.Models.ClaimDataBatchViewModel
+
+@{
+    PagedList.IPagedList<WebApp.Models.ClaimDataListViewModel> ClaimDataList = ViewBag.ClaimDataList as PagedList.IPagedList<WebApp.Models.ClaimDataListViewModel>;
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    routeValue["id"] = Url.RequestContext.RouteData.Values["id"];
+}
+
+<div class="form-horizontal mt-4">
+    <div class="form-row">
+        <div class="form-group col-md-12">
+            <ul class="nav nav-tabs">
+                <li class="nav-item"><a data-toggle="tab" href="#claimsData" class="active underline-tab">Claims Data</a></li>
+                <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#fileHistory">File History</a></li>
+                <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+                <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remark">Remark</a></li>
+            </ul>
+
+            <div class="tab-content underline-tab-content">
+                <div class="tab-pane fade show active" id="claimsData" role="tabpanel" aria-labelledby="claimsData-tab">
+
+                    <div class="text-right mb-2">
+                        @if (ViewBag.CanReportClaim)
+                        {
+                            <a href="@Url.Action("EditClaimData", new { id = 0, claimdataBatchId = Model.Id })" class="btn btn-submit">CREATE NEW ADJUSTMENT</a>
+                        }
+                        else
+                        {
+                            <span class="btn btn-submit isDisabled">CREATE NEW ADJUSTMENT</span>
+                        }
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-download dropdown-toggle prevent-disable" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                DOWNLOAD AS
+                            </button>
+                            <div class="dropdown-menu">
+                                @Html.ActionLink("All", "Download", new { type = 1, id = Model.Id }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                                @Html.ActionLink("Filtered", "Download", new
+                               {
+                                   type = 2,
+                                   Id = Model.Id,
+                                   MlreEventCode = routeValue["MlreEventCode"],
+                                   ClaimCode = routeValue["ClaimCode"],
+                                   PolicyNumber = routeValue["PolicyNumber"],
+                                   TreatyCode = routeValue["TreatyType"],
+                                   InsuredName = routeValue["InsuredName"],
+                                   InsuredGenderCodeId = routeValue["InsuredGenderCodeId"],
+                                   Layer1SumRein = routeValue["Layer1SumRein"],
+                                   MappingStatus = routeValue["MappingStatus"],
+                                   PreComputationStatus = routeValue["PreComputationStatus"],
+                                   PreValidationStatus = routeValue["PreValidationStatus"],
+                                   ReportingStatus = routeValue["ReportingStatus"],
+                               }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                            </div>
+                        </div>
+                    </div>
+
+                    @using (Html.BeginForm("Edit", "ClaimData", new { id = Model.Id }, FormMethod.Get))
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10"> File ID </th>
+                                        <th class="w-10"> Entry No </th>
+                                        <th class="w-10"> Type </th>
+                                        <th class="w-15"> MLRe Event Code </th>
+                                        <th class="w-10"> Claim Code </th>
+                                        <th class="w-10"> Policy No </th>
+                                        <th class="w-10"> Treaty Types </th>
+                                        <th class="w-10"> Family Name </th>
+                                        <th class="w-10"> Sex </th>
+                                        <th class="w-10"> Sum Reinsurance </th>
+                                        <th class="w-10">
+                                            Mapping Status
+                                            @if (Model.TotalMappingFailedStatus > 0)
+                                            {
+                                                <span class="badge badge-failed" )>@Model.TotalMappingFailedStatus</span>
+                                            }
+                                        </th>
+                                        <th class="w-10">
+                                            Pre-Computation Status
+                                            @if (Model.TotalPreComputationFailedStatus > 0)
+                                            {
+                                                <span class="badge badge-failed" )>@Model.TotalPreComputationFailedStatus</span>
+                                            }
+                                        </th>
+                                        <th class="w-10">
+                                            Pre-Validation Status
+                                            @if (Model.TotalPreValidationFailedStatus > 0)
+                                            {
+                                                <span class="badge badge-failed" )>@Model.TotalPreValidationFailedStatus</span>
+                                            }
+                                        </th>
+                                        <th class="w-10">
+                                            Reporting Status
+                                        </th>
+                                        <th class="text-center w-5"> Action </th>
+                                    </tr>
+                                    <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th>
+                                            @Html.TextBox("MlreEventCode", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                        </th>
+                                        <th>
+                                            @Html.TextBox("ClaimCode", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                        </th>
+                                        <th>
+                                            @Html.TextBox("PolicyNumber", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                        </th>
+                                        <th>
+                                            @Html.TextBox("TreatyType", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                        </th>
+                                        <th>
+                                            @Html.TextBox("InsuredName", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                        </th>
+                                        <th>
+                                            @Html.DropDownList("InsuredGenderCodeId", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                        </th>
+                                        <th>
+                                            @Html.TextBox("Layer1SumRein", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                        </th>
+                                        <th>
+                                            @Html.DropDownList("MappingStatus", (List<SelectListItem>)ViewBag.DropDownMappingStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                        </th>
+                                        <th>
+                                            @Html.DropDownList("PreComputationStatus", (List<SelectListItem>)ViewBag.DropDownPreComputationStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                        </th>
+                                        <th>
+                                            @Html.DropDownList("PreValidationStatus", (List<SelectListItem>)ViewBag.DropDownPreValidationStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                        </th>
+                                        <th>
+                                            @Html.DropDownList("ReportingStatus", (List<SelectListItem>)ViewBag.DropDownReportingStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                        </th>
+                                        <th class="text-center">
+                                            <div class="btn-row-action">
+                                                <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                    <span class="fas fa-backspace" />
+                                                </a>
+                                                <button type="submit" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" /></button>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (ClaimDataList.Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="16" class="no-data">No available data found.</td>
+                                        </tr>
+                                    }
+                                    @foreach (var claimData in ClaimDataList)
+                                    {
+                                        <tr>
+                                            <td>@claimData.ClaimDataFileId</td>
+                                            <td>@claimData.EntryNo</td>
+                                            <td>@claimData.ClaimTransactionType</td>
+                                            <td>@claimData.MlreEventCode</td>
+                                            <td>@claimData.ClaimCode</td>
+                                            <td>@claimData.PolicyNumber</td>
+                                            <td>@claimData.TreatyType</td>
+                                            <td>@claimData.InsuredName</td>
+                                            <td>@claimData.InsuredGenderCode</td>
+                                            <td>@claimData.Layer1SumRein</td>
+                                            <td>@BusinessObject.Claims.ClaimDataBo.GetMappingStatusName(claimData.MappingStatus)</td>
+                                            <td>@BusinessObject.Claims.ClaimDataBo.GetPreComputationStatusName(claimData.PreComputationStatus)</td>
+                                            <td>@BusinessObject.Claims.ClaimDataBo.GetPreValidationStatusName(claimData.PreValidationStatus)</td>
+                                            <td>@BusinessObject.Claims.ClaimDataBo.GetReportingStatusName(claimData.ReportingStatus)</td>
+                                            <td class="text-center">
+                                                <a href="@Url.Action("EditClaimData", new { id = claimData.Id, claimdataBatchId = claimData.ClaimDataBatchId })" title="Edit">
+                                                    <span class="fas fa-pencil-alt" />
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    @{
+                        ViewBag.CurrentPageNumber = ClaimDataList.PageNumber;
+                        ViewBag.CurrentPageItems = ClaimDataList.Count;
+                        ViewBag.PageSize = ClaimDataList.PageSize;
+                        ViewBag.Total = ViewBag.ClaimDataTotal;
+                    }
+                    <div class="pagination-footer">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.Partial("_PageInfo")
+                            </div>
+                            <div class="col-md-8">
+                                @Html.PagedListPager(ClaimDataList, Page => Url.Action("Edit", new
+                               {
+                                   MlreEventCode = routeValue["MlreEventCode"],
+                                   ClaimCode = routeValue["ClaimCode"],
+                                   PolicyNumber = routeValue["PolicyNumber"],
+                                   TreatyCode = routeValue["TreatyType"],
+                                   InsuredName = routeValue["InsuredName"],
+                                   InsuredGenderCodeId = routeValue["InsuredGenderCodeId"],
+                                   PolicyTerm = routeValue["Layer1SumRein"],
+                                   MappingStatus = routeValue["MappingStatus"],
+                                   PreComputationStatus = routeValue["PreComputationStatus"],
+                                   PreValidationStatus = routeValue["PreValidationStatus"],
+                                   ReportingStatus = routeValue["ReportingStatus"],
+                                   SortOrder = ViewBag.SortOrder,
+                                   Page,
+                               }), Shared.Html.GetPagedListRenderOptions())
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" v-model="ClaimDataBatch.IncludedFiles" name="IncludedFilesApp" id="IncludedFilesApp" />
+                <div class="tab-pane fade" id="fileHistory" role="tabpanel" aria-labelledby="fileHistory-tab">
+                    <div class="table-responsive pb-2">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-5">No</th>
+                                    <th class="w-25">Configuration</th>
+                                    <th class="w-20">File Name</th>
+                                    <th class="w-10">Exclude</th>
+                                    <th class="w-10">Date Uploaded</th>
+                                    <th class="w-10">File</th>
+                                    <th class="w-10">Error</th>
+                                    <th class="w-10">Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!ClaimDataFiles.length">
+                                    <td colspan="4" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(claimDataFile, index) in ClaimDataFiles">
+                                    <td>
+                                        {{ index+1 }}
+
+                                        <input type="hidden" v-model="claimDataFile.Id" :name="'ClaimDataFile.Id[' + index + ']'" />
+                                    </td>
+                                    <td>
+                                        <a v-bind:href="editClaimDataConfigUrl(index)" target="_blank" class="linkbtn">{{ claimDataFile.ClaimDataConfigBo.Code }} - {{ claimDataFile.ClaimDataConfigBo.Name }}</a>
+                                    </td>
+                                    <td>{{ claimDataFile.RawFileBo.FileName }}</td>
+                                    <td>
+                                        <input type="hidden" v-model="claimDataFile.Mode" :name="'ClaimDataFile.Mode[' + index + ']'" />
+                                        <input type="checkbox" :id="'claimDataFileExclude_' + index" v-on:change="checkExcludeFile(index)" />
+                                    </td>
+                                    <td>{{ claimDataFile.CreatedAtStr }}</td>
+                                    <td><a v-bind:href="downloadClaimDataFileUrl(index)" title="Download"><span class="fas fa-download" /></a></td>
+                                    <td>
+                                        <a href="#claimDataFileErrorModal" data-toggle="modal" data-target="#claimDataFileErrorModal" v-if="claimDataFile.Errors" v-on:click="getClaimDataFileErrors(index)">
+                                            <span class="fas fa-exclamation-triangle"></span>
+                                        </a>
+                                    </td>
+                                    <td><a v-bind:href="editClaimDataFileUrl(index)" title="Edit"><span class="fas fa-pencil-alt" /></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-30">Status</th>
+                                    <th class="w-30">Update Date & time</th>
+                                    <th class="w-30">Updated By</th>
+                                    <th class="w-10">Log File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!StatusHistories.length">
+                                    <td colspan="4" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(statusHistory, index) in StatusHistories">
+                                    <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                                    <td>{{ statusHistory.CreatedAtStr }}</td>
+                                    <td>{{ statusHistory.CreatedByName }}</td>
+                                    <td>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="remark" role="tabpanel" aria-labelledby="remark-tab">
+                    @Html.Partial("_Remark", new ViewDataDictionary { { "dropdownRemarkStatus", ViewBag.DropDownStatus } })
+                </div>
+            </div>
+
+            <div class="modal fade" id="claimDataFileErrorModal" tabindex="-1" role="dialog" aria-labelledby="claimDataFileErrorModal" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Errors</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <ul>
+                                <li v-for="(error, index) in ClaimDataFileErrors" class="text-danger">{{ error }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

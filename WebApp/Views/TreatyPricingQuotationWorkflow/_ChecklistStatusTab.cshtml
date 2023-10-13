@@ -1,0 +1,169 @@
+﻿@model WebApp.Models.TreatyPricingQuotationWorkflowViewModel
+
+<div class="text-right">
+    <div v-if="QuotationWorkflowVersion.ChecklistFinalised != true">
+        @*<button type="button" id="finalisedButton" v-on:click="checklistFinalise()" class="btn btn-submit">FINALISE</button>*@
+        <button type="button" id="finalisedButton" data-toggle="modal" data-target="#finaliseConfirmationModal" class="btn btn-submit">FINALISE</button>
+        <button type="button" v-on:click="checklistNotify()" class="btn btn-submit">NOTIFY</button>
+        @*<button type="button" v-on:click="checklistReset()" class="btn btn-submit">RESET</button>*@
+        <button type="button" data-toggle="modal" data-target="#resetConfirmationModal" class="btn btn-submit">RESET</button>
+    </div>
+    <div v-else>
+        <button type="button" v-on:click="checklistNotify()" class="btn btn-submit">NOTIFY</button>
+        <button type="button" data-toggle="modal" data-target="#resetConfirmationModal" class="btn btn-submit">RESET</button>
+    </div>
+</div>
+
+@Html.HiddenFor(model => model.QuotationChecklists)
+
+<div class="form-horizontal" id="app">
+    @Html.HiddenFor(model => model.ChecklistFinalised, htmlAttributes: new { @v_model = "QuotationWorkflowVersion.ChecklistFinalised" })
+    <div class="table-responsive" v-cloak>
+        <table class="table table-hover mt-3">
+            <thead>
+                <tr>
+                    <th class="w-15"></th>
+                    <th class="w-35">Person In-Charge</th>
+                    <th class="w-15">Status</th>
+                    <th class="w-25 text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="!ChecklistItems.length">
+                    <td colspan="4" class="no-data">No available data found.</td>
+                </tr>
+                <tr v-for="(checklistItem, index) in ChecklistItems">
+                    <td>{{ checklistItem.InternalTeam }}</td>
+                    <td><input v-model="checklistItem.InternalTeamPersonInCharge" :id="'InternalTeamPersonInCharge_' + index" class="form-control" placeholder="Type Here"></td>
+                    <td>{{ checklistItem.StatusName }}</td>
+                    <td>
+                        <div class="text-center" v-if="checklistItem.Status == @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusNotRequired">
+                            <button type="button" v-on:click="checklistRequest(index)" class="btn btn-submit prevent-disable" :disabled="checklistItem.DisableRequest">REQUEST</button>
+                        </div>
+                        <div class="text-center" v-if="checklistItem.Status == @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusRequested">
+                            <button type="button" v-on:click="checklistNotRequired(index)" class="btn btn-submit prevent-disable" :disabled="checklistItem.DisableRequest">NOT REQUIRED</button>
+                            <button type="button" v-on:click="checklistCompleted(index)" class="btn btn-submit prevent-disable" :disabled="checklistItem.DisableButtons">COMPLETED</button>
+                        </div>
+                        <div class="text-center" v-if="checklistItem.Status == @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusCompleted">
+                            <button type="button" v-on:click="checklistRequest(index)" class="btn btn-submit prevent-disable" :disabled="checklistItem.DisableRequest">REQUEST AGAIN</button>
+                        </div>
+                        <div class="text-center" v-if="checklistItem.Status == @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusPendingSignOff">
+                            <button type="button" v-on:click="checklistSignOff(index)" class="btn btn-submit prevent-disable" :disabled="checklistItem.DisableButtons">SIGN OFF</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">
+                        <div id="finalisedMessage" class="text-sm-left" v-if="QuotationWorkflowVersion.ChecklistFinalised == true">
+                            <span class="fas fa-info-circle" />
+                            Please view the Quote Spec and update the checklist upon confirmation. If there are further comments, please add at the "Remarks" section.
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="modal fade" id="emailSentModal" tabindex="-1" role="dialog" aria-labelledby="emailSentModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Success</h5>
+                        <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        E-mail(s) sent successfully.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel prevent-disable" data-dismiss="modal">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="emailErrorModal" tabindex="-1" role="dialog" aria-labelledby="emailErrorModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Errors</h5>
+                        <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            <li v-for="(error, index) in NotifyChecklistValidation" class="text-danger">{{ error }}</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel prevent-disable" data-dismiss="modal">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="finaliseErrorModal" tabindex="-1" role="dialog" aria-labelledby="finaliseErrorModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Errors</h5>
+                        <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>
+                            <li class="text-danger">Please make sure all checklists are in <span class="font-weight-bold">Not Required</span> or <span class="font-weight-bold">Completed</span> status.</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel prevent-disable" data-dismiss="modal">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="finaliseConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="finaliseConfirmationModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Do you wish to proceed to finalise?
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-submit" v-on:click="checklistFinalise()" data-dismiss="modal">YES</button>
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">NO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="resetConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="resetConfirmationModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Do you wish to proceed to reset?
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-submit" v-on:click="checklistReset()" data-dismiss="modal">YES</button>
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">NO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,505 @@
+﻿@using Microsoft.AspNet.Identity
+
+@using BusinessObject
+
+@using BusinessObject.Identity
+
+@using Services.Identity
+
+<ul class="nav">
+
+    @if (Request.IsAuthenticated)
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action("Dashboard", "Home")">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </li>
+
+        var authUserId = User.Identity.GetUserId<int>();
+        var authUserBo = UserService.Find(authUserId);
+
+        foreach (DepartmentBo department in Services.Identity.DepartmentService.Get())
+        {
+            if (Services.ModuleService.CountByDepartmentId(department.Id) == 0)
+            {
+                continue;
+            }
+
+            var actionModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeAction);
+            var reportModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeReport);
+            var maintenanceModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeMaintenance);
+            var groupMaintenanceModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeGroupMaintenance);
+            var repositoryModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeRepository);
+            var workflowModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeWorkflow);
+            var dashboardModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeDashboard);
+            var groupBusinessModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeGroupBusiness);
+            var groupReportModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeGroupReport);
+            var perLifeRetroModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypePerLifeRetro);
+            var perLifeAggregationModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypePerLifeAggregation);
+            var targetPlanningReportModules = Services.ModuleService.GetByDepartmentId(department.Id, 0, ModuleBo.TypeTargetPlanningReport);
+
+            <li class="nav-item nav-dropdown">
+                <a class="nav-link nav-dropdown-toggle" href="#">
+                    <i class="@BusinessObject.Identity.DepartmentBo.GetIconName(department.Id)"></i> @department.Name
+                </a>
+                <ul class="nav-dropdown-items">
+                    @if (dashboardModules.Count > 0)
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypeDashboard)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @foreach (ModuleBo moduleBo in dashboardModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+
+                    @if (department.Id == DepartmentBo.DepartmentRetrocession && (actionModules.Count == 0 || actionModules.FirstOrDefault().Controller != ModuleBo.ModuleController.RetrocessionDashboard.ToString()) && (perLifeRetroModules.Count > 0 || perLifeAggregationModules.Count > 0))
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypePerLifeRetro)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @if (perLifeAggregationModules.Count > 0)
+                                {
+                                    <li class="nav-item nav-dropdown">
+                                        <a class="nav-link nav-dropdown-toggle" href="#">
+                                            @ModuleBo.GetTypeName(ModuleBo.TypePerLifeAggregation)
+                                        </a>
+                                        <ul class="nav-dropdown-items">
+                                            @foreach (ModuleBo moduleBo in perLifeAggregationModules)
+                                            {
+                                                var valid = false;
+                                                foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                                {
+                                                    var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                                    if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                                    {
+                                                        valid = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!valid)
+                                                {
+                                                    continue;
+                                                }
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                                        @moduleBo.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+
+                                @foreach (ModuleBo moduleBo in perLifeRetroModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+
+                    @foreach (ModuleBo moduleBo in actionModules)
+                    {
+                        if (department.Id == DepartmentBo.DepartmentRetrocession && 
+                            actionModules.IndexOf(moduleBo) == 1 && 
+                            moduleBo.Controller != ModuleBo.ModuleController.RetrocessionDashboard.ToString() && 
+                            (perLifeRetroModules.Count > 0 || perLifeAggregationModules.Count > 0))
+                        {
+                            <li class="nav-item nav-dropdown">
+                                <a class="nav-link nav-dropdown-toggle" href="#">
+                                    @ModuleBo.GetTypeName(ModuleBo.TypePerLifeRetro)
+                                </a>
+                                <ul class="nav-dropdown-items">
+                                    @if (perLifeAggregationModules.Count > 0)
+                                    {
+                                        <li class="nav-item nav-dropdown">
+                                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                                @ModuleBo.GetTypeName(ModuleBo.TypePerLifeAggregation)
+                                            </a>
+                                            <ul class="nav-dropdown-items">
+                                                @foreach (ModuleBo perLifeAggregationModuleBo in perLifeAggregationModules)
+                                                {
+                                                    var validPerLifeAggregationModule = false;
+                                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                                    {
+                                                        var accessMatrixBo = AccessMatrixService.Find(perLifeAggregationModuleBo.Id, userAccessGroupBo.AccessGroupId);
+                                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                                        {
+                                                            validPerLifeAggregationModule = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!validPerLifeAggregationModule)
+                                                    {
+                                                        continue;
+                                                    }
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" href="@Url.Action("Index", perLifeAggregationModuleBo.Controller)">
+                                                            @perLifeAggregationModuleBo.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+
+                                    @foreach (ModuleBo perLifeRetroModuleBo in perLifeRetroModules)
+                                    {
+                                        var validPerLifeRetroModule = false;
+                                        foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                        {
+                                            var accessMatrixBo = AccessMatrixService.Find(perLifeRetroModuleBo.Id, userAccessGroupBo.AccessGroupId);
+                                            if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                            {
+                                                validPerLifeRetroModule = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!validPerLifeRetroModule)
+                                        {
+                                            continue;
+                                        }
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="@Url.Action("Index", perLifeRetroModuleBo.Controller)">
+                                                @perLifeRetroModuleBo.Name
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
+                        var valid = false;
+                        foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                        {
+                            var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                            if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                            {
+                                valid = true;
+                                break;
+                            }
+                        }
+                        if (!valid)
+                        {
+                            continue;
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                @moduleBo.Name
+                            </a>
+                        </li>
+                    }
+
+                    @if (repositoryModules.Count > 0)
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypeRepository)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @foreach (ModuleBo moduleBo in repositoryModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+
+                    @if (workflowModules.Count > 0)
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypeWorkflow)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @foreach (ModuleBo moduleBo in workflowModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+
+                    @if (groupBusinessModules.Count > 0 || groupReportModules.Count > 0)
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypeGroupBusiness)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @foreach (ModuleBo moduleBo in groupBusinessModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+
+                                @if (groupReportModules.Count > 0)
+                                {
+                                    <li class="nav-item nav-dropdown">
+                                        <a class="nav-link nav-dropdown-toggle" href="#">
+                                            @ModuleBo.GetTypeName(ModuleBo.TypeReport)
+                                        </a>
+                                        <ul class="nav-dropdown-items">
+                                            @foreach (ModuleBo moduleBo in groupReportModules)
+                                            {
+                                                var valid = false;
+                                                foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                                {
+                                                    var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                                    if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                                    {
+                                                        valid = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!valid)
+                                                {
+                                                    continue;
+                                                }
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="@Url.Action("Index", "Report", new { ModuleId = moduleBo.Id.ToString() })">
+                                                        @moduleBo.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+
+                    @if (reportModules.Count > 0 || targetPlanningReportModules.Count > 0)
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypeReport)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @foreach (ModuleBo moduleBo in reportModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", "Report", new { ModuleId = moduleBo.Id.ToString() })">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+
+                                @if (targetPlanningReportModules.Count > 0)
+                                {
+                                    <li class="nav-item nav-dropdown">
+                                        <a class="nav-link nav-dropdown-toggle" href="#">
+                                            @ModuleBo.GetTypeName(ModuleBo.TypeTargetPlanningReport)
+                                        </a>
+                                        <ul class="nav-dropdown-items">
+                                            @foreach (ModuleBo moduleBo in targetPlanningReportModules)
+                                            {
+                                                var valid = false;
+                                                foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                                {
+                                                    var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                                    if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                                    {
+                                                        valid = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!valid)
+                                                {
+                                                    continue;
+                                                }
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="@Url.Action("Index", "Report", new { ModuleId = moduleBo.Id.ToString() })">
+                                                        @moduleBo.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+
+                    @if (maintenanceModules.Count > 0 || groupMaintenanceModules.Count > 0)
+                    {
+                        <li class="nav-item nav-dropdown">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                @ModuleBo.GetTypeName(ModuleBo.TypeMaintenance)
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                @foreach (ModuleBo moduleBo in maintenanceModules)
+                                {
+                                    var valid = false;
+                                    foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                    {
+                                        var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                        if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!valid)
+                                    {
+                                        continue;
+                                    }
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                            @moduleBo.Name
+                                        </a>
+                                    </li>
+                                }
+
+                                @if (groupMaintenanceModules.Count > 0)
+                                {
+                                    <li class="nav-item nav-dropdown">
+                                        <a class="nav-link nav-dropdown-toggle" href="#">
+                                            @ModuleBo.GetTypeName(ModuleBo.TypeGroupMaintenance)
+                                        </a>
+                                        <ul class="nav-dropdown-items">
+                                            @foreach (ModuleBo moduleBo in groupMaintenanceModules)
+                                            {
+                                                var valid = false;
+                                                foreach (UserAccessGroupBo userAccessGroupBo in authUserBo.UserAccessGroupBos)
+                                                {
+                                                    var accessMatrixBo = AccessMatrixService.Find(moduleBo.Id, userAccessGroupBo.AccessGroupId);
+                                                    if (accessMatrixBo != null && accessMatrixBo.IsPowerExists("R"))
+                                                    {
+                                                        valid = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!valid)
+                                                {
+                                                    continue;
+                                                }
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="@Url.Action("Index", moduleBo.Controller)">
+                                                        @moduleBo.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
+    }
+</ul>

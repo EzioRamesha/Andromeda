@@ -1,0 +1,136 @@
+﻿@model WebApp.Models.Mfrs17CellMappingViewModel
+
+@{
+    ViewBag.Title = "MFRS17 Cell Mapping";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyCode)</td>
+                            <td>
+                                @Shared.Util.GetTruncatedValue(Model.TreatyCode)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffDatePolStartDate)</td>
+                            <td>
+                                @if (Model.ReinsEffDatePolStartDate != null)
+                                {
+                                    @Model.ReinsEffDatePolStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffDatePolEndDate)</td>
+                            <td>
+                                @if (Model.ReinsEffDatePolEndDate != null)
+                                {
+                                    @Model.ReinsEffDatePolEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsBasisCodePickListDetailId)</td>
+                            <td>
+                                @if (Model.ReinsBasisCodePickListDetailBo != null)
+                                {
+                                    @Model.ReinsBasisCodePickListDetailBo.Code
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.CedingPlanCode)</td>
+                            <td>@Shared.Util.GetTruncatedValue(Model.CedingPlanCode)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.BenefitCode)</td>
+                            <td>@Shared.Util.GetTruncatedValue(Model.BenefitCode)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ProfitCommPickListDetailId)</td>
+                            <td>
+                                @if (Model.ProfitCommPickListDetailBo != null)
+                                {
+                                    @Model.ProfitCommPickListDetailBo.Code
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RateTable)</td>
+                            <td>@Html.DisplayFor(model => model.RateTable)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.BasicRiderPickListDetailId)</td>
+                            <td>
+                                @if (Model.BasicRiderPickListDetailBo != null)
+                                {
+                                    @Model.BasicRiderPickListDetailBo.Code
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.CellName)</td>
+                            <td>@Html.DisplayFor(model => model.CellName)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.Mfrs17ContractCodeDetailId)</td>
+                            <td>
+                                @if (Model.Mfrs17ContractCodeDetailBo != null)
+                                {
+                                    @Model.Mfrs17ContractCodeDetailBo.ContractCode
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.LoaCode)</td>
+                            <td>@Html.DisplayFor(model => model.LoaCode)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

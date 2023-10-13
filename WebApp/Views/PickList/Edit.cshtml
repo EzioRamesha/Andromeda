@@ -1,0 +1,338 @@
+﻿@model WebApp.Models.PickListViewModel
+
+@{
+    ViewBag.Title = "Pick List";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="alert alert-danger" id="errorRecordInUsed" style="display: none;"></div>
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+
+                @Html.HiddenFor(model => model.Id)
+                @Html.HiddenFor(model => model.StandardOutputId)
+                @Html.HiddenFor(model => model.IsEditable)
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.DepartmentId, "Department", htmlAttributes: new { @class = "col-form-label" })
+                        @*<input type="text" readonly class="form-control" value="@ViewBag.DepartmentName">*@
+                        @if (!@ViewBag.IsEditableDept)
+                        {
+                            @Html.DropDownListFor(model => model.DepartmentId, (List<SelectListItem>)ViewBag.DropDownDepartments, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.DepartmentId, (List<SelectListItem>)ViewBag.DropDownDepartments, htmlAttributes: new { @class = "form-control selectpicker" })
+                        }
+                        @Html.HiddenFor(model => model.DepartmentId)
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.FieldName, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@Model.FieldName">
+                        @Html.HiddenFor(model => model.FieldName)
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.UsedBy, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@ViewBag.UsedByDepartments">
+                        @Html.ValidationMessageFor(model => model.UsedBy, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="text-right">
+                            <button type="button" v-on:click="addNewDetail" class="btn btn-add-sub mt-4" :disabled="!Editable">ADD NEW</button>
+                        </div>
+                        <input type="hidden" v-model="PickListDetailMaxIndex" name="pickListDetailMaxIndex" />
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">No</th>
+                                        <th style="display:none"></th>
+                                        <th><a style="cursor:pointer" v-on:click="sortDetail()">Code <span class="sub-label">(Max Length: @ViewBag.MaxLength)</span> <i v-if="sortAsc && !sortDesc" class="fas fa-sort-down"></i> <i v-if="!sortAsc && sortDesc" class="fas fa-sort-up"></i> <i v-if="!sortAsc && !sortDesc" class="fas fa-sort sub-label"></i></a></th>
+                                        <th>Description</th>
+                                        <th class="text-center">Sort</th>
+                                        @if (ViewBag.EnabledDelete && Model.IsEditable == true)
+                                        {
+                                            <th class="text-center">Action</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!Details.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(detail, index) in Details">
+                                        <td class="text-center">{{index+1}}</td>
+                                        <td style="display:none">
+                                            <input type="hidden" :name="'id[' + index + ']'" class="form-control" :value="detail.Id">
+                                        </td>
+                                        <td><input v-model="detail.Code" class="form-control" :name="'code[' + index + ']'" placeholder="Type here" maxlength="@ViewBag.MaxLength" :readonly="!Editable" /></td>
+                                        <td>
+                                            @*<input v-model="detail.Description" class="form-control" :name="'description[' + index + ']'" placeholder="Type here" />*@
+                                            <textarea rows="1" v-on:focus="autoExpandTextarea('description' + index)" v-on:blur="autoCollapseTextarea('description' + index)" v-model.lazy="detail.Description" class="form-control textarea-auto-expand" :id="'description' + index" :name="'description[' + index + ']'" placeholder="Type here" :readonly="!Editable"></textarea>
+                                        </td>
+                                        @if (@ViewBag.IsEditable)
+                                        {
+                                            <td class="text-center">
+                                                <button type="button" v-if="index != 0" v-on:click="upRank(detail, index)" class="btn bg-transparent border-0 btn-sort"><i class="fas fa-caret-up fa-lg"></i></button>
+                                                <button type="button" v-if="index == 0" class="btn bg-transparent border-0 btn-sort"><i class="sort-button-disabled fas fa-caret-up fa-lg"></i></button>
+                                                <button type="button" v-if="(Details.length - 1) != index" v-on:click="downRank(detail, index)" class="btn bg-transparent border-0 btn-sort"><i class="fas fa-caret-down fa-lg"></i></button>
+                                                <button type="button" v-if="(Details.length - 1) == index" class="btn bg-transparent border-0 btn-sort"><i class="sort-button-disabled fas fa-caret-down fa-lg"></i></button>
+                                            </td>
+                                        }
+                                        @if (ViewBag.EnabledDelete && @ViewBag.IsEditable)
+                                        {
+                                            <td class="text-center">
+                                                <a href="javascript:void(0);" v-on:click="openDeleteDetailModal(index)"><span class="fas fa-trash-alt" /></a>
+                                            </td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="deleteDetailModal" tabindex="-1" role="dialog" aria-labelledby="deleteDetailModal" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Delete Pick List's Code Confirmation</h5>
+                                    <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <span>Are you sure you want to delete Code {{DeleteDetailModal.code}} at row #{{DeleteDetailModal.row}}?</span>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                                    <button type="button" v-on:click="removeDetail()" class="btn btn-submit">CONFIRM</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right" :disabled="!Saveable">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var PickListId = @Model.Id;
+        var PickListDetailBos = @Html.Raw(Json.Encode(ViewBag.PickListDetailBos));
+        var ValidatePickListDetailDeleteUrl = "@(Url.Action("ValidatePickListDetailDelete"))";
+        @*var Editable =  @Html.Raw(Json.Encode(Model.IsEditable));*@
+        var Editable =  @Html.Raw(Json.Encode(ViewBag.IsEditable));
+        var Departments = @Html.Raw(Json.Encode(ViewBag.Departments));
+        var Saveable = @Html.Raw(Json.Encode(ViewBag.IsSaveable));
+
+        var usedByCount = 0;
+        var tokenfieldReady = {
+            usedBy: false,
+        };
+
+        $(document).ready(function () {
+            $('#UsedByTokenField')
+
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (usedByCount != 0) {
+                        $.each(existingTokens, function (index, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+
+                .on('tokenfield:createdtoken', function (e) {
+                    var valid = Departments.includes(e.attrs.value)
+                    if (!valid) {
+                        $(e.relatedTarget).addClass('invalid');
+                    }
+                    usedByCount += 1;
+                    $('#UsedByTokenField-tokenfield').removeAttr('placeholder');
+                })
+
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = Departments.includes(e.attrs.value)
+                    if (valid) {
+                        e.preventDefault();
+                    }
+                })
+
+                .on('tokenfield:removedtoken', function (e) {
+                    usedByCount -= 1;
+                    if (usedByCount == 0) {
+                        $("#UsedByTokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                })
+
+                .on('tokenfield:initialize', function (e) {
+                    tokenfieldReady.usedBy = true;
+                    Object.keys(tokenfieldReady).forEach(function (key) {
+                        if (tokenfieldReady[key] == false) {
+                            isReady = false;
+                        }
+                    });
+                })
+
+                .tokenfield({
+                    autocomplete: {
+                        source: Departments,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Details: PickListDetailBos,
+                SortIndex: 1,
+                PickListDetailMaxIndex: 0,
+                Editable: Editable,
+                sortAsc: false,
+                sortDesc: false,
+                DeleteDetailModal: {index: "", row: "", code: ""}
+            },
+            methods: {
+                addNewDetail: function () {
+                    this.Details.push({ SortIndex: this.SortIndex + 1 });
+                    this.PickListDetailMaxIndex += 1;
+                    this.SortIndex++;
+                },
+                upRank: function (detail, index) {
+                    if (index != 0) {
+                        let previous = this.Details[index - 1];
+                        this.$set(this.Details, index, previous);
+                        this.$set(this.Details, index - 1, detail);
+                    }
+                },
+                downRank: function (detail, index) {
+                    let size = this.Details.length;
+                    if ((size - 1) != index) {
+                        let next = this.Details[index + 1];
+                        this.$set(this.Details, index, next);
+                        this.$set(this.Details, index + 1, detail);
+                    }
+                },
+                openDeleteDetailModal: function (index) {
+                    this.DeleteDetailModal.index = index;
+                    this.DeleteDetailModal.row = index + 1;
+                    this.DeleteDetailModal.code = this.Details[index].code;
+
+                    $("#deleteDetailModal").modal()
+                },
+                removeDetail: function () {
+                    var index = this.DeleteDetailModal.index;
+                    var item = this.Details[index];
+                    var pickListDetails = this.Details;
+                    var updatedPickListDetailIndex = this.PickListDetailMaxIndex;
+                    if (item != null && item.Id != null && item.Id != 0) {
+                        $.ajax({
+                            url: ValidatePickListDetailDeleteUrl,
+                            type: "POST",
+                            data: { pickListId: PickListId, pickListDetailId: item.Id },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                var valid = data.valid;
+                                if (valid) {
+                                    pickListDetails.splice(index, 1);
+                                    updatedPickListDetailIndex -= 1;
+                                } else {
+                                    @*alert('The Pick List Detail "' + item.Code + '" In Use');*@
+                                    $("#errorRecordInUsed").css("display", "block");
+                                    $("#errorRecordInUsed").text('The Pick List\'s Code "' + item.Code + '" In Use');
+                                }
+                            }
+                        });
+                        this.PickListDetailMaxIndex = updatedPickListDetailIndex;
+                    } else {
+                        this.Details.splice(index, 1);
+                        this.PickListDetailMaxIndex -= 1;
+                        this.SortIndex--;
+                    }
+                    $("#deleteDetailModal").modal('hide');
+                },
+                autoExpandTextarea: function (id) {
+                    var tArea = $('#' + id);
+                    this.textAreaWidth = tArea.width();
+                    this.textAreaHeight = tArea.height();
+                    tArea.autoResize();
+                    tArea.trigger('keyup');
+
+                    tArea.on('keypress', function (evt) {
+                        var evt = (evt) ? evt : ((event) ? event : null);
+                        if (evt.keyCode == 13)
+                            return false;
+                    });
+                },
+                autoCollapseTextarea: function (id) {
+                    var tArea = $('#' + id);
+                    tArea.height(this.textAreaHeight);
+                },
+                sortDetail: function () {
+                    if ((!this.sortAsc && !this.sortDesc) || (!this.sortAsc && this.sortDesc)) {
+                        this.sortAsc = true;
+                        this.sortDesc = false;
+                        this.Details.sort((a, b) => a.Code.toLowerCase().localeCompare(b.Code.toLowerCase()));
+                    } else {
+                        this.sortAsc = false;
+                        this.sortDesc = true;
+                        this.Details.sort((a, b) => a.Code.toLowerCase().localeCompare(b.Code.toLowerCase())).reverse();
+                    }
+                }
+            },
+            created: function () {
+                this.PickListDetailMaxIndex = (this.Details) ? this.Details.length - 1 : -1;
+            },
+        });
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('#BenefitTypeTokenField').tokenfield('disable');
+                $('button').prop("disabled", true);
+            }
+        });
+    </script>
+}

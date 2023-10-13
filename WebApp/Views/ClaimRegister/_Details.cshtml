@@ -1,0 +1,136 @@
+﻿@model WebApp.Models.ClaimRegisterViewModel
+
+@Html.HiddenFor(model => model.IsClaim)
+
+<div class="form-row" style="margin-top: 50px;">
+    <div class="form-group col-md-12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="active underline-tab" data-toggle="tab" href="#generalTab">General</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#riDataTab">RI Data</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#financeProvisioningTab">Finance Provisioning</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarkTab">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#documentTab">Documents</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistoryTab">Status History</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelogTab">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            @Html.Partial("Shared/_GeneralTab")
+            @Html.Partial("Shared/_RiDataTab")
+            @Html.Partial("Shared/_FinanceProvisioningTab")
+
+            <div class="tab-pane fade" id="remarkTab" role="tabpanel" aria-labelledby="remark-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showFollowUp", true }, { "showPermission", true }, { "showDocuments", true }, { "dropdownRemarkStatus", ViewBag.DropDownClaimStatuses } })
+            </div>
+
+            <div class="tab-pane fade" id="documentTab" role="tabpanel" aria-labelledby="document-tab">
+                @Html.Partial("_Document", new ViewDataDictionary { { "showPermission", true }, { "hideDetail", true }, { "hideAddButton", true } })
+            </div>
+
+            @Html.Partial("Shared/_OtherTabs")
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="matchSoaDataModal" tabindex="-1" role="dialog" aria-labelledby="matchSoaDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Match SOA Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="matchSoaDataError" style="display:none;"></div>
+
+                <div class="table-responsive my-1" v-if="SoaDataBatches.length != 0">
+                    <table class="table table-hover">
+                        <thead style="width: unset">
+                            <tr>
+                                <th class="w-40">Ceding Company</th>
+                                <th class="w-40">Treaty ID</th>
+                                <th class="w-15">Quarter</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="SoaDataBatches.length == 0">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(soaData, index) in SoaDataBatches">
+                                <td>{{ soaData.CedantBo.Name }}</td>
+                                <td>{{ soaData.TreatyBo.TreatyIdCode }}</td>
+                                <td>{{ soaData.Quarter }}</td>
+                                <td><input type="radio" name="checkedSoadata" :value="index" :checked="soaData.Id == ClaimRegister.SoaDataBatchId"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn btn-submit" v-on:click="createSoaDataBatch()">AUTO CREATE</button>
+                <button type="button" class="btn btn-submit" v-on:click="selectSoaDataBatch()" :disabled="SoaDataBatches.length == 0">SELECT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    // Status
+    var ClaimStatusReported = @BusinessObject.ClaimRegisterBo.StatusReported;
+    var ProvisionStatusProvisioned = @BusinessObject.ClaimRegisterBo.ProvisionStatusProvisioned;
+    var ProvisionStatusPending = @BusinessObject.ClaimRegisterBo.ProvisionStatusPending;
+    var ProvisionStatusFailed = @BusinessObject.ClaimRegisterBo.ProvisionStatusFailed;
+    var ProvisionStatusPendingReprovision = @BusinessObject.ClaimRegisterBo.ProvisionStatusPendingReprovision;
+    var ProvisionStatusPendingReprocess = @BusinessObject.ClaimRegisterBo.ProvisionStatusPendingReprocess;
+    var DrProvisionStatusPending = @BusinessObject.ClaimRegisterBo.DrProvisionStatusPending;
+    var DrProvisionStatusSuccess = @BusinessObject.ClaimRegisterBo.DrProvisionStatusSuccess;
+    var DrProvisionStatusFailed = @BusinessObject.ClaimRegisterBo.DrProvisionStatusFailed;
+
+    // Url
+    var GetTreatyCodeByCedantUrl = '@Url.Action("GetByCedantCode", "TreatyCode")';
+    var GetDropDownTreatyCodeByCedantUrl = '@Url.Action("GetDropDownByCedantCode", "TreatyCode")';
+    var GetClaimDataConfigListUrl = '@Url.Action("GetClaimDataConfigByCedant")';
+    var SearchRIDataUrl = '@Url.Action("SearchFromClaimRegister", "RiDataWarehouse")';
+    var SearchClaimDataUrl = '@Url.Action("SearchOriginalClaimRegister")';
+    var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var SaveTempFileUrl = "@(Url.Action("Upload", "Document"))";
+    var UploadSaveDocumentUrl = "@(Url.Action("UploadSave", "Document"))";
+    var DeleteTempFileUrl = "@(Url.Action("Remove", "Document"))";
+    var AddUnderwritingRemarkUrl = "@(Url.Action("Create", "UnderwritingRemark"))";
+    var GetSoaDataBatchUrl = '@Url.Action("GetSoaDataBatchByStr", "SoaData")';
+    var CreateSoaDataBatchUrl = '@Url.Action("CreateSoaDataBatchByStr", "SoaData")';
+    var ViewSoaDataBatchUrl = "@(Url.Action("Edit", "SoaData"))";
+    var EditRiDataWarehouseUrl = "@(Url.Action("Edit", "RiDataWarehouse"))";
+
+    // List
+    var Months = @Html.Raw(Json.Encode(ViewBag.DropDownMonths));
+    var CedingBenefitTypeCodes = @Html.Raw(Json.Encode(ViewBag.DropDownCedingBenefitTypeCodes));
+    var DropDownBenefits = @Html.Raw(Json.Encode(ViewBag.DropDownBenefits));
+    var DropDownClaimCodes = @Html.Raw(Json.Encode(ViewBag.DropDownClaimCodes));
+    var DropDownTreatyCodes = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyCodes));
+    var DocumentTypeItems = @Html.Raw(Json.Encode(ViewBag.DropDownDocumentTypes));
+    var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+    var RelatedClaims = [];
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.Remarks));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+    var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+    var UserTrails = @Html.Raw(Json.Encode(ViewBag.UserTrails));
+    var FinanceProvisioningTransactions = @Html.Raw(Json.Encode(ViewBag.FinanceProvisioningTransactions));
+    var DirectRetroProvisioningTransactions = @Html.Raw(Json.Encode(ViewBag.DirectRetroProvisioningTransactions));
+    var UnderwritingRemarks = [];
+
+    // Others
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var TreatyCodeActive = '@BusinessObject.TreatyCodeBo.StatusActive';
+    var QuarterDateFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var DateFormat = "@Shared.Util.GetDateFormatMomentJs()";
+    var IsProvisioned = @(ViewBag.IsProvisioned != null ? ViewBag.IsProvisioned.ToString().ToLower() : "false");;
+    var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+</script>

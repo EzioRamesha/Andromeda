@@ -1,0 +1,165 @@
+﻿@model WebApp.Models.IndexViewModel
+@{
+    ViewBag.Title = "Account";
+
+    BusinessObject.Identity.UserBo user = ViewBag.UserProfile;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<a href="@Url.Action("Index", "Home")" class="btn btn-circle btn-circle-txt" title="Back">
+    <span id="backTxt">Back</span>
+</a>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Profile</h4>
+    </div>
+    <div class="card-body">
+        @*<p class="text-success">@ViewBag.StatusMessage</p>*@
+        <div class="form-horizontal">
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.Label("Username", htmlAttributes: new { @class = "col-form-label" })
+                    <input type="text" readonly class="form-control" value="@user.UserName">
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.Label("Email", htmlAttributes: new { @class = "col-form-label" })
+                    <input type="text" readonly class="form-control" value="@user.Email">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.Label("Employee Name", htmlAttributes: new { @class = "col-form-label" })
+                    <input type="text" readonly class="form-control" value="@user.FullName">
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.Label("Department", htmlAttributes: new { @class = "col-form-label" })
+                    <input type="text" readonly class="form-control" value="@user.DepartmentBo.Name">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.Label("Login Method", htmlAttributes: new { @class = "col-form-label" })
+                    <input type="text" readonly class="form-control" value="@BusinessObject.Identity.UserBo.GetLoginMethodName(user.LoginMethod)">
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.Label("Access Group", htmlAttributes: new { @class = "col-form-label" })
+                    @{
+                        string accessGroupName = "";
+                        if (user.UserAccessGroupBos != null && user.UserAccessGroupBos.Count > 0)
+                        {
+                            var i = 0;
+                            foreach (var uag in user.UserAccessGroupBos)
+                            {
+                                accessGroupName = (i != 0 ? ", " : "") + uag.AccessGroupBo.Name;
+                                i++;
+                            }
+                        }
+
+                        <input type="text" readonly class="form-control" value="@accessGroupName">
+                    }
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <dl class="row">
+                        <dt class="col-12">
+                            @Html.Label("Password", htmlAttributes: new { @class = "col-form-label", @style = "font-weight: 900;" })
+                        </dt>
+                        <dd class="col-12 settingLinks" style="margin-top: 10px;">
+                            @if (Model.HasPassword)
+                            {
+                                <u>@Html.ActionLink("Change your password", "ChangePassword")</u>
+                            }
+                            else
+                            {
+                                <u>@Html.ActionLink("Create", "SetPassword")</u>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div>
+            <dl class="row">
+                @*
+            <dt class="col-2">
+                External Logins:
+            </dt>
+                <dd class="col-10">
+                    @Model.Logins.Count
+                        [ @Html.ActionLink("Manage", "ManageLogins") ]
+                </dd>
+                *@
+
+                @*
+            Phone Numbers can used as a second factor of verification in a two-factor authentication system.
+
+             See <a href="https://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+                for details on setting up this ASP.NET application to support two-factor authentication using SMS.
+
+             Uncomment the following block after you have set up two-factor authentication
+                *@
+
+                @*
+            <dt class="col-2">Phone Number:</dt>
+            <dd class="col-10">
+                @(Model.PhoneNumber ?? "None")
+                @if (Model.PhoneNumber != null)
+                {
+                    <br />
+                    <text>[&nbsp;&nbsp;@Html.ActionLink("Change", "AddPhoneNumber")&nbsp;&nbsp;]</text>
+                    using (Html.BeginForm("RemovePhoneNumber", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <text>[<input type="submit" value="Remove" class="btn-link" />]</text>
+                    }
+                }
+                else
+                {
+                    <text>[&nbsp;&nbsp;@Html.ActionLink("Add", "AddPhoneNumber")
+                }
+            </dd>
+                *@
+
+                @*
+            <dt class="col-2">Two-Factor Authentication:</dt>
+            <dd class="col-10">
+                <p>
+                    There are no two-factor authentication providers configured. See <a href="https://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+                    for details on setting up this ASP.NET application to support two-factor authentication.
+                </p>
+                @if (Model.TwoFactor)
+                {
+                    using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <text>Enabled
+                        <input type="submit" value="Disable" class="btn btn-link" />
+                        </text>
+                    }
+                }
+                else
+                {
+                    using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <text>Disabled
+                        <input type="submit" value="Enable" class="btn btn-link" />
+                        </text>
+                    }
+                }
+            </dd>
+                *@
+            </dl>
+        </div>
+    </div>
+</div>
+
+<a href="@Url.Action("Index", "Home")" class="btn btn-circle btn-circle-txt" title="Back">
+    <span id="backTxt">Back</span>
+</a>

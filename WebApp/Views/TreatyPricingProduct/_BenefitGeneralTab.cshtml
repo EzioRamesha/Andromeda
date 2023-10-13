@@ -1,0 +1,151 @@
+﻿@model WebApp.Models.TreatyPricingProductViewModel
+
+<div class="table-responsive" style="overflow-x: auto; white-space: nowrap;">
+    <table class="table table-hover my-3 vertical-table" style="width:auto;" v-cloak>
+        <thead>
+            <tr>
+                <th v-for="(benefit, index) in Benefits" style="width: 25vw; position:relative;">
+                    {{ benefit.BenefitCode }}
+                    <a href="javascript:void(0);" v-on:click="removeBenefit(index)"><span class="fas fa-trash-alt" style="position:absolute; right: 20px; top: 9px;" /></a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td v-for="(benefit, index) in Benefits" style="width: 25vw;">
+                    <input v-model="benefit.Id" type="hidden" class="form-control">
+                    <input v-model="benefit.Code" type="hidden" class="form-control">
+                    <input v-model="benefit.BenefitId" type="hidden" class="form-control">
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Benefit Marketing Name</label>
+                        <input v-model="benefit.Name" class="form-control" placeholder="Type Here" v-on:change="changeBenefitName(index)">
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label required">Basic / Rider</label>
+                        <select v-model="benefit.BasicRiderPickListDetailId" class="form-control selectpicker" style="display:block;">
+                            <option v-for="basicRider in Mfrs17BasicRiders" :value="basicRider.Value">{{ basicRider.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label required">Payout Type</label>
+                        <select v-model="benefit.PayoutTypePickListDetailId" class="form-control selectpicker">
+                            <option v-for="payoutType in PayoutTypes" :value="payoutType.Value">{{ payoutType.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Rider Attachment Ratio</label>
+                        <input v-model="benefit.RiderAttachmentRatio" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label required">Age Basis</label>
+                        <select v-model="benefit.AgeBasisPickListDetailId" class="form-control selectpicker">
+                            <option v-for="ageBasis in AgeBasis" :value="ageBasis.Value">{{ ageBasis.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Minimum Entry Age</label>
+                        <input v-model="benefit.MinimumEntryAge" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Maximum Entry Age</label>
+                        <input v-model="benefit.MaximumEntryAge" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Maximum Expiry Age</label>
+                        <input v-model="benefit.MaximumExpiryAge" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Minimum Policy Term</label>
+                        <input v-model="benefit.MinimumPolicyTerm" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Maximum Policy Term</label>
+                        <input v-model="benefit.MaximumPolicyTerm" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Premium Paying Term</label>
+                        <input v-model="benefit.PremiumPayingTerm" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Minimum Sum Assured</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            <input v-model="benefit.MinimumSumAssured" class="form-control" placeholder="Type Here">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label required">Maximum Sum Assured</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            <input v-model="benefit.MaximumSumAssured" class="form-control" placeholder="Type Here">
+                        </div>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Underwriting Limit</label>
+                        <select v-model="benefit.TreatyPricingUwLimitSelect" class="form-control selectpicker">
+                            <option v-for="uwLimit in UnderwritingLimits" :value="uwLimit.Value">{{ uwLimit.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Others</label>
+                        <input v-model="benefit.Others" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Claim Approval Limit</label>
+                        <select v-model="benefit.TreatyPricingClaimApprovalLimitSelect" class="form-control selectpicker">
+                            <option v-for="claimApprovalLimit in ClaimApprovalLimits" :value="claimApprovalLimit.Value">{{ claimApprovalLimit.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">If Others</label>
+                        <input v-model="benefit.IfOthers1" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Benefit Definitions and Exclusions</label>
+                        <select v-model="benefit.TreatyPricingDefinitionAndExclusionSelect" class="form-control selectpicker">
+                            <option v-for="definitionExclusion in DefinitionExclusions" :value="definitionExclusion.Value">{{ definitionExclusion.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">If Others</label>
+                        <input v-model="benefit.IfOthers2" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Refund of Premium</label>
+                        <textarea v-model="benefit.RefundOfPremium" class="form-control textarea-auto-expand" placeholder="Type Here" rows="1"></textarea>
+                        @*<input v-model="benefit.RefundOfPremium" class="form-control" placeholder="Type Here">*@
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Pre-Existing Conditions</label>
+                        <textarea v-model="benefit.PreExistingCondition" class="form-control textarea-auto-expand" placeholder="Type Here" rows="1"></textarea>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

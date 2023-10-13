@@ -1,0 +1,221 @@
+﻿@using Shared.Forms.Helpers
+@model WebApp.Models.TreatyPricingCustomOtherViewModel
+
+@{
+    ViewBag.Title = "Custom / Other";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index", "TreatyPricingCedant");
+
+    ViewBag.PrevTitle = "Cedant";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", "TreatyPricingCedant", new { id = Model.TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexCustomOther });
+
+    RouteValueDictionary routeValue = new RouteValueDictionary()
+    {
+        ["Id"] = Model.Id,
+        ["versionId"] = ViewBag.VersionId,
+        ["isCalledFromWorkflow"] = ViewBag.IsCalledFromWorkflow,
+        ["isQuotationWorkflow"] = ViewBag.IsQuotationWorkflow,
+        ["workflowId"] = Model.WorkflowId,
+    };
+
+    var disableVersionSelect = ViewBag.IsHideSideBar != null ? bool.Parse(ViewBag.IsHideSideBar.ToString().ToLower()) : false;
+
+    string cancelController = "TreatyPricingCedant";
+    object cancelRouteValues = new { id = Model.TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexCustomOther };
+
+    if (ViewBag.IsCalledFromWorkflow)
+    {
+        cancelRouteValues = new { id = Model.WorkflowId };
+        cancelController = ViewBag.IsQuotationWorkflow ? "TreatyPricingQuotationWorkflow" : "TreatyPricingTreatyWorkflow";
+    }
+}
+
+@if (ViewBag.IsCalledFromWorkflow == false)
+{
+    @section breadcrumb
+    {
+        @Html.Partial("_Breadcrumb")
+    }
+
+    @Html.Partial("_BackToList")
+}
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.TreatyPricing.TreatyPricingCustomOtherBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.TreatyPricing.TreatyPricingCustomOtherBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_ObjectLockEditButton")
+
+        @*@using (Html.BeginForm(Html.BeginForm()))*@
+        @using (Html.BeginForm("Edit", "TreatyPricingCustomOther", new
+        {
+            Id = Model.Id,
+            versionId = ViewBag.VersionId,
+            isCalledFromWorkflow = ViewBag.IsCalledFromWorkflow,
+            isQuotationWorkflow = ViewBag.IsQuotationWorkflow,
+            workflowId = Model.WorkflowId
+        }, FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.TreatyPricingCedantId)
+            @Html.HiddenFor(model => model.Errors)
+            @Html.HiddenFor(model => model.EditableVersion)
+            @Html.HiddenFor(model => model.FileName)
+            @Html.HiddenFor(model => model.HashFileName)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Status, new List<SelectListItem> {
+                                                                                    new SelectListItem { Text = "Nothing selected", Value = "", Selected = true},
+                                                                                    new SelectListItem { Text = "Active", Value = "1" },
+                                                                                    new SelectListItem { Text = "Inactive", Value = "2" }}, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @placeholder = "Type Here" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @if (ViewBag.IsCalledFromWorkflow == false)
+                        {
+                            @Html.ActionLink("CANCEL", "Edit", "TreatyPricingCedant", new { id = Model.TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexCustomOther }, new { @class = "btn btn-cancel" })
+                        }
+                        else if (ViewBag.IsQuotationWorkflow == true)
+                        {
+                            @Html.ActionLink("CANCEL", "Edit", "TreatyPricingQuotationWorkflow", new { id = Model.WorkflowId }, new { @class = "btn btn-cancel" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("CANCEL", "Edit", "TreatyPricingTreatyWorkflow", new { id = Model.WorkflowId }, new { @class = "btn btn-cancel" })
+                        }
+                        @if (ViewBag.IsEditMode ?? false)
+                        {
+                            <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-submit prevent-disable float-right edit-mode-btn" onclick="enterEditMode()">EDIT</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (ViewBag.IsCalledFromWorkflow == false)
+{
+    @Html.Partial("_BackToList")
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        // Model
+        var Model = @Html.Raw(Json.Encode(Model));
+
+        // Url
+        var CreateVersionUrl = "@(Url.Action("CreateVersion", "TreatyPricingCustomOther"))";
+        var DownloadFileUrl = "@(Url.Action("DownloadFile", "TreatyPricingCustomOther"))";
+        var ProductsUrl = '@Url.Action("GetProductData")';
+
+        //Remarks
+        var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+        var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+
+        // List
+        var CustomOtherProducts = @Html.Raw(Json.Encode(ViewBag.CustomOtherProducts));
+        var CampaignTypeCodes = @Html.Raw(Json.Encode(ViewBag.CampaignTypeCodes));
+        var TargetSegmentCodes = @Html.Raw(Json.Encode(ViewBag.TargetSegmentCodes));
+        var DistributionChannelCodes = @Html.Raw(Json.Encode(ViewBag.DistributionChannelCodes));
+        var UnderwritingMethodCodes = @Html.Raw(Json.Encode(ViewBag.UnderwritingMethodCodes));
+        var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var DropDownProductTypes = @Html.Raw(Json.Encode(ViewBag.DropDownProductTypes));
+        var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.TreatyPricingCustomOther.ToString()';
+        var DropDownProducts = @Html.Raw(Json.Encode(ViewBag.DropDownProducts));
+        var DropDownProductQuotations = @Html.Raw(Json.Encode(ViewBag.DropDownProductQuotations));
+        var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+        var Changelogs = @Html.Raw(Json.Encode(ViewBag.ObjectVersionChangelogs));
+
+
+        // Others
+        var AuthUserId = "@ViewBag.PersonInChargeId";
+        var AuthUserName = "@ViewBag.PersonInChargeName";
+        var selDiv = "";
+        var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+
+        document.addEventListener("DOMContentLoaded", init, false);
+
+        function init() {
+            var control = document.querySelector('#files');
+            if (control) {
+                document.querySelector('#files').addEventListener('change', handleFileSelect, false);
+                selDiv = document.querySelector(".reuploadFile#selectedFiles");
+            }
+        }
+
+        function handleFileSelect(e) {
+            if (!e.target.files) return;
+            selDiv.innerHTML = "";
+            var files = e.target.files;
+            var list = "";
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+
+                var fileSize = f.size / 1024 / 1024 / 1024; // in GB
+                if (fileSize >= 2) {
+                    $("#errorSizeExceeds").css("display", "block");
+                    $("#errorSizeExceeds").text('Maximum allowed size is : 2 GB');
+                    //reset file upload control
+                    e.target.value = null;
+                    return;
+                } else {
+                    $("#errorSizeExceeds").css("display", "none");
+                }
+
+                list += "<li>" + f.name + "</li>";
+            }
+            selDiv.innerHTML = "<ul>" + list + "</ul>";
+        }
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingCustomOther.js")
+    @Scripts.Render("~/Scripts/models/LinkTreatyPricingProduct.js")
+    @Scripts.Render("~/Scripts/models/Versioning.js")
+    @Scripts.Render("~/Scripts/models/ObjectLock.js")
+}

@@ -1,0 +1,105 @@
+﻿@model WebApp.Models.TreatyPricingProductViewModel
+
+<div class="table-responsive" style="overflow-x: auto; white-space: nowrap;">
+    <table class="table table-hover my-3 vertical-table" style="width:auto;" v-cloak>
+        <thead>
+            <tr>
+                <th v-for="(benefit, index) in Benefits" style="width: 25vw; position:relative;">
+                    {{ benefit.BenefitCode }}
+                    <a href="javascript:void(0);" v-on:click="removeBenefit(index)"><span class="fas fa-trash-alt" style="position:absolute; right: 20px; top: 9px;" /></a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td v-for="(benefit, index) in Benefits" style="width: 25vw;">
+                    <div class="form-group">
+                        <label class="col-form-label">Benefit Marketing Name</label>
+                        <input v-model="benefit.Name" class="form-control force-disable" placeholder="Type Here" disabled>
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Basic / Rider</label>
+                        <select v-model="benefit.BasicRiderPickListDetailId" class="form-control force-disable" style="display:block;" disabled>
+                            <option v-for="basicRider in Mfrs17BasicRiders" :value="basicRider.Value">{{ basicRider.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Inward Retro Party</label>
+                        <input v-model="benefit.InwardRetroParty" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group group-block-select">
+                        <label class="col-form-label">Reinsurance Type of Arrangement</label>
+                        <select v-model="benefit.InwardRetroArrangementReinsuranceTypePickListDetailId" class="form-control selectpicker">
+                            <option v-for="reinsuranceType in ArrangementReinsuranceTypes" :value="reinsuranceType.Value">{{ reinsuranceType.Text }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Inward Retro's Retention</label>
+                        <input v-model="benefit.InwardRetroRetention" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">MLRe's Share</label>
+                        <input v-model="benefit.MlreShare" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Retrocession's Profit Commission</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" :id="'isRetrocessionProfitCommission_' + index" type="checkbox" v-model="benefit.IsRetrocessionProfitCommission" />
+                                <label class="custom-control-label" :for="'isRetrocessionProfitCommission_' + index">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Retrocession's Advantage Program</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" :id="'isRetrocessionAdvantageProgram_' + index" type="checkbox" v-model="benefit.IsRetrocessionAdvantageProgram" />
+                                <label class="custom-control-label" :for="'isRetrocessionAdvantageProgram_' + index">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Retrocession Rate Table</label>
+                        <input v-model="benefit.RetrocessionRateTable" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Rate Guarantee for New Business</label>
+                        <input v-model="benefit.NewBusinessRateGuarantee" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Rate Guarantee for Renewal Business</label>
+                        <input v-model="benefit.RenewalBusinessRateGuarantee" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Retrocession Discount</label>
+                        <input v-model="benefit.RetrocessionDiscount" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Additional Discount</label>
+                        <input v-model="benefit.AdditionalDiscount" class="form-control" placeholder="Type Here">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Additional Loading</label>
+                        <input v-model="benefit.AdditionalLoading" class="form-control" placeholder="Type Here">
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,366 @@
+﻿
+
+<div class="table-responsive" style="min-height: 310px;">
+    <table class="table table-hover my-3" id="changelogList">
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Created Date & Time</th>
+                <th>Created By</th>
+                <th>Linked Workflow</th>
+                <th>Document Type</th>
+                <th>Status</th>
+                <th class="text-center">Action</th>
+            </tr>
+            <tr id="changelogFilterRow">
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="changelogFilter-Version">
+                        <option value="null">Please select</option>
+                        @foreach (SelectListItem item in ViewBag.DropDownVersions)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th>
+                    <input id="changelogFilter-CreatedAt" class="form-control prevent-disable" placeholder="DD MM YYYY" onclick="openDatePicker('changelogFilter-CreatedAt')" />
+                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('changelogFilter-CreatedAt')" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="changelogFilter-CreatedBy" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="changelogFilter-LinkedWorkflow" />
+                </th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="changelogFilter-DocumentType">
+                        @foreach (SelectListItem item in ViewBag.DropDownWorkflowObjectTypes)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="changelogFilter-Status">
+                        @foreach (SelectListItem item in ViewBag.DropDownWorkflowStatus)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th class="text-center align-middle">
+                    <div class="btn-row-action">
+                        <button type="button" title="Clear" class="btn-circle prevent-disable"><span class="fas fa-backspace" onclick="clearTableFilters('Changelogs', 'changelog')" /></button>
+                        <button type="button" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" onclick="filterTable('Changelogs', 'changelog')" /></button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!Changelogs.length">
+                <td colspan="7" class="no-data">No available data found.</td>
+            </tr>
+            <tr id="changelogNoData" style="display: none;">
+                <td colspan="7" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(changelog, index) in Changelogs">
+                <td>{{ changelog.VersionStr }}</td>
+                <td>{{ changelog.CreatedAtStr }}</td>
+                <td>{{ changelog.CreatedByName }}</td>
+                <td>
+                    <span v-if="!changelog.WorkflowObjectBo">
+                        <a href="#" :onclick="'resetLinkWorkflowModal(' + index + ')'" class="linkbtn"><i class="fas fa-link"></i> Link to Workflow</a>
+                    </span>
+                    <span v-if="changelog.WorkflowObjectBo">
+                        <a href="#" :onclick="'editWorkflow(' + index + ')'" class="linkbtn">{{ changelog.WorkflowObjectBo.WorkflowCode }}</a> |
+                        <a href="#" :onclick="'unlinkWorkflow(' + index + ')'" class="linkbtn"><i class="fas fa-unlink"></i> Unlink</a>
+                    </span>
+                </td>
+                <td>
+                    <span v-if="changelog.WorkflowObjectBo">{{ changelog.WorkflowObjectBo.TypeName }}</span>
+                </td>
+                <td>
+                    <span v-if="changelog.WorkflowObjectBo">{{ changelog.WorkflowObjectBo.WorkflowStatus }}</span>
+                </td>
+                <td class="text-center">
+                    <a href="javascript:void(0);" v-on:click="viewChangelog(index)"><span class="fas fa-eye" /></a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="changelogModal" tabindex="-1" role="dialog" aria-labelledby="changelogModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document" style="max-height: 80vh;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Changelog</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mt-2">
+                    <li class="nav-item"><a data-toggle="tab" href="#withinVersionTab" class="active underline-tab">Within Version</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#betweenVersionTab">Between Version</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="withinVersionTab" role="tabpanel" aria-labelledby="withinVersion-tab">
+                        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th class="w-20">Created Date & Time</th>
+                                        <th class="w-20">Created By</th>
+                                        <th class="w-50"></th>
+                                        <th class="w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(trail, index) in Trails">
+                                        <td>{{ trail.CreatedAtStr }}</td>
+                                        <td>{{ trail.CreatedByBo.FullName }}</td>
+                                        <td>
+                                            <pre class="jsonView" :id="'showAll_' + index" style="display: none;color: #01509F"><code>{{ trail.Data }}</code></pre>
+                                            <span :id="'showLess_' + index">{ ... }</span>
+                                        </td>
+                                        <td>
+                                            <a href="javascript:void(0);" v-on:click="toggleChangelogDataView(index)">
+                                                <span class="far fa-plus-square" :id="'showAllBtn_' + index"> Expand All</span>
+                                                <span class="far fa-minus-square" :id="'collapseAllBtn_' + index" style="display:none;"> Collapse All</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="betweenVersionTab" role="tabpanel" aria-labelledby="betweenVersion-tab">
+                        <div class="pl-3 py-1" style="background-color: #F3F8FE; max-height: 60vh; overflow-y: auto;">
+                            <pre class="jsonView" style="color: #01509F"><code>{{ VersionTrail }}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit prevent-disable" data-dismiss="modal">CLOSE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="linkWorkflowModal" tabindex="-1" role="dialog" aria-labelledby="linkWorkflowModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-height: 80vh;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Link to Workflow</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="linkWorkflowError" style="display:none;"></div>
+
+                <input type="hidden" id="changelogIndex" />
+                <span class="font-weight-bold">Search</span>
+                <div class="form-group">
+                    <label class="col-form-label">Document Type</label>
+                    <select class="form-control selectpicker" id="workflowDocumentType">
+                        <option value="null">Please Select</option>
+                        <option value="@BusinessObject.TreatyPricing.TreatyPricingWorkflowObjectBo.TypeQuotation">Quotation</option>
+                        <option value="@BusinessObject.TreatyPricing.TreatyPricingWorkflowObjectBo.TypeTreaty">Treaty</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="col-form-label">Document No</label>
+                    <input type="text" class="form-control" id="workflowDocumentNo" placeholder="Type Here">
+                </div>
+                <button type="button" class="btn btn-submit float-right" onclick="searchWorkflow()">SEARCH</button>
+
+
+                <div style="margin-top: 65px">
+                    <span class="font-weight-bold">Search Result</span>
+                    <div class="table-responsive mb-0" style="max-height: 60vh; overflow-y: auto;">
+                        <table class="table table-hover my-3" id="searchWorkflowTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-40">Document No</th>
+                                    <th class="w-40">Document Type</th>
+                                    <th class="w-20 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit" onclick="selectWorkflow()">SELECT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var SearchWorkflowUrl = "@Url.Action("Search", "TreatyPricingWorkflowObject")";
+    var CreateWorkflowObjectUrl = "@Url.Action("Create", "TreatyPricingWorkflowObject")";
+    var DeleteWorkflowObjectUrl = "@Url.Action("Delete", "TreatyPricingWorkflowObject")";
+    var WorkflowObjectType = @ViewBag.WorkflowObjectType;
+    var WorkflowObjects = [];
+
+    function editWorkflow(index) {
+        var workflowObject = app.Changelogs[index].WorkflowObjectBo;
+        var url = '/TreatyPricing' + workflowObject.TypeName + 'Workflow/Edit/' + workflowObject.WorkflowId;
+
+        window.open(url, '_blank');
+
+        return false;
+    }
+
+    function unlinkWorkflow(index) {
+        var workflowObject = app.Changelogs[index].WorkflowObjectBo;
+        var id = workflowObject.Id;
+
+        $.ajax({
+            url: DeleteWorkflowObjectUrl,
+            type: "POST",
+            cache: false,
+            async: false,
+            data: { id },
+        });
+
+        if (workflowObject.ObjectType == 8) {
+            app.updateWorkflowData(workflowObject);
+        }
+
+        app.Changelogs[index].WorkflowObjectBo = null;
+
+        return false;
+    }
+
+    function resetLinkWorkflowError() {
+        $('#linkWorkflowError').empty();
+        $('#linkWorkflowError').hide();
+    }
+
+    function searchWorkflow() {
+        resetLinkWorkflowError();
+
+        $("#searchWorkflowTable tbody tr").remove();
+        var documentType = $('#workflowDocumentType').val();
+        var documentNo = $('#workflowDocumentNo').val();
+
+        var changelogIndex = $('#changelogIndex').val();
+        var changelog = app.Changelogs[changelogIndex];
+
+        var workflowObjectBo = {
+            Type: documentType,
+            WorkflowCode: documentNo,
+            ObjectType: WorkflowObjectType,
+            ObjectId: Model.Id,
+            ObjectVersionId: changelog.ObjectVersionId
+        };
+
+        WorkflowObjects = [];
+        $.ajax({
+            url: SearchWorkflowUrl,
+            type: "POST",
+            data: workflowObjectBo,
+            cache: false,
+            async: false,
+            success: function (data) {
+                if (data.errors.length > 0) {
+                    $('#linkWorkflowError').append(arrayToUnorderedList(data.errors));
+                    $('#linkWorkflowError').show();
+                } else {
+                    WorkflowObjects = data.workflowObjectBos;
+                }
+            }
+        });
+
+        if (WorkflowObjects.length == 0) {
+            showNoWorkflowFound();
+        }
+
+        WorkflowObjects.forEach(function (workflowObject) {
+            var row = '<tr>';
+            row += '<td>' + workflowObject.WorkflowCode + '</td>';
+            row += '<td>' + workflowObject.TypeName + '</td>';
+            row += '<td class="text-center"> <input type="radio" name="workflowObject" value="' + workflowObject.WorkflowId + '"></td>';
+            row += '</tr>';
+            $("#searchWorkflowTable tbody").append(row);
+        });
+    }
+
+    function validateSelectWorkflow() {
+        resetLinkWorkflowError();
+
+        var errors = [];
+
+        if (typeof $('input[name="workflowObject"]:checked').val() == 'undefined') {
+            errors.push("No workflow selected");
+        }
+
+        if (errors.length > 0) {
+            $('#linkWorkflowError').append(arrayToUnorderedList(errors));
+            $('#linkWorkflowError').show();
+        }
+
+        return errors.length == 0;
+    }
+
+    function selectWorkflow() {
+        if (!validateSelectWorkflow())
+            return;
+
+        var id = $('input[name="workflowObject"]:checked').val();
+        var workflowObjectBo = WorkflowObjects.find(w => w.WorkflowId == id);
+        var changelogIndex = $('#changelogIndex').val();
+
+        var workflowObject = null;
+        $.ajax({
+            url: CreateWorkflowObjectUrl,
+            type: "POST",
+            data: {
+                workflowObjectBo: workflowObjectBo,
+                loadObjectDetails: false,
+                loadWorkflowDetails: true
+            },
+            cache: false,
+            async: false,
+            success: function (data) {
+                workflowObject = data.bo;
+            }
+        });
+
+        if (workflowObject.ObjectType == 8) {
+            app.updateWorkflowData(workflowObject);
+        }
+        app.Changelogs[changelogIndex].WorkflowObjectBo = workflowObject;
+
+        $('#linkWorkflowModal').modal('hide');
+    }
+
+    function resetLinkWorkflowModal(index) {
+        if (ReadOnly)
+            return;
+
+        $('#changelogIndex').val(index);
+        $('#workflowDocumentType').val(null);
+        $('#workflowDocumentType').selectpicker('refresh');
+        $('#workflowDocumentNo').val('');
+
+        resetLinkWorkflowError();
+        showNoWorkflowFound();
+
+        $('#linkWorkflowModal').modal('show');
+    }
+
+    function showNoWorkflowFound() {
+        $("#searchWorkflowTable tbody tr").remove();
+        var row = '<tr><td colspan="3" class="no-data">No available data found.</td></tr>';
+        $("#searchWorkflowTable tbody").append(row);
+    }
+</script>

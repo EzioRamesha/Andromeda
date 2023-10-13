@@ -1,0 +1,129 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.SoaDataRetakafulViewModel>
+
+@{
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+<div id="SoaDataRetakafulList">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="w-10">COMPANY NAME</th>
+                    <th class="w-10">BUSINESS</th>
+                    <th class="w-10">TREATY ID</th>
+                    <th class="w-10">TREATY CODE</th>
+                    <th class="w-10">TREATY MODE</th>
+                    <th class="w-10">TREATY TYPE</th>
+                    <th class="w-10">PLAN / BLOCK</th>
+                    <th class="w-10">RISK MONTH</th>
+                    <th class="w-10">SOA QTR</th>
+                    <th class="w-10">RISK QTR</th>
+                    <th class="w-10">NB PREMIUM</th>
+                    <th class="w-10">RN PREMIUM</th>
+                    <th class="w-10">ALT PREMIUM</th>
+                    <th class="w-10">TOTAL DISCOUNT</th>
+                    <th class="w-10">CLAIM</th>
+                    <th class="w-10">NET TOTAL AMOUNT</th>
+                    <th class="w-10">SOA RECEIVED DATE</th>
+                    <th class="w-10">BORDEREAUX RECEIVED DATE</th>
+                    <th class="w-10">STATEMENT STATUS</th>
+                    <th class="w-10">REMARKS</th>
+                    <th class="w-10">MAPPING STATUS</th>
+                    <th class="w-35">ERROR</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.CompanyName</td>
+                            <td>@item.BusinessCode</td>
+                            <td>@item.TreatyId</td>
+                            <td>@item.TreatyCode</td>
+                            <td>@item.TreatyMode</td>
+                            <td>@item.TreatyType</td>
+                            <td>@item.PlanBlock</td>
+                            <td>@item.RiskMonth</td>
+                            <td>@item.SoaQuarter</td>
+                            <td>@item.RiskQuarter</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TotalDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.Claim)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NetTotalAmount)</td>
+                            <td>
+                                @if (item.SoaReceivedDate != null)
+                                {
+                                    @item.SoaReceivedDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.BordereauxReceivedDate != null)
+                                {
+                                    @item.BordereauxReceivedDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>@item.StatementStatus</td>
+                            <td>@item.Remarks1</td>
+                            <td>@BusinessObject.SoaDatas.SoaDataBo.GetMappingStatusName(item.MappingStatus)</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Error))
+                                {
+                                    <a href="#errorDataModal" data-toggle="modal" data-target="#errorDataModal" onclick="retrieveErrors(@item.Error)"><span class="fas fa-exclamation-triangle"></span></a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>TOTAL</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Sum(item => item.NbPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Sum(item => item.RnPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Sum(item => item.AltPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Sum(item => item.TotalDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Sum(item => item.Claim))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Sum(item => item.NetTotalAmount))</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="22" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-footer">
+        <div class="row">
+            <div class="col-md-4">
+                @Html.Partial("_PageInfo")
+            </div>
+            <div class="col-md-8" id="retakafulPager">
+                @Html.PagedListPager(Model, Page => Url.Action("SoaDataRetakaful", new { id = routeValue["Id"], Page, }), Shared.Html.GetPagedListRenderOptions())
+            </div>
+        </div>
+    </div>
+</div>

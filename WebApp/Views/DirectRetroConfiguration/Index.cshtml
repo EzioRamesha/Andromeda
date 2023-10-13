@@ -1,0 +1,137 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.DirectRetroConfigurationViewModel>
+
+@{
+    ViewBag.Title = "Direct Retro Configuration";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right  btn-row-inline">
+                <a href="@Url.Action("Create")" class="btn btn-add">
+                    ADD DIRECT RETRO CONFIGURATION
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-30">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortName;
+                                @Shared.Html.Sorter(ViewBag, "Name", "Name", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-30">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTreatyCodeId;
+                                @Shared.Html.Sorter(ViewBag, "Treaty Code", "TreatyCodeId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-35">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().RetroParty)
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "DirectRetroConfiguration", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.TextBox("Name", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("TreatyCodeId", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CedingPlanCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @if (item.TreatyCode != null)
+                                {
+                                    @item.TreatyCode.ToString()
+                                }
+                            </td>
+                            <td>
+                                @Shared.Util.GetTruncatedValue(item.RetroParty)
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fas fa-ellipsis-v dropbtn" />
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        Name = routeValue["Name"],
+                        TreatyCodeId = routeValue["TreatyCodeId"],
+                        RetroParty = routeValue["RetroParty"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

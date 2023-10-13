@@ -1,0 +1,59 @@
+﻿@model WebApp.Models.DiscountTableViewModel
+
+@{
+    ViewBag.Title = "Discount Table";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly != null && ViewBag.ReadOnly);
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "DiscountTable", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <br />
+                <br />
+
+                @Html.Partial("_DiscountTableDetails")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/models/DiscountTable.js")
+}

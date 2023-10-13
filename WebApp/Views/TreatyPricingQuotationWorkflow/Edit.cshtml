@@ -1,0 +1,433 @@
+﻿@using Shared.Forms.Helpers
+@model WebApp.Models.TreatyPricingQuotationWorkflowViewModel
+
+@{
+    ViewBag.Title = "Quotation Workflow";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+@Html.Partial("_LoadingSpinner")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+
+        @Html.Partial("_ObjectLockEditButton")
+
+        @using (Html.BeginForm("Edit", "TreatyPricingQuotationWorkflow", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.PricingStatus)
+            @Html.HiddenFor(model => model.EditableVersion)
+            @Html.HiddenFor(model => model.ModuleId)
+
+            <div class="form-horizontal">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.QuotationId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.QuotationId, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.ReinsuranceTypePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ReinsuranceTypePickListDetailId, (List<SelectListItem>)ViewBag.DropDownReinsuranceTypes, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.ReinsuranceTypePickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Summary, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Summary, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Summary, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label required">Quotation Status</label>
+                        @Html.EditorFor(model => model.StatusName, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.StatusName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.StatusRemarks, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.StatusRemarks, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.StatusRemarks, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.TargetSendDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.TargetSendDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TargetSendDateStr')" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('TargetSendDateStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.TargetSendDateStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.LatestRevisionDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.LatestRevisionDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('LatestRevisionDateStr')" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('LatestRevisionDateStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.LatestRevisionDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PricingTeamPickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.PricingTeamPickListDetailId, (List<SelectListItem>)ViewBag.DropDownPricingTeam, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "togglePricingTeam()" })
+                        @Html.ValidationMessageFor(model => model.PricingTeamPickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.PricingStatusName, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.PricingStatusName, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.PricingStatusName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.LatestVersion, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.LatestVersion, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CreatedAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.CreatedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { "readonly", "true" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('CreatedAtStr')" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.TargetClientReleaseDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.TargetClientReleaseDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TargetClientReleaseDateStr')" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('TargetClientReleaseDateStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.TargetClientReleaseDateStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TargetRateCompletionDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.TargetRateCompletionDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TargetRateCompletionDateStr')" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('TargetRateCompletionDateStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.TargetRateCompletionDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.FinaliseDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.FinaliseDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('FinaliseDateStr')" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('FinaliseDateStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.FinaliseDateStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "2" })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Version", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getVersionDetails(this.value)" })
+                            <div class="input-group-prepend">
+                                <button type="button" id="CreateVersionButton" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal">CREATE NEW VERSION</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @if (ViewBag.IsEditMode ?? false)
+                        {
+                            <button type="submit" id="SubmitButton" class="btn btn-submit float-right" v-on:click="saveChecklist()">SAVE</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-submit prevent-disable float-right edit-mode-btn" onclick="enterEditMode()">EDIT</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="modal fade" id="addQuotationWorkflowModal" tabindex="-1" role="dialog" aria-labelledby="addQuotationWorkflowModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="newQuotationError" style="display:none;"></div>
+
+                    <div class="form">
+                        <div class="form-group">
+                            <label class="col-form-label">Ceding Company</label>
+                            <select v-model="QuotationWorkflowModal.CedantCode" id="dropDownCedant" class="form-control selectpicker">
+                                <option v-for="cedant in DropDownCedant" :value="cedant.Value">
+                                    {{ cedant.Text }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Reinsurance Type</label>
+                            <select v-model="QuotationWorkflowModal.ReinsuranceTypePickListDetailId" id="dropDownReinsuranceType" class="form-control selectpicker">
+                                <option v-for="reinsuranceType in DropDownReinsuranceType" :value="reinsuranceType.Value">
+                                    {{ reinsuranceType.Text }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Quotation Name</label>
+                            <input type="text" class="form-control" v-model="QuotationWorkflowModal.Name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Description</label>
+                            <input type="text" class="form-control" v-model="QuotationWorkflowModal.Description">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Pricing Team</label>
+                            <select v-model="QuotationWorkflowModal.PricingTeamPickListDetailId" id="dropDownPricingTeam" class="form-control selectpicker">
+                                <option v-for="pricingTeam in DropDownPricingTeam" :value="pricingTeam.Value">
+                                    {{ pricingTeam.Text }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-add" v-on:click="resetLinkObjectModal()" data-toggle="modal" data-target="#addLinkedObjectModal">LINK OBJECT</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Object</th>
+                                        <th class="w-10">Object ID</th>
+                                        <th class="w-15">Object Name</th>
+                                        <th class="w-5">Version</th>
+                                        <th class="w-5 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!WorkflowObjects.length">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(objects, index) in WorkflowObjects">
+                                        <td>{{ objects.ObjectTypeName }}</td>
+                                        <td>{{ objects.ObjectCode }}</td>
+                                        <td>{{ objects.ObjectName }}</td>
+                                        <td>{{ objects.ObjectVersion }}</td>
+                                        <td class="text-center">
+                                            <a href="#" v-on:click="removeObject(objects.ObjectModuleId, objects.ObjectId, objects.ObjectVersionId);return false;">
+                                                <span class="fas fa-trash-alt" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                    <button v-on:click="saveQuotationWorkflow()" type="button" class="btn btn-submit">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newVersionModal" tabindex="-1" role="dialog" aria-labelledby="newVersionModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Version</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Previous Version</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="duplicatePreviousVersion" name="duplicatePreviousVersion" type="checkbox" v-model="RemarkModal.RemarkIsPrivate" />
+                                <label class="custom-control-label" for="duplicatePreviousVersion">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" onclick="createVersion(); resetVersionDetails();" class="btn btn-submit" data-dismiss="modal">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        //Model
+        var Model = @Html.Raw(Json.Encode(Model));
+
+        //Others
+        var TreatyPricingQuotationWorkflows = @Html.Raw(Json.Encode(ViewBag.TreatyPricingQuotationWorkflows));
+        var TreatyPricingWorkflowObjectBos = @Html.Raw(Json.Encode(Model.TreatyPricingWorkflowObjectBos));
+        var AuthUserId = "@ViewBag.PersonInChargeId";
+        var AuthUserName = "@ViewBag.PersonInChargeName";
+        var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+        var DocumentType = @BusinessObject.TreatyPricing.TreatyPricingWorkflowObjectBo.TypeQuotation;
+        var BaseUrl = "@ViewBag.BaseUrl";
+        var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+        var RecipientEmails = @Html.Raw(Json.Encode(ViewBag.RecipientEmails));
+        var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.TreatyPricingQuotationWorkflow.ToString()';
+
+        var loadingDiv = $("#loadingSpinner");
+
+        //Url
+        var CreateVersionUrl = "@(Url.Action("CreateVersion", "TreatyPricingQuotationWorkflow"))";
+        var AddQuotationWorkflowUrl = "@Url.Action("Add", "TreatyPricingQuotationWorkflow")";
+        var EditQuotationWorkflowUrl = "@Url.Action("Edit", "TreatyPricingQuotationWorkflow")?Id=";
+        var GetTreatyPricingObjectsUrl = "@Url.Action("GetTreatyPricingObjects", "TreatyPricingWorkflowObject")";
+        var GetTreatyPricingObjectVersionsUrl = "@Url.Action("GetTreatyPricingObjectVersions", "TreatyPricingWorkflowObject")";
+        var GenerateSharePointFileUrl = "@Url.Action("GenerateSharePointFile", "TreatyPricingQuotationWorkflow")";
+        var GenerateSharePointFileConfirmedUrl = "@Url.Action("GenerateSharePointFileConfirmed", "TreatyPricingQuotationWorkflow")";
+        var UploadFinalFileUrl = "@Url.Action("UploadFinalFile", "TreatyPricingQuotationWorkflow")";
+        var DownloadFinalFileUrl = "@Url.Action("DownloadFinalFile", "TreatyPricingQuotationWorkflow")";
+        var CreateStatusHistoryUrl = "@Url.Action("UpdateStatus", "TreatyPricingQuotationWorkflow")";
+        var GetStatusNameUrl = "@Url.Action("GetStatusName", "TreatyPricingQuotationWorkflow")";
+        var GetLatestVersionUrl = "@Url.Action("GetLatestVersion", "TreatyPricingQuotationWorkflow")";
+        var GetVersionDetailUrl = "@Url.Action("GetVersionDetails", "TreatyPricingQuotationWorkflow")";
+        var GetChecklistStatusNameUrl = "@Url.Action("GetChecklistStatusName", "TreatyPricingQuotationWorkflow")";
+        var NotifyQuotationChecklistUrl = "@Url.Action("NotifyQuotationChecklist", "TreatyPricingQuotationWorkflow")";
+        var UpdateChecklistStatusUrl = "@Url.Action("UpdateChecklistStatus", "TreatyPricingQuotationWorkflow")";
+        var UpdateVersionChecklistFinalisedUrl = "@Url.Action("UpdateVersionChecklistFinalised", "TreatyPricingQuotationWorkflow")";
+        var GetPickListDetailCodeUrl = "@Url.Action("GetPickListDetailCode", "TreatyPricingQuotationWorkflow")";
+        var GetTreatyPricingCedantIdUrl = "@Url.Action("GetTreatyPricingCedantId", "TreatyPricingQuotationWorkflow") ";
+
+        //Dropdowns
+        var DropDownCedant = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var DropDownReinsuranceType = @Html.Raw(Json.Encode(ViewBag.DropDownReinsuranceTypes));
+        var DropDownPricingTeam = @Html.Raw(Json.Encode(ViewBag.DropDownPricingTeam));
+        var DropDownObjectModules = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingObjectModules));
+        var DropDownStatuses = @Html.Raw(Json.Encode(ViewBag.StatusItems));
+        var DropDownPricingStatuses = @Html.Raw(Json.Encode(ViewBag.PricingStatusItems));
+        var DropDownPersonInChargePPT = @Html.Raw(Json.Encode(ViewBag.PersonInChargePPT));
+        var DropDownPersonInChargeGroupPricing = @Html.Raw(Json.Encode(ViewBag.PersonInChargeGroupPricing));
+
+        //Remarks
+        var QuotationRemarks = @Html.Raw(Json.Encode(ViewBag.QuotationRemarkBos));
+        var PricingRemarks = @Html.Raw(Json.Encode(ViewBag.PricingRemarkBos));
+        var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+
+        // Status Histories
+        var StatusHistories = @Html.Raw(Json.Encode(ViewBag.StatusHistoryBos));
+        var PricingStatusHistories = @Html.Raw(Json.Encode(ViewBag.PricingStatusHistoryBos));
+        var ChecklistStatusHistories = @Html.Raw(Json.Encode(ViewBag.ChecklistStatusHistoryBos));
+
+        // User tokens
+        var UsersCEO = @Html.Raw(Json.Encode(ViewBag.UsersCEO));
+        var UsersPricing = @Html.Raw(Json.Encode(ViewBag.UsersPricing));
+        var UsersUnderwriting = @Html.Raw(Json.Encode(ViewBag.UsersUnderwriting));
+        var UsersHealth = @Html.Raw(Json.Encode(ViewBag.UsersHealth));
+        var UsersClaims = @Html.Raw(Json.Encode(ViewBag.UsersClaims));
+        var UsersBD = @Html.Raw(Json.Encode(ViewBag.UsersBD));
+        var UsersTG = @Html.Raw(Json.Encode(ViewBag.UsersTG));
+
+        // Checklist statuses
+        var StatusNotRequired = @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusNotRequired;
+        var StatusRequested = @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusRequested;
+        var StatusCompleted = @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusCompleted;
+        var StatusPendingSignOff = @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusPendingSignOff;
+        var StatusApproved = @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowVersionQuotationChecklistBo.StatusApproved;
+
+        @*$(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("textarea").prop("disabled", true);
+                $("select").not('#CurrentVersion').prop("disabled", true);
+                $('.selectpicker').selectpicker('refresh');
+
+                // Button
+                $('#CreateVersionButton').prop("disabled", true);
+                $('#SubmitButton').prop("disabled", true);
+
+                $("[name='__RequestVerificationToken']").prop("disabled", false);
+            }
+        });*@
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingQuotationWorkflow.js")
+    @Scripts.Render("~/Scripts/models/Versioning.js")
+    @Scripts.Render("~/Scripts/models/ObjectLock.js")
+}

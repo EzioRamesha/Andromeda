@@ -1,0 +1,100 @@
+﻿@using WebApp.Models
+@model WebApp.Models.InvoiceRegisterDetailViewModel
+
+@{
+    ViewBag.Title = "Invoice Register";
+    ViewBag.Action = "View";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.SoaDatas.SoaDataBatchBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.SoaDatas.SoaDataBatchBo.GetInvoiceStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover tableBodyScroll" id="dataFieldTable">
+                <thead>
+                    <tr>
+                        <th class="w-40"> Label </th>
+                        <th class="w-60"> Value </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            @Html.TextBox("SearchProperty", null, new { @class = "form-control form-control-sm w-50", @placeholder = "Type here", onkeyup = "toggleRowView()" })
+                        </th>
+                        <th>
+                            @Html.CheckBox("HasValue", htmlAttributes: new { onclick = "toggleRowView()" }) @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                        </th>
+                    </tr>
+                </thead>
+                <tbody style="max-height: 60vh">
+                    @foreach (var property in (Dictionary<string, string>)ViewBag.Values)
+                    {
+                        <tr>
+                            <td class="w-40">
+                                @property.Key
+                            </td>
+                            <td class="w-60">
+                                @property.Value
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+<script>
+    var values = @Html.Raw(Json.Encode(ViewBag.Values));
+
+    function toggleRowView() {
+        var search = $('#SearchProperty').val();
+        var filter = search.toUpperCase();
+        var hasValueOnly = $('#HasValue').prop("checked");
+
+        var table = document.getElementById("dataFieldTable");
+        var tr = table.getElementsByTagName("tr");
+
+        var i = 2;
+        for (var key of Object.keys(values)) {
+            var value = values[key];
+
+            if (hasValueOnly == true && value == null) {
+                tr[i].style.display = "none";
+            } else if (key.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+            i++;
+        }
+    }
+
+    function isEmpty(td) {
+        var value = td.innerText;
+        if (value === "" || $(td).text() === '')
+            return true;
+
+        return false;
+    }
+</script>

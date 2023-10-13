@@ -1,0 +1,85 @@
+﻿@model WebApp.Models.StandardOutputViewModel
+
+@{
+    ViewBag.Title = "Standard Output";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="hidden" name="Type" value=@Model.Type>
+                        <input type="text" readonly class="form-control" value="@BusinessObject.StandardOutputBo.GetCodeByType(Model.Type)">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.DataType, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="hidden" name="DataType" value=@Model.DataType>
+                        <input type="text" readonly class="form-control" value="@BusinessObject.StandardOutputBo.GetDataTypeName(Model.DataType)">
+                        @Html.ValidationMessageFor(model => model.DataType, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @if (Model.Type == BusinessObject.StandardOutputBo.TypeCustomField)
+                        {
+                            <input type="text" name="Name" readonly class="form-control" value=@Model.Name>
+                        }
+                        else
+                        {
+                            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        }
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        @if (Model.Type != BusinessObject.StandardOutputBo.TypeCustomField)
+                        {
+                            <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+            }
+        });
+    </script>
+}

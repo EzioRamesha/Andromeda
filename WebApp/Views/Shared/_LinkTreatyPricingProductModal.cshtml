@@ -1,0 +1,125 @@
+﻿@{
+    int colspan = 10;
+    bool hideCedingCompany = ViewData["hideCedingCompany"] != null ? bool.Parse(ViewData["hideCedingCompany"].ToString()) : false;
+    int defaultCedantId = ViewData["defaultCedantId"] != null ? int.Parse(ViewData["defaultCedantId"].ToString()) : 0;
+    string controllerName = ViewData["controllerName"] != null ? ViewData["controllerName"].ToString() : "";
+    string listName = ViewData["listName"] != null ? ViewData["listName"].ToString() : "";
+
+    if (hideCedingCompany)
+    {
+        colspan -= 1;
+    }
+}
+
+<div class="text-right mb-2">
+    <button type="button" id="linkProductModalBtn" class="btn btn-add-sub" data-toggle="modal" data-target="#linkProductModal" onclick="openLinkProductModal()">LINK PRODUCT</button>
+</div>
+
+<div class="modal fade" id="linkProductModal" tabindex="-1" role="dialog" aria-labelledby="linkProductModal" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Link Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow: auto;">
+                <div class="alert alert-danger" id="linkProductError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group pb-0">
+                        <span class="font-weight-bold">@Html.Label("Search", htmlAttributes: new { @class = "col-form-label" })</span>
+                    </div>
+                    @if (!hideCedingCompany)
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label">Ceding Company</label>
+                            @Html.DropDownList("lpTreatyPricingCedantId", (List<SelectListItem>)ViewData["DropDownTreatyPricingCedants"], htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+                    }
+                    else
+                    {
+                        @Html.Hidden("lpTreatyPricingCedantId")
+                    }
+                    <div class="form-group">
+                        <label class="col-form-label">Product Type</label>
+                        @Html.DropDownList("lpProductTypeId", (List<SelectListItem>)ViewData["DropDownProductTypes"], htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Target Segment <span class="sub-label">(Separated by Comma)</span></label>
+                        <input type="text" class="form-control" id="lpTargetSegments" placeholder="Type here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Distribution Channel <span class="sub-label">(Separated by Comma)</span></label>
+                        <input type="text" class="form-control" id="lpDistributionChannels" placeholder="Type here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Underwriting Method <span class="sub-label">(Separated by Comma)</span></label>
+                        <input type="text" class="form-control" id="lpUnderwritingMethods" placeholder="Type here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Product ID/Name</label>
+                        <input type="text" class="form-control" id="lpProductIdName" placeholder="Type here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Quotation Name</label>
+                        <input type="text" class="form-control" id="lpQuotationName" placeholder="Type here">
+                    </div>
+                    <div class="form-group text-right mt-4">
+                        <button onclick="searchProduct()" type="button" class="btn btn-submit">SEARCH</button>
+                    </div>
+
+                    <div class="form-group mt-2">
+                        <span class="font-weight-bold">@Html.Label("Search Result", htmlAttributes: new { @class = "col-form-label" })</span>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="linkProductTable">
+                                <thead>
+                                    <tr>
+                                        @if (!hideCedingCompany)
+                                        {
+                                            <th>Ceding Company</th>
+                                        }
+                                        <th>Product Type</th>
+                                        <th>Target Segment</th>
+                                        <th>Distribution Channel</th>
+                                        <th>Underwriting Method</th>
+                                        <th>Product ID</th>
+                                        <th>Product Name</th>
+                                        <th>Description</th>
+                                        <th>Quotation Name</th>
+                                        <th text-align="center">Action &nbsp; <input type="checkbox" id="chkAllLinkProduct" onclick="selectAllLinkProduct(this.checked)" /></th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel float-left" data-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn btn-submit" onclick="linkProducts()" id="linkProductBtn" disabled>SELECT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var SearchProductUrl = "@(Url.Action("Search", controllerName))";
+    var LinkProductUrl = "@(Url.Action("Add", controllerName))";
+    var UnlinkProductUrl = "@(Url.Action("Remove", controllerName))";
+    var EditProductUrl = "@(Url.Action("Edit", "TreatyPricingProduct"))";
+
+    var ColSpan = '@colspan.ToString()';
+    var DefaultTreatyPricingCedantId = '@defaultCedantId';
+    var VueProductListName = '@listName';
+    var HideCedingCompany = @hideCedingCompany.ToString().ToLower();
+
+    var TargetSegmentCodes = @Html.Raw(Json.Encode(ViewBag.TargetSegmentCodes));
+    var DistributionChannelCodes = @Html.Raw(Json.Encode(ViewBag.DistributionChannelCodes));
+    var UnderwritingMethodCodes = @Html.Raw(Json.Encode(ViewBag.UnderwritingMethodCodes));
+</script>

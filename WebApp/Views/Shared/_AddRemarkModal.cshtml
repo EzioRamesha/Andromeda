@@ -1,0 +1,156 @@
+﻿@{
+    bool showFollowUp = ViewData["showFollowUp"] != null ? bool.Parse(ViewData["showFollowUp"].ToString()) : false;
+    bool showPermission = ViewData["showPermission"] != null ? bool.Parse(ViewData["showPermission"].ToString()) : false;
+    bool showDocuments = ViewData["showDocuments"] != null ? bool.Parse(ViewData["showDocuments"].ToString()) : false;
+    bool showSubject = ViewData["showSubject"] != null ? bool.Parse(ViewData["showSubject"].ToString()) : false;
+}
+
+
+<div class="modal fade" id="remarkModal" tabindex="-1" role="dialog" aria-labelledby="remarkModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Remark</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addRemarkError" style="display:none;"></div>
+
+                <div class="form">
+                    @if (showPermission)
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label" for="remarkIsPrivate">Remarks Permission</label>
+                            <div class="row m-0 p-0">
+                                <div class="mr-2"> <p style="color: #004BA2;">Public</p> </div>
+                                <div class="custom-control custom-switch pl-2">
+                                    <input class="custom-control-input prevent-disable" id="remarkIsPrivate" name="remarkIsPrivate" type="checkbox" v-model="RemarkModal.RemarkIsPrivate" />
+                                    <label class="custom-control-label" for="remarkIsPrivate">Private</label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label" for="userName">Your Name</label>
+                            <input type="text" readonly class="form-control prevent-disable" id="userName" :value="RemarkModal.CreatedByName">
+                        </div>
+                    }
+
+                    @if (showSubject)
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label">Subject</label>
+                            <div class="input-group">
+                                <select id="subjectSelect" class="form-control selectpicker prevent-disable" v-model="RemarkModal.Subject">
+                                    <option v-for="subject in RemarkSubjects" :value="subject">{{ subject }}</option>
+                                </select>
+                                <input v-model="RemarkModal.Subject" id="subjectText" class="form-control prevent-disable" style="display: none;" placeholder="Type Here" />
+                                <div class="input-group-prepend">
+                                    <button type="button" class="input-group-text prevent-disable" v-on:click="toggleRemarkSubject()">
+                                        CREATE NEW
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="remarkContent">Please write your remark here</label>
+                        <textarea rows="1" v-on:focus="autoExpandTextarea('remarkContent')" v-on:blur="autoCollapseTextarea('remarkContent')" v-model="RemarkModal.Content" class="form-control textarea-auto-expand prevent-disable" id="remarkContent" placeholder="Type here"></textarea>
+                    </div>
+
+                    @if (showDocuments)
+                    {
+                        <hr />
+                        <span class="font-weight-bold">@Html.Label("Document", htmlAttributes: new { @class = "col-form-label" })</span>
+                        if (showPermission)
+                        {
+                            <div class="form-group">
+                                <label class="col-form-label" for="documentIsPrivate">File Permission</label>
+                                <div class="row m-0 p-0">
+                                    <div class="mr-2"> <p style="color: #004BA2;">Public</p> </div>
+                                    <div class="custom-control custom-switch pl-2">
+                                        <input class="custom-control-input prevent-disable" id="documentIsPrivate" name="documentIsPrivate" type="checkbox" v-model="RemarkModal.DocumentIsPrivate" />
+                                        <label class="custom-control-label" for="documentIsPrivate">Private</label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <label class="col-form-label">File Upload</label>
+                            <div class="file is-boxed">
+                                <label class="file-label">
+                                    <input class="form-control-file prevent-disable" type="file" id="remarkfiles" name="upload" multiple accept=".pdf,.docx,.xlsx,.xls,.jpg,.jpeg" onchange="uploadFile('remark')">
+                                    Drag and Drop File Here or <u>Browse your file</u>
+                                    <br />
+                                    <span class="file-desc">
+                                        Allowed file format: .pdf, .docx, .xlsx, .xls, .jpg, .jpeg
+                                    </span>
+                                    <br />
+                                    <span class="file-desc">
+                                        File size is up to 10MB
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="remarkselectedFiles" class="file-list-display"></div>
+                        </div>
+                    }
+
+                    @if (showFollowUp)
+                    {
+                        <hr />
+                        <div class="form-group">
+                            <label class="col-form-label" for="hasFollowUp">Follow Up</label>
+                            <div class="row m-0 p-0">
+                                <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                <div class="custom-control custom-switch pl-2">
+                                    <input class="custom-control-input prevent-disable" id="hasFollowUp" name="hasFollowUp" type="checkbox" v-model="RemarkModal.HasFollowUp" v-on:click="clearFollowUpDetails()" />
+                                    <label class="custom-control-label" for="hasFollowUp">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="col-form-label" for="RemarkModalFollowUpAtStr">Follow Up Date</label>
+                            <input type="text" class="form-control" id="RemarkModalFollowUpAtStr" :disabled="!RemarkModal.HasFollowUp" v-on:click="openDatePicker('RemarkModalFollowUpAtStr')" placeholder="DD MM YYYY" v-model="RemarkModal.FollowUpAtStr" autocomplete="off">
+                        </div>
+
+                        <div class="mt-2">
+                            <label class="col-form-label" for="FollowUpUserId">Follow Up with User</label>
+                            <select id="FollowUpUserId" class="form-control selectpicker" v-model="RemarkModal.FollowUpUserId" disabled>
+                                <option v-for="user in DropDownUsers" :value="user.Value">{{ user.Text }}</option>
+                            </select>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" v-on:click="validateRemark()" class="btn btn-submit prevent-disable">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remarkConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="remarkConfirmationModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to save?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto prevent-disable" data-dismiss="modal">CANCEL</button>
+                <button type="button" v-on:click="addRemark()" class="btn btn-submit prevent-disable" data-dismiss="modal">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+</div>

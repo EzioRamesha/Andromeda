@@ -1,0 +1,360 @@
+﻿<div class="form-row" style="margin-top: 50px;">
+    <div class="form-group col-md-12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="active underline-tab" data-toggle="tab" href="#cedantData">Cedant Data</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#mfrs17TreatyCodeData">MFRS17 Contract Code Data</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remark">Remark</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#file">File</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="cedantData" role="tabpanel" aria-labelledby="data-tab">
+                <div class="text-right">
+                    @if (Model.Status != BusinessObject.Mfrs17ReportingBo.StatusFinalised)
+                    {
+                        <button type="button" class="btn btn-add-sub" style="width: auto;" v-on:click="resetModalData()" data-toggle="modal" data-target="#newCedantDataModal" :disabled="!CedantDetails.length || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusProcessing">ADD NEW</button>
+                    }
+                    <input class="btn btn-upload" id="summaryButton" :disabled="!CedantDetails.length || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusProcessing" type="submit" href="#" formaction="@(Url.Action("GenerateMfrs17SummaryReport", new { isDefault = true }))" value="Download" />
+                </div>
+                <input type="hidden" v-model="CedantDetailMaxIndex" name="CedantDetails.MaxIndex" />
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th class="w-15">Cedant</th>
+                                <th class="w-15">Treaty Code</th>
+                                <th class="w-10">Payment Mode</th>
+                                <th class="w-10">Ceding Plan Code</th>
+                                <th class="w-10">Risk Quarter</th>
+                                <th class="w-10">Data Start Date</th>
+                                <th class="w-10">Data End Date</th>
+                                <th class="w-10">No. of Records</th>
+                                <th class="w-10">Status</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!CedantDetails.length">
+                                <td colspan="11" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(detail, index) in CedantDetails">
+                                <td>{{ index + 1 }}</td>
+                                <td>
+                                    {{ detail.CedantBo ? detail.CedantBo.Name : null }}
+                                    <input type="hidden" v-model="detail.CedantId" :name="'CedantDetails.CedantId[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.TreatyCode }}
+                                    <input type="hidden" v-model="detail.TreatyCode" :name="'CedantDetails.TreatyCode[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.PremiumFrequencyCodePickListDetailBo ? detail.PremiumFrequencyCodePickListDetailBo.Code : null }}
+                                    <input type="hidden" v-model="detail.PremiumFrequencyCodePickListDetailId" :name="'CedantDetails.PremiumFrequencyCodePickListDetailId[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.CedingPlanCode }}
+                                    <input type="hidden" v-model="detail.CedingPlanCode" :name="'CedantDetails.CedingPlanCode[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.RiskQuarter }}
+                                    <input type="hidden" v-model="detail.RiskQuarter" :name="'CedantDetails.RiskQuarter[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.LatestDataStartDateStr }}
+                                    <input type="hidden" v-model="detail.LatestDataStartDateStr" :name="'CedantDetails.LatestDataStartDateStr[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.LatestDataEndDateStr }}
+                                    <input type="hidden" v-model="detail.LatestDataEndDateStr" :name="'CedantDetails.LatestDataEndDateStr[' + index + ']'" />
+                                </td>
+                                <td>
+                                    {{ detail.Record }}
+                                    <input type="hidden" v-model="detail.Record" :name="'CedantDetails.Record[' + index + ']'" />
+                                </td>
+                                <td class="va-middle">
+                                    <span class="status-badge">{{ DetailStatusList[detail.Status] }}</span>
+                                    <input type="hidden" v-model="detail.Status" :name="'CedantDetails.Status[' + index + ']'" />
+                                </td>
+                                <td>
+                                    @if (@Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusSuccess)
+                                    {
+                                        <a v-if="detail.Status == StatusProcessed || detail.Status == StatusDeleted" href="javascript:void(0);" v-on:click="reprocessCedantDetail(index)" class="mr-3"><span class="fas fa-sync" /></a>
+                                        <a v-if="detail.Status == StatusProcessed || detail.Status == StatusPending" href="javascript:void(0);" v-on:click="deleteCedantDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                        <a v-else-if="detail.Status == StatusPendingDelete || detail.Status == StatusReprocess" href="javascript:void(0);" v-on:click="revertCedantDetail(index)"><span class="fas fa-redo" /></a>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-if="CedantDetails.length" class="text-right mb-2">
+                    <span class="total-record">Total No. of Records: {{ TotalRecord }}</span>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="mfrs17TreatyCodeData" role="tabpanel" aria-labelledby="data-tab">
+                <div class="text-right">
+                    <input class="btn btn-upload" id="summaryButton" :disabled="!Mfrs17TreatyCodeDetails.length|| @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusProcessing" type="submit" href="#" formaction="@(Url.Action("GenerateMfrs17SummaryReport", new { isDefault = false }))" value="Download" />
+                </div>
+                <div class="table-responsive mb-4">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-20">MFRS17 Contract Code</th>
+                                <th class="w-10">Payment Mode</th>
+                                <th class="w-10">Risk Quarter</th>
+                                <th class="w-15">Data Start Date</th>
+                                <th class="w-15">Data End Date</th>
+                                <th class="w-10">No. of Records</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!Mfrs17TreatyCodeDetails.length">
+                                <td colspan="7" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(detail, index) in Mfrs17TreatyCodeDetails">
+                                <td>{{ detail.Mfrs17TreatyCode }}</td>
+                                <td>{{ detail.PremiumFrequencyCodePickListDetailBo ? detail.PremiumFrequencyCodePickListDetailBo.Code : null }}</td>
+                                <td>{{ detail.RiskQuarter }}</td>
+                                <td>{{ detail.LatestDataStartDateStr }}</td>
+                                <td>{{ detail.LatestDataEndDateStr }}</td>
+                                <td>{{ detail.Record }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div v-if="Mfrs17TreatyCodeDetails.length" class="text-right mb-2">
+                    <span class="total-record">Total No. of Records: {{ TotalRecord }}</span>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="remark" role="tabpanel" aria-labelledby="remark-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "dropdownRemarkStatus", ViewBag.DropDownStatuses } })
+            </div>
+
+            <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-35">Status</th>
+                                <th class="w-35">Update Date & time</th>
+                                <th class="w-30">Updated By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!StatusHistories.length">
+                                <td colspan="3" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(statusHistory, index) in StatusHistories">
+                                <td class="va-middle"><span class="status-badge">{{ StatusList[statusHistory.Status] }}</span></td>
+                                <td>{{ statusHistory.CreatedAtStr }}</td>
+                                <td>{{ statusHistory.CreatedByName }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="file" role="tabpanel" aria-labelledby="file-tab">
+                <div class="text-right">
+                    <input class="btn btn-upload" id="summaryButton" v-if="IsMultipleFileExist" type="submit" href="#" formaction="@(Url.Action("DownloadMultiple", new { quarter = Model.Quarter }))" value="Download All Multiple" />
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-25">File Name</th>
+                                <th class="w-20">Type</th>
+                                <th class="w-20">Created At</th>
+                                <th class="w-20">Modified At</th>
+                                <th class="w-15 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!Files.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(file, index) in Files">
+                                <td>{{ file.FileName }}</td>
+                                <td>{{ file.SubFolder }}</td>
+                                <td>{{ file.CreatedAtStr }}</td>
+                                <td>{{ file.ModifiedAtStr }}</td>
+                                <td class="text-center"><a v-bind:href="downloadFile(index)" title="Download"><span class="fas fa-download" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newCedantDataModal" tabindex="-1" role="dialog" aria-labelledby="newCedantDataModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="CedantDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in CedantDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="cedantId" class="col-form-label">Ceding Company</label>
+                            <select v-model="NewCedantData.cedantId" id="cedantId" class="form-control selectpicker" v-on:change="getTreatyCodeByCedant()" ref="select" data-container="body">
+                                <option v-for="cedant in DropDownCedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please choose a username.
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            <label for="treatyCode" class="col-form-label">Treaty Code</label>
+                            <select v-model="NewCedantData.treatyCode" id="treatyCode" class="form-control selectpicker" ref="select" data-container="body">
+                                <option v-for="treatyCode in DropDownTreatyCodes" :value="treatyCode.Value">{{ treatyCode.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="paymentMode" class="col-form-label">Payment Mode</label>
+                            <select v-model="NewCedantData.paymentMode" id="paymentMode" class="form-control selectpicker" ref="select" data-container="body" v-on:change="changePaymentMode()">
+                                <option v-for="paymentMode in DropDownPaymentModes" :value="paymentMode.Value">{{ paymentMode.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            <label for="riskQuarter" class="col-form-label">Risk Quarter</label>
+                            <input type="text" v-model="NewCedantData.riskQuarter" v-on:click="openRiskQuarterPicker('riskQuarter')" id="riskQuarter" class="form-control" placeholder="YYYY MM" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="cedingPlanCode" class="col-form-label">Ceding Plan Code</label>
+                            <input v-model="NewCedantData.cedingPlanCode" class="form-control" name="cedingPlanCode" id="cedingPlanCodeTokenField" placeholder="Type here" />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            <div id="riskQuarterMonthDiv">
+                                <label for="riskQuarterMonth" class="col-form-label">Risk Quarter Month</label>
+                                <select v-model="NewCedantData.riskQuarterMonth" id="riskQuarterMonth" class="form-control selectpicker" ref="select" data-container="body">
+                                    <option v-for="(riskQuarterMonth, index) in DropDownRiskQuarterMonths" :value="riskQuarterMonth.Value">{{ riskQuarterMonth.Text }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4" v-if="NewCedantDetail != null">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-15">Cedant</th>
+                                    <th class="w-15">Treaty Code</th>
+                                    <th class="w-10">Payment Mode</th>
+                                    <th class="w-10">Ceding Plan Code</th>
+                                    <th class="w-10">Risk Quarter</th>
+                                    <th class="w-10">Data Start Date</th>
+                                    <th class="w-10">Data End Date</th>
+                                    <th class="w-10">No. of Records</th>
+                                    <th class="w-10">Select &nbsp; <input type="checkbox" @@click='checkAll()' v-model='isCheckAll' /></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(newCedantDetail, index) in NewCedantDetail">
+                                    <td>{{ newCedantDetail.CedantBo ? newCedantDetail.CedantBo.Name : null }}</td>
+                                    <td>{{ newCedantDetail.TreatyCode }}</td>
+                                    <td>{{ newCedantDetail.PremiumFrequencyCodePickListDetailBo ? newCedantDetail.PremiumFrequencyCodePickListDetailBo.Code : null }}</td>
+                                    <td>{{ newCedantDetail.CedingPlanCode }}</td>
+                                    <td>{{ newCedantDetail.RiskQuarter }}</td>
+                                    <td>{{ newCedantDetail.LatestDataStartDateStr }}</td>
+                                    <td>{{ newCedantDetail.LatestDataEndDateStr }}</td>
+                                    <td>{{ newCedantDetail.Record }}</td>
+                                    <td><input type="checkbox" v-model="selectedCheck" :value="index" @@change='updateCheck(index)' /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit" v-on:click="searchCedantData()" style="width: auto;">SEARCH</button>
+                <button type="button" class="btn btn-submit" v-on:click="addCedantData()" :disabled="NewCedantDetail == null">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Reporting Status
+    var StatusPending = @BusinessObject.Mfrs17ReportingBo.StatusPending;
+    var StatusSubmitForProcessing = @BusinessObject.Mfrs17ReportingBo.StatusSubmitForProcessing;
+    var StatusPendingUpdate = @BusinessObject.Mfrs17ReportingBo.StatusPendingUpdate;
+    var StatusProcessing = @BusinessObject.Mfrs17ReportingBo.StatusProcessing;
+    var StatusSuccess = @BusinessObject.Mfrs17ReportingBo.StatusSuccess;
+    var StatusFinalised = @BusinessObject.Mfrs17ReportingBo.StatusFinalised;
+    var StatusPendingGenerate = @BusinessObject.Mfrs17ReportingBo.StatusPendingGenerate;
+    var StatusGenerating = @BusinessObject.Mfrs17ReportingBo.StatusGenerating;
+    var StatusPendingName = "@BusinessObject.Mfrs17ReportingBo.GetStatusName(BusinessObject.Mfrs17ReportingBo.StatusPending)";
+    var StatusFailedGenerate = @BusinessObject.Mfrs17ReportingBo.StatusFailedOnGenerate;
+
+    var StatusList = @Html.Raw(Json.Encode(ViewBag.StatusHistoryStatusList));
+    var StatusClassList = @Html.Raw(Json.Encode(ViewBag.StatusClassList));
+
+    // Reporting Detail Status
+    var StatusPending = @BusinessObject.Mfrs17ReportingDetailBo.StatusPending;
+    var StatusProcessed = @BusinessObject.Mfrs17ReportingDetailBo.StatusProcessed;
+    var StatusReprocess = @BusinessObject.Mfrs17ReportingDetailBo.StatusReprocess;
+    var StatusPendingDelete = @BusinessObject.Mfrs17ReportingDetailBo.StatusPendingDelete;
+    var StatusDeleted = @BusinessObject.Mfrs17ReportingDetailBo.StatusDeleted;
+
+    var DetailStatusList = @Html.Raw(Json.Encode(ViewBag.DetailStatusList));
+
+    var AuthUserName = '@ViewBag.AuthUserName';
+
+    var Mfrs17ReportingModel = @Html.Raw(Json.Encode(Model));
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var DateFormat = "@Shared.Util.GetDateFormatMomentJs()";
+
+    // URL
+    var FileDownloadUrl = "@(Url.Action("FileDownload"))";
+    var getTreatyCodeByCedantUrl = '@Url.Action("RefreshDropDownTreatyCode", "Mfrs17Reporting")';
+    var countCedantDataUrl = '@Url.Action("CountCedantData", "Mfrs17Reporting")';
+    var getMonthByRiskQuarterUrl = '@Url.Action("RefreshDropDownRiskQuarterMonth", "Mfrs17Reporting")';
+    var getCedingPlanCodeByCedingCompanyTreatyCodeUrl = '@Url.Action("RefreshTokenfieldCedingPlanCode", "Mfrs17Reporting")';
+
+    // List
+    var CedantDetailsList = @Html.Raw(Json.Encode(ViewBag.CedantDetails));
+    var Mfrs17TreatyCodeDetailsList = @Html.Raw(Json.Encode(ViewBag.Mfrs17TreatyCodeDetails));
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.Remarks));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+    var Mfrs17ReportingFilesList = @Html.Raw(Json.Encode(ViewBag.Mfrs17ReportingFiles));
+
+    var IsMultipleFileExist = @Html.Raw(Json.Encode(ViewBag.IsMultipleFileExist));
+
+    var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+    var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+    var DropDownPaymentModes = @Html.Raw(Json.Encode(ViewBag.DropDownPremiumFrequencyCodes));
+    var PaymentModes = @Html.Raw(Json.Encode(ViewBag.PremiumFrequencyCodes));
+    var DropDownriskQuarterMonths = null;
+
+    var ModelId = @Model.Id;
+
+    var TotalRecord = @Model.TotalRecord;
+
+    var RiskQuarterFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var QuarterValidFormat = '@BusinessObject.Mfrs17ReportingBo.RegexPattern';
+    var GenerateTypeMultiple = '@BusinessObject.Mfrs17ReportingBo.GenerateTypeMultiple';
+    var GenerateTypeSingle = '@BusinessObject.Mfrs17ReportingBo.GenerateTypeSingle';
+    var DefaultGenerateModified = JSON.parse('@Html.Raw(Json.Encode(ViewBag.HasBeenGenerated))'.toLowerCase());
+    var DefaultIsResume = JSON.parse('@Html.Raw(Json.Encode(ViewBag.ToResume))'.toLowerCase());
+</script>

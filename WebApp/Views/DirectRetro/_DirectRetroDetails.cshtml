@@ -1,0 +1,564 @@
+﻿@using PagedList.Mvc
+
+@model WebApp.Models.DirectRetroViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+
+    PagedList.IPagedList<WebApp.Models.RetroRiDataListingViewModel> RiDataList = ViewBag.RiDataList as PagedList.IPagedList<WebApp.Models.RetroRiDataListingViewModel>;
+    PagedList.IPagedList<WebApp.Models.RetroClaimRegisterListingViewModel> ClaimRegisterList = ViewBag.ClaimRegisterList as PagedList.IPagedList<WebApp.Models.RetroClaimRegisterListingViewModel>;
+    var enableAddRetroStatement = ViewBag.EnableAddRetroStatement != null ? ViewBag.EnableAddRetroStatement : false;
+    var enableDownloadData = ViewBag.EnableDownloadData != null ? ViewBag.EnableDownloadData : false;
+}
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a class="@(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "active" : "") underline-tab" data-toggle="tab" href="#riData">RI Data</a></li>
+    <li class="nav-item"><a class="@(ViewBag.ActiveTab == 2 ? "active" : "") underline-tab" data-toggle="tab" href="#claims">Claims</a></li>
+    <li class="nav-item"><a class="@(ViewBag.ActiveTab == 3 ? "active" : "") underline-tab" data-toggle="tab" href="#retroSummary">Retro Summary</a></li>
+    <li class="nav-item"><a class="@(ViewBag.ActiveTab == 4 ? "active" : "") underline-tab" data-toggle="tab" href="#retroStatement">Retro Statement</a></li>
+    <li class="nav-item"><a class="@(ViewBag.ActiveTab == 5 ? "active" : "") underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+</ul>
+
+<div class="tab-content underline-tab-content">
+    <div class="tab-pane fade @(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "show active" : "")" id="riData" role="tabpanel" aria-labelledby="riData-tab">
+        <div class="text-right my-4">
+            <button type="submit" class="btn btn-download" style="width: auto;" formaction="@(Url.Action("DownloadRiData"))" :disabled="Disabled == 'True' || EnableDownloadData == 'False'">Download</button>
+        </div>
+
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-10">Policy Number</th>
+                        <th class="w-10">Treaty Code</th>
+                        <th class="w-10">Transaction Type Code</th>
+                        <th class="w-10">Reinsurance Basis Code</th>
+                        <th class="w-10">Report Period Month</th>
+                        <th class="w-10">Report Period Year</th>
+                        <th class="w-10">Risk Period Month</th>
+                        <th class="w-10">Risk Period Year</th>
+                        <th class="w-10">Insured Name</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Direct Retro AAR</th>
+                        <th class="w-10">Direct Retro Reinsurance Premium</th>
+                        <th class="w-10">Direct Retro Discount</th>
+                        <th class="w-10">Direct Retro Net Premium</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Direct Retro AAR</th>
+                        <th class="w-10">Direct Retro Reinsurance Premium</th>
+                        <th class="w-10">Direct Retro Discount</th>
+                        <th class="w-10">Direct Retro Net Premium</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Direct Retro AAR</th>
+                        <th class="w-10">Direct Retro Reinsurance Premium</th>
+                        <th class="w-10">Direct Retro Discount</th>
+                        <th class="w-10">Direct Retro Net Premium</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (RiDataList != null && RiDataList.Count > 0)
+                    {
+                        foreach (var item in RiDataList)
+                        {
+                            <tr>
+                                <td>
+                                    @item.PolicyNumber
+                                </td>
+                                <td>
+                                    @item.TreatyCode
+                                </td>
+                                <td>
+                                    @item.TransactionTypeCode
+                                </td>
+                                <td>
+                                    @item.ReinsBasisCode
+                                </td>
+                                <td>
+                                    @item.ReportPeriodMonth
+                                </td>
+                                <td>
+                                    @item.ReportPeriodYear
+                                </td>
+                                <td>
+                                    @item.RiskPeriodMonth
+                                </td>
+                                <td>
+                                    @item.RiskPeriodYear
+                                </td>
+                                <td>
+                                    @item.InsuredName
+                                </td>
+                                <td>
+                                    @item.RetroParty1
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroShare1)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroAar1)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroReinsurancePremium1)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroDiscount1)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroNetPremium1)
+                                </td>
+                                <td>
+                                    @item.RetroParty2
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroShare2)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroAar2)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroReinsurancePremium2)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroDiscount2)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroNetPremium2)
+                                </td>
+                                <td>
+                                    @item.RetroParty3
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroShare3)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroAar3)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroReinsurancePremium3)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroDiscount3)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroNetPremium3)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="27" class="no-data">No available data found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (RiDataList != null)
+        {
+            {
+                ViewBag.CurrentPageNumber = RiDataList.PageNumber;
+                ViewBag.CurrentPageItems = RiDataList.Count;
+                ViewBag.PageSize = RiDataList.PageSize;
+                ViewBag.Total = ViewBag.RiDataTotal;
+            }
+            <div class="pagination-footer position-relative">
+                <div class="row">
+                    <div class="col-md-4">
+                        @Html.Partial("_PageInfo")
+                    </div>
+                    <div class="col-md-8">
+                        @Html.PagedListPager(RiDataList, Page => Url.Action("Edit", new
+                       {
+                           RiDataPage = Page,
+                           ClaimRegisterPage = ViewBag.ClaimRegisterPage,
+                           TabIndex = 1
+                       }), Shared.Html.GetPagedListRenderOptions())
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="tab-pane fade @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="claims" role="tabpanel" aria-labelledby="claims-tab">
+        <div class="text-right my-4">
+            <button type="submit" class="btn btn-download" style="width: auto;" formaction="@(Url.Action("DownloadClaim"))" :disabled="Disabled == 'True' || EnableDownloadData == 'False'">Download</button>
+        </div>
+
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-10">Entry No</th>
+                        <th class="w-10">Type</th>
+                        <th class="w-10">MLRe Event Code</th>
+                        <th class="w-10">Claim Code</th>
+                        <th class="w-10">Claim ID</th>
+                        <th class="w-10">Policy No</th>
+                        <th class="w-10">Treaty Type</th>
+                        <th class="w-10">Insured Name</th>
+                        <th class="w-10">Insured Gender Code</th>
+                        <th class="w-10">Sum Reinsurance</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Claim Amount</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Claim Amount</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Claim Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ClaimRegisterList != null && ClaimRegisterList.Count > 0)
+                    {
+                        foreach (var item in ClaimRegisterList)
+                        {
+                            <tr>
+                                <td>
+                                    @item.EntryNo
+                                </td>
+                                <td>
+                                    @item.ClaimTransactionType
+                                </td>
+                                <td>
+                                    @item.MlreEventCode
+                                </td>
+                                <td>
+                                    @item.ClaimCode
+                                </td>
+                                <td>
+                                    @item.ClaimId
+                                </td>
+                                <td>
+                                    @item.PolicyNumber
+                                </td>
+                                <td>
+                                    @item.TreatyType
+                                </td>
+                                <td>
+                                    @item.InsuredName
+                                </td>
+                                <td>
+                                    @item.InsuredGenderCode
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.AarPayable)
+                                </td>
+                                <td>
+                                    @item.RetroParty1
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroShare1)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroRecovery1, 2)
+                                </td>
+                                <td>
+                                    @item.RetroParty2
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroShare2)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroRecovery2, 2)
+                                </td>
+                                <td>
+                                    @item.RetroParty3
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroShare3)
+                                </td>
+                                <td class="text-right">
+                                    @Shared.Util.DoubleToString(item.RetroRecovery3, 2)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="20" class="no-data">No available data found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        @if (ClaimRegisterList != null)
+        {
+            {
+                ViewBag.CurrentPageNumber = ClaimRegisterList.PageNumber;
+                ViewBag.CurrentPageItems = ClaimRegisterList.Count;
+                ViewBag.PageSize = ClaimRegisterList.PageSize;
+                ViewBag.Total = ViewBag.ClaimRegisterTotal;
+            }
+            <div class="pagination-footer position-relative">
+                <div class="row">
+                    <div class="col-md-4">
+                        @Html.Partial("_PageInfo")
+                    </div>
+                    <div class="col-md-8">
+                        @Html.PagedListPager(ClaimRegisterList, Page => Url.Action("Edit", new
+                        {
+                            RiDataPage = ViewBag.RiDataPage,
+                            ClaimRegisterPage = Page,
+                            TabIndex = 2
+                        }), Shared.Html.GetPagedListRenderOptions())
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="tab-pane fade @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="retroSummary" role="tabpanel" aria-labelledby="retroSummary-tab">
+        <div class="text-right my-4">
+            <button type="submit" class="btn btn-download" style="width: auto;" formaction="@(Url.Action("DownloadRetroSummary"))" :disabled="Disabled == 'True' || EnableDownloadData == 'False'">Download</button>
+        </div>
+
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-10">Treaty Code</th>
+                        <th class="w-10">Risk Quarter</th>
+                        <th class="w-10">Risk Month</th>
+                        <th class="w-10">Risk Year</th>
+                        <th class="w-10">Type</th>
+                        <th class="w-10">No of Policy</th>
+                        <th class="w-10">Total SAR (AAR)</th>
+                        <th class="w-10">Total Direct Retro AAR</th>
+                        <th class="w-10">Total RI Premium</th>
+                        <th class="w-10">Total Discount</th>
+                        <th class="w-10">No of Claims</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Premium Spread</th>
+                        <th class="w-10">RI Premium</th>
+                        <th class="w-10">Discount</th>
+                        <th class="w-10">Claims</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Premium Spread</th>
+                        <th class="w-10">RI Premium</th>
+                        <th class="w-10">Discount</th>
+                        <th class="w-10">Claims</th>
+
+                        <th class="w-10">Retro Party</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-10">Premium Spread</th>
+                        <th class="w-10">RI Premium</th>
+                        <th class="w-10">Discount</th>
+                        <th class="w-10">Claims</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!RetroSummaries.length">
+                        <td colspan="29" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(RetroSummary, index) in RetroSummaries">
+                        <td class="w-10">{{RetroSummary.TreatyCode}}</td>
+                        <td class="w-10">{{RetroSummary.RiskQuarter}}</td>
+                        <td class="w-10">{{RetroSummary.Month}}</td>
+                        <td class="w-10">{{RetroSummary.Year}}</td>
+                        <td class="w-10">{{RetroSummary.Type}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.NoOfPolicy}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.TotalSarStr}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.TotalDirectRetroAarStr}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.TotalRiPremiumStr}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.TotalDiscountStr}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.NoOfClaimsStr}}</td>
+
+                        <td class="w-10">{{RetroSummary.RetroParty1}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroShare1Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroPremiumSpread1Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroRiPremium1Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroDiscount1Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroClaims1Str}}</td>
+
+                        <td class="w-10">{{RetroSummary.RetroParty2}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroShare2Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroPremiumSpread2Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroRiPremium2Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroDiscount2Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroClaims2Str}}</td>
+
+                        <td class="w-10">{{RetroSummary.RetroParty3}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroShare3Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroPremiumSpread3Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroRiPremium3Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroDiscount3Str}}</td>
+                        <td class="w-10 text-right">{{RetroSummary.RetroClaims3Str}}</td>
+                    </tr>
+                    <tr v-if="RetroSummaries.length">
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.TreatyCode}}</td>
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.RiskQuarter}}</td>
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.Month}}</td>
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.Year}}</td>
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.Type}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.NoOfPolicy}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.TotalSarStr}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.TotalDirectRetroAarStr}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.TotalRiPremiumStr}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.TotalDiscountStr}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.NoOfClaimsStr}}</td>
+
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.RetroParty1}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroShare1Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroPremiumSpread1Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroRiPremium1Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroDiscount1Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroClaims1Str}}</td>
+
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.RetroParty2}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroShare2Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroPremiumSpread2Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroRiPremium2Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroDiscount2Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroClaims2Str}}</td>
+
+                        <td class="w-10 font-weight-bold">{{TotalRetroSummary.RetroParty3}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroShare3Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroPremiumSpread3Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroRiPremium3Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroDiscount3Str}}</td>
+                        <td class="w-10 font-weight-bold text-right">{{TotalRetroSummary.RetroClaims3Str}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade @(ViewBag.ActiveTab == 4 ? "show active" : "")" id="retroStatement" role="tabpanel" aria-labelledby="retroStatement-tab">
+        <div class="text-right my-4">
+            <div class="btn-group">
+                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Template
+                </button>
+                <div class="dropdown-menu">
+                    @Html.ActionLink("Default", "DownloadTemplate", new { type = 1 }, new { @class = "dropdown-item" })
+                    @Html.ActionLink("Swiss Re", "DownloadTemplate", new { type = 2 }, new { @class = "dropdown-item" })
+                </div>
+            </div>
+            @if (Model.Id != 0 && disabled == false && enableAddRetroStatement == true)
+            {
+                <a href="@Url.Action("RetroStatement", new { id = 0, directRetroId = Model.Id })" class="btn btn-add-sub">ADD NEW</a>
+            }
+            else
+            {
+                <span class="btn btn-submit isDisabled">ADD NEW</span>
+            }
+        </div>
+
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-20">Retro Party</th>
+                        <th class="w-15">Accounting Period 1</th>
+                        <th class="w-15">Accounting Period 2</th>
+                        <th class="w-15">Accounting Period 3</th>
+                        <th class="w-30">Status</th>
+                        <th class="w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!RetroStatements.length">
+                        <td colspan="6" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(RetroStatement, index) in RetroStatements">
+                        <td>{{RetroStatement.RetroPartyBo?.Party}}</td>
+                        <td>{{RetroStatement.AccountingPeriod}}</td>
+                        <td>{{RetroStatement.AccountingPeriod2}}</td>
+                        <td>{{RetroStatement.AccountingPeriod3}}</td>
+                        <td class="va-middle"><span class="status-badge">{{ RetroStatement.StatusName }}</span></td>
+                        <td class="text-center">
+                            <a v-bind:href="retroStatementLink(index)" title="Edit Retro Statement">
+                                <span class="fas fa-pencil-alt" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade @(ViewBag.ActiveTab == 5 ? "show active" : "")" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="w-30">Status</th>
+                        <th class="w-30">Update Date & time</th>
+                        <th class="w-30">Updated By</th>
+                        <th class="w-10">Log File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!StatusHistories.length">
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(statusHistory, index) in StatusHistories">
+                        <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                        <td>{{ statusHistory.CreatedAtStr }}</td>
+                        <td>{{ statusHistory.CreatedByName }}</td>
+                        <td>
+                            <span v-for="log in logFile(index)">
+                                <a v-bind:href="urlDownloadLink(index)" title="Download Log File">
+                                    <span class="fas fa-download" />
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var ModelId = "@Model.Id";
+    var DirectRetroModel = "@Model";
+
+    // Retro Status
+    var RetroStatusPending = '@BusinessObject.DirectRetroBo.RetroStatusPending';
+    var RetroStatusSubmitForProcessing = '@BusinessObject.DirectRetroBo.RetroStatusSubmitForProcessing';
+    var RetroStatusPendingApproval = '@BusinessObject.DirectRetroBo.RetroStatusPendingApproval';
+    var RetroStatusApproved = '@BusinessObject.DirectRetroBo.RetroStatusApproved';
+    var RetroStatusProcessing = '@BusinessObject.DirectRetroBo.RetroStatusProcessing';
+    var RetroStatusCompleted = '@BusinessObject.DirectRetroBo.RetroStatusCompleted';
+
+    // Url
+    var GetTreatyCodeByCedantUrl = '@Url.Action("Index", "TreatyCode")';
+    var GetSoaDataBatchUrl = '@Url.Action("GetSoaDataBatch")';
+    var DownloadStatusFileUrl = '@Url.Action("StatusFileDownload", "DirectRetro")?directRetroId=@Model.Id' + "&statusHistoryId=";
+    var RetroStatementUrl = '@Url.Action("RetroStatement", "DirectRetro")?directRetroId=@Model.Id' + "&id=";
+
+    // Listing
+    var SelectedCedantId = '@Model.CedantId';
+    var SelectedTreatyCodeId = '@Model.TreatyCodeId';
+    var SelectedSoaDataBatchId = '@Model.SoaDataBatchId';
+    var QuarterFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var RetroSummaries = @Html.Raw(Json.Encode(ViewBag.RetroSummaryBos));
+    var TotalRetroSummary = @Html.Raw(Json.Encode(ViewBag.TotalRetroSummaryBo));
+    var StatusHistories = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+    var StatusFiles = @Html.Raw(Json.Encode(ViewBag.StatusFiles));
+    var RetroStatements = @Html.Raw(Json.Encode(ViewBag.RetroStatements));
+
+    // Others
+    var Disabled = "@disabled";
+    var EnableDownloadData = "@enableDownloadData";
+</script>

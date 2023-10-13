@@ -1,0 +1,67 @@
+﻿@model WebApp.Models.SanctionVerificationViewModel
+
+@{
+    ViewBag.Title = "Sanction Verification";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Status, new { @Value = BusinessObject.Sanctions.SanctionVerificationBo.StatusPending })
+            @Html.HiddenFor(model => model.Type, new { @Value = BusinessObject.Sanctions.SanctionVerificationBo.TypeManual })
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SourceId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.SourceId, (List<SelectListItem>)ViewBag.DropDownSources, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.SourceId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Checking Against", htmlAttributes: new { @class = "col-form-label" })
+
+                        <div>
+                            @Html.LabelFor(model => model.IsRiData, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.IsRiData)
+                            @Html.ValidationMessageFor(model => model.IsRiData, "", new { @class = "text-danger" })
+
+                            @Html.LabelFor(model => model.IsClaimRegister, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.IsClaimRegister)
+                            @Html.ValidationMessageFor(model => model.IsClaimRegister, "", new { @class = "text-danger" })
+
+                            @Html.LabelFor(model => model.IsReferralClaim, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.IsReferralClaim)
+                            @Html.ValidationMessageFor(model => model.IsReferralClaim, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

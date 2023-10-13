@@ -1,0 +1,60 @@
+﻿@{
+    bool save = ViewData["save"] != null ? bool.Parse(ViewData["save"].ToString()) : false;
+}
+
+<div class="modal fade" id="addLinkedObjectModal" tabindex="-1" role="dialog" aria-labelledby="addLinkedObjectModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Link Object</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="linkObjectError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label">Object</label>
+                        <select v-model="LinkObjectModal.ObjectType" id="dropDownObjectType" class="form-control selectpicker" v-on:change="updateDropDownObjects">
+                            <option v-for="objectModule in DropDownObjectModules" :value="objectModule.Value">
+                                {{ objectModule.Text }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Object ID / Name</label>
+                        <select v-model="LinkObjectModal.ObjectId" id="dropDownObjectId" class="form-control selectpicker" v-on:change="updateDropDownObjectVersions">
+                            <option v-for="object in DropDownObjects" :value="object.Value">
+                                {{ object.Text }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Version</label>
+                        <select v-model="LinkObjectModal.ObjectVersionId" id="dropDownObjectVersionId" class="form-control selectpicker">
+                            <option v-for="objectVersion in DropDownObjectVersions" :value="objectVersion.Value">
+                                {{ objectVersion.Text }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto prevent-disable" data-dismiss="modal">CANCEL</button>
+                <button v-on:click="addWorkflowObject('@save')" type="button" class="btn btn-submit">LINK OBJECT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var GetTreatyPricingObjectsUrl = "@Url.Action("GetTreatyPricingObjects", "TreatyPricingWorkflowObject")";
+    var GetTreatyPricingObjectVersionsUrl = "@Url.Action("GetTreatyPricingObjectVersions", "TreatyPricingWorkflowObject")";
+    var CreateWorkflowObjectUrl = "@Url.Action("Create", "TreatyPricingWorkflowObject")";
+    var DeleteWorkflowObjectUrl = "@Url.Action("Delete", "TreatyPricingWorkflowObject")";
+    //var BaseUrl = "@Request.Url.GetLeftPart(UriPartial.Authority)";
+</script>

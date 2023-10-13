@@ -1,0 +1,233 @@
+﻿@model WebApp.Models.TreatyPricingCedantViewModel
+
+@{
+    ViewBag.Title = "Cedant";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", disabled = "true" })
+                        @Html.HiddenFor(model => model.CedantId)
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReinsuranceTypePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ReinsuranceTypePickListDetailId, (List<SelectListItem>)ViewBag.DropDownReinsuranceTypes, htmlAttributes: new { @class = "form-control selectpicker", disabled = "true" })
+                        @Html.HiddenFor(model => model.ReinsuranceTypePickListDetailId)
+                        @Html.ValidationMessageFor(model => model.ReinsuranceTypePickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row my-3">
+                    <div class="form-group col-md-12">
+                        <button type="button" class="btn btn-download float-right" v-on:click="resetWorkflowModal()" data-toggle="modal" data-target="#addWorkflowModal">REQUEST DOCUMENT / QUOTATION</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        @Html.Partial("_Details")
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @*<button type="submit" class="btn btn-submit float-right">SAVE</button>*@
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="modal fade" id="addWorkflowModal" tabindex="-1" role="dialog" aria-labelledby="addWorkflowModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Document / Quotation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="newWorkflowError" style="display:none;"></div>
+
+                    <div class="form">
+                        <div class="form-group">
+                            <label class="col-form-label">Quotation / Treaty</label>
+                            <div class="row m-0 p-0">
+                                <div class="mr-2"> <p style="color: #004BA2;">Quotation</p> </div>
+                                <div class="custom-control custom-switch pl-2">
+                                    <input class="custom-control-input" id="workflowType" name="workflowType" type="checkbox" v-model="WorkflowModal.WorkflowType" v-on:change="changeWorkflowType()" />
+                                    <label class="custom-control-label" for="workflowType">Treaty</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Ceding Company / Counter Party</label>
+                            <select v-model="WorkflowModal.CedantId" id="dropDownCedant" class="form-control selectpicker">
+                                <option v-for="cedant in DropDownCedant" :value="cedant.Value">
+                                    {{ cedant.Text }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Reinsurance Type</label>
+                            <select v-model="WorkflowModal.ReinsuranceTypePickListDetailId" id="dropDownReinsuranceType" class="form-control selectpicker">
+                                <option v-for="reinsuranceType in DropDownReinsuranceType" :value="reinsuranceType.Value">
+                                    {{ reinsuranceType.Text }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" v-if="WorkflowModal.WorkflowType">
+                            <label class="col-form-label">Document Type</label>
+                            <select v-model="WorkflowModal.DocumentType" id="dropDownDocumentType" class="form-control selectpicker">
+                                <option v-for="documentType in DropDownDocumentType" :value="documentType.Value">
+                                    {{ documentType.Text }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" v-if="WorkflowModal.WorkflowType">
+                            <label class="col-form-label">Inward Retro Party</label>
+                            <select v-model="WorkflowModal.RetroPartyId" id="dropDownRetroParty" class="form-control selectpicker">
+                                <option v-for="retroParty in DropDownRetroParties" :value="retroParty.Value">
+                                    {{ retroParty.Text }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Quotation Name / Document ID</label>
+                            <input type="text" class="form-control" v-model="WorkflowModal.Name" placeholder="Type Here">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label">Description</label>
+                            <input type="text" class="form-control" v-model="WorkflowModal.Description" placeholder="Type Here">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-add" v-on:click="resetLinkObjectModal()" data-toggle="modal" data-target="#addLinkedObjectModal">LINK OBJECT</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Object</th>
+                                        <th class="w-10">Object ID</th>
+                                        <th class="w-15">Object Name</th>
+                                        <th class="w-5">Version</th>
+                                        <th class="w-5 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!WorkflowObjects.length">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(objects, index) in WorkflowObjects">
+                                        <td>{{ objects.ObjectTypeName }}</td>
+                                        <td>{{ objects.ObjectCode }}</td>
+                                        <td>{{ objects.ObjectName }}</td>
+                                        <td>{{ objects.ObjectVersion }}</td>
+                                        <td class="text-center">
+                                            <a href="#" v-on:click="removeWorkflowObject(index);">
+                                                <span class="fas fa-trash-alt" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                    <button v-on:click="saveWorkflow()" type="button" class="btn btn-submit">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_TreatyPricingWorkflowObject")
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        //Model
+        var Model = @Html.Raw(Json.Encode(Model));
+
+        // URL
+        var TreatyPricingWorkflowObjectBos = [];
+        var AddQuotationWorkflowUrl = "@Url.Action("Add", "TreatyPricingQuotationWorkflow")";
+        var EditQuotationWorkflowUrl = "@Url.Action("Edit", "TreatyPricingQuotationWorkflow")?Id=";
+        var AddTreatyWorkflowUrl = "@Url.Action("Add", "TreatyPricingTreatyWorkflow")";
+        var EditTreatyWorkflowUrl = "@Url.Action("Edit", "TreatyPricingTreatyWorkflow")?Id=";
+
+        //Dropdowns
+        var DropDownCedant = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var DropDownReinsuranceType = @Html.Raw(Json.Encode(ViewBag.DropDownReinsuranceTypes));
+        var DropDownObjectModules = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingObjectModules));
+        var DropDownDocumentType = @Html.Raw(Json.Encode(ViewBag.TreatyWorkflowDocumentTypes));
+        var DropDownRetroParties = @Html.Raw(Json.Encode(ViewBag.DropDownRetroParties));
+
+        // Others
+        var WorkflowTypeQuotation = "@BusinessObject.TreatyPricing.TreatyPricingWorkflowObjectBo.TypeQuotation";
+        var WorkflowTypeTreaty = "@BusinessObject.TreatyPricing.TreatyPricingWorkflowObjectBo.TypeTreaty";
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+            }
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingCedant.js")
+}

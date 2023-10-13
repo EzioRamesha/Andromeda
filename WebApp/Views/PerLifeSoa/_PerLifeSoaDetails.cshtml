@@ -1,0 +1,634 @@
+﻿@model WebApp.Models.PerLifeSoaViewModel
+
+<div class="form-row">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#retroStatementSummary" class="active underline-tab">Retro Statement Summary</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#soa">SOA</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#premium">Premium</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#claims">Claims</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#inforceListing">Inforce Listing</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarks">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="retroStatementSummary" role="tabpanel" aria-labelledby="retroStatementSummary-tab">
+
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#soaDataWMOM" class="active underline-tab">SOA WMOM</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#retroStatement">Retro Statement</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="soaDataWMOM" role="tabpanel" aria-labelledby="soaDataWMOM-tab">
+
+                        <div class="form-horizontal">
+                            <div class="form-row">
+                                <div class="form-group col-md-12 text-right">
+                                    @*@Html.ActionLink("DOWNLOAD", "", null, new { @class = "btn btn-submit" })*@
+                                </div>
+                            </div>
+                            <div class="form-row mt-2">
+                                <div class="form-group col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-soaDataWMOM" style="border: 1px solid #e8f1fb">
+                                            <tr>
+                                                <td class="w-30">&nbsp;</td>
+                                                <td class="w-30">&nbsp;</td>
+                                                <td class="w-10">&nbsp;</td>
+                                                <td class="w-10">&nbsp;</td>
+                                                <td class="w-10">&nbsp;</td>
+                                                <td class="w-10">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold" colspan="6"><u>RMW (Within Malaysia)</u></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">MALAYSIA</td>
+                                                <td>&nbsp;</td>
+                                                <td class="font-weight-bold header">AUTOMATIC</td>
+                                                <td class="font-weight-bold header">FACULTATIVE</td>
+                                                <td class="font-weight-bold header">ADVANTAGE</td>
+                                                <td class="font-weight-bold header">TOTAL</td>
+                                            </tr>
+                                            <tr>
+                                                <td>NEW BUSINESS</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Automatic', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Facultative', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Advantage', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Total', SoaWM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>RENEWAL</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Automatic', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Facultative', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Advantage', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Total', SoaWM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total Premium</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Automatic', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Facultative', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Advantage', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Total', SoaWM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total Claim</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Automatic', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Facultative', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Advantage', SoaWM) }}</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Total', SoaWM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">Net Total</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body-last">{{ calculateNetTotal('Automatic', SoaWM) }}</td>
+                                                <td class="body-last">{{ calculateNetTotal('Facultative', SoaWM) }}</td>
+                                                <td class="body-last">{{ calculateNetTotal('Advantage', SoaWM) }}</td>
+                                                <td class="body-last">{{ calculateNetTotal('Total', SoaWM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="6">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold" colspan="6"><u>ROMW (Outside Malaysia)</u></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold"><> MALAYSIA</td>
+                                                <td>&nbsp;</td>
+                                                <td class="font-weight-bold header">AUTOMATIC</td>
+                                                <td class="font-weight-bold header">FACULTATIVE</td>
+                                                <td class="font-weight-bold header">ADVANTAGE</td>
+                                                <td class="font-weight-bold header">TOTAL</td>
+                                            </tr>
+                                            <tr>
+                                                <td>NEW BUSINESS</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Automatic', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Facultative', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Advantage', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('NEW BUSINESS', 'Total', SoaOM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>RENEWAL</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Automatic', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Facultative', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Advantage', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('RENEWAL', 'Total', SoaOM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total Premium</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Automatic', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Facultative', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Advantage', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('Total Premium', 'Total', SoaOM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Total Claim</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Automatic', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Facultative', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Advantage', SoaOM) }}</td>
+                                                <td class="body">{{ soaItem('Total Claim', 'Total', SoaOM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">Net Total</td>
+                                                <td>&nbsp;</td>
+                                                <td class="body-last">{{ calculateNetTotal('Automatic', SoaOM) }}</td>
+                                                <td class="body-last">{{ calculateNetTotal('Facultative', SoaOM) }}</td>
+                                                <td class="body-last">{{ calculateNetTotal('Advantage', SoaOM) }}</td>
+                                                <td class="body-last">{{ calculateNetTotal('Total', SoaOM) }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="6">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold" colspan="5">TOTAL WM & OM PREMIUM</td>
+                                                <td class="font-weight-bold">{{ calculateTotalSum('Total Premium', 'Total') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold" colspan="5">TOTAL WM & OM CLAIMS</td>
+                                                <td class="font-weight-bold">{{ calculateTotalSum('Total Claim', 'Total') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="6">&nbsp;</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold" colspan="6"><u>PROFIT COMMISSION</u></td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5">Total PC</td>
+                                                <td style="border-top: 1px solid #01509F;">0.00</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5">Total Payable to RGA Labuan (from RGA Labuan)</td>
+                                                <td class="total-border">{{ calculateTotalPayable('Total') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="6">&nbsp;</td>
+                                            </tr>
+                                        </table>
+                                    </div>                                    
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="tab-pane fade" id="retroStatement" role="tabpanel" aria-labelledby="retroStatement-tab">
+                        
+                        <div class="form-horizontal">
+                            @*<div class="form-row">
+                                <div class="form-group col-md-6">
+                                    @Html.Label("Report Type", htmlAttributes: new { @class = "col-form-label" })
+                                    <select v-model="ReportTypeId" class="form-control selectpicker" ref="select" :id="'ReportTypeId'" :name="'ReportTypeId'" data-container="body" v-on:change="changeReportType()">
+                                        <option v-for="type in ReportingTypes" :value="type.Value">{{ type.Text }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">&nbsp;</div>
+                            </div>*@
+                            <div class="form-row mt-4">
+                                <div class="form-group col-md-6">&nbsp;</div>
+                                <div class="form-group col-md-6 text-right">
+                                    <a href="@Url.Action("RetroStatement", new { id = 0, perLifeSoaId = Model.Id })" class="btn btn-add-sub">ADD NEW</a>
+                                    @Html.ActionLink("DOWNLOAD ALL", "DownloadAllRetroStatement", new { perLifeSoaId = Model.Id }, new { @class = "btn btn-submit" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th class="w-40">Risk Quarter</th>
+                                                    <th class="w-40">Retro Party</th>
+                                                    <th class="w-15">Status</th>
+                                                    <th class="text-center w-5">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-if="!RetroStatements.length">
+                                                    <td colspan="4" class="no-data">No available data found.</td>
+                                                </tr>
+                                                <tr v-for="(RetroStatement, index) in RetroStatements">
+                                                    <td>{{ RetroStatement.AccountingPeriod }}</td>
+                                                    <td>{{ RetroStatement.RetroPartyBo?.Party }}</td>
+                                                    <td class="va-middle"><span class="status-badge">{{ RetroStatement.StatusName }}</span></td>
+                                                    <td class="text-center">
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                <span class="fas fa-ellipsis-v dropbtn" />
+                                                            </button>
+                                                            <div class="dropdown-menu">
+                                                                <a class="dropdown-item" v-bind:href="downalodRetroStatementLink(index)">Download</a>
+                                                                <a class="dropdown-item" v-bind:href="viewRetroStatementLink(index)">View</a>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>                            
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="soa" role="tabpanel" aria-labelledby="soa-tab">
+
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-12 text-right">
+                            @*@Html.ActionLink("DOWNLOAD", "", null, new { @class = "btn btn-submit" })*@
+                        </div>
+                    </div>
+                    <div class="form-row mt-2">
+                        <div class="form-group col-md-12">
+                            @Html.Label("Summary Statement of Account", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        </div>
+                        <div class="form-group col-md-12">
+                            <label for="Premiums" class="col-form-label font-weight-bold" style="padding-left: 8px;"><u>Premiums</u></label>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-soaDataWMOM">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10">Risk Quarter</th>
+                                            <th class="w-20">Individual Statement as at @(Model.SoaQuarter)</th>
+                                            <th class="w-20">Group Statement as at @(Model.SoaQuarter)</th>
+                                            <th class="w-10">Total</th>
+                                            <th class="w-20">Individual Statement as at @(Model.PreviousSoaQuarter)</th>
+                                            <th class="w-20">Group Statement as at @(Model.PreviousSoaQuarter)</th>
+                                            <th class="w-10">Total</th>
+                                            <th class="w-10">Movement</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!soaSummariesBy(TypePremium).length">
+                                            <td colspan="8" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="summary in soaSummariesBy(TypePremium)">
+                                            <td>{{ summary.RowLabel }}</td>
+                                            <td>{{ summary.IndividualStr }}</td>
+                                            <td>{{ summary.GroupStr }}</td>
+                                            <td>{{ summary.TotalStr }}</td>
+                                            <td>{{ summary.PrevIndividualStr }}</td>
+                                            <td>{{ summary.PrevGroupStr }}</td>
+                                            <td>{{ summary.PrevTotalStr }}</td>
+                                            <td>{{ summary.MovementStr }}</td>
+                                        </tr>
+                                        <tr v-if="soaSummariesBy(TypePremium).length">
+                                            <td class="font-weight-bold">Total</td>
+                                            <td>{{ calculateTotal(1, 'Individual') }}</td>
+                                            <td>{{ calculateTotal(1, 'Group') }}</td>
+                                            <td>{{ calculateTotal(1, 'Total') }}</td>
+                                            <td>{{ calculateTotal(1, 'PrevIndividual') }}</td>
+                                            <td>{{ calculateTotal(1, 'PrevGroup') }}</td>
+                                            <td>{{ calculateTotal(1, 'PrevTotal') }}</td>
+                                            <td>{{ calculateTotal(1, 'Movement') }}</td>
+                                        </tr>
+                                    </tbody>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="8" class="col-form-label font-weight-bold">
+                                                <div class="d-inline-flex mt-4">
+                                                    <div><u>Claims</u></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="!soaSummariesBy(TypeClaim).length">
+                                            <td colspan="8" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="summary in soaSummariesBy(TypeClaim)">
+                                            <td>{{ summary.RowLabel }}</td>
+                                            <td>{{ summary.Individual === 0 ? setAmountFormat(summary.Individual) : summary.Individual  }}</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr v-if="soaSummariesBy(TypeClaim).length">
+                                            <td class="font-weight-bold">Total</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{ calculateTotal(2, 'Total') }}</td>
+                                        </tr>
+                                    </tbody>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="8" class="col-form-label font-weight-bold">
+                                                <div class="d-inline-flex mt-4">
+                                                    <div><u>Profit Commission</u></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold">Total PC</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>{{ calculateTotal(3, 'Individual') }}</td>
+                                        </tr>
+                                    </tbody>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="7" class="col-form-label font-weight-bold">
+                                                <div class="d-inline-flex mt-4">
+                                                    <div>TOTAL DUE TO RGA LABUAN /(FROM RGA LABUAN)</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-inline-flex mt-4">
+                                                    <div>{{ calculateTotalDue() }}</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    @if (ViewBag.ShowApprove)
+                    {
+                        <div class="form-row mt-4">
+                            <div class="form-group col-md-12">
+                                @using (Html.BeginForm())
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.HiddenFor(model => model.Id)
+
+                                    <div class="row m-0 p-0 float-right">
+                                         <div class="mr-1">
+                                             <input type="button" onclick="updateStatus(@BusinessObject.Retrocession.PerLifeSoaBo.StatusApproved);" class="btn btn-submit float-right" @(ViewBag.CanApproveSoa ? "disabled" : "") style="width: auto;" value="APPROVE" />
+                                         </div>
+                                         <div class="mr-1 ml-1">
+                                             <input type="button" onclick="updateStatus(@BusinessObject.Retrocession.PerLifeSoaBo.StatusRejected);" class="btn btn-submit" @(ViewBag.CanApproveSoa ? "disabled" : "") style="width: auto;" value="REJECT" />
+                                         </div>   
+                                    </div>
+                                                                     
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="premium" role="tabpanel" aria-labelledby="premium-tab">
+
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#summaryByTreaty" class="active underline-tab">Summary by Treaty</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#retroOutput">Retro Output</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="summaryByTreaty" role="tabpanel" aria-labelledby="summaryByTreaty-tab">
+
+                        <div class="form-horizontal">
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.Label("Treaty Code", htmlAttributes: new { @class = "col-form-label" })
+                                    <select v-model="PremiumSearch.TreatyCode" class="form-control selectpicker" ref="select" :id="'TreatyCodeId'" :name="'TreatyCodeId'" data-container="body">
+                                        <option v-for="treatyCode in DropDownTreatyCodes" :value="treatyCode.Value">{{ treatyCode.Text }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.Label("Risk Year", htmlAttributes: new { @class = "col-form-label" })
+                                    <input v-model="PremiumSearch.RiskYear" class="form-control" :name="'RiskYear'" :id="'RiskYear'" placeholder="YYYY" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12 text-right">
+                                    <button type="button" class="btn btn-download" v-on:click="searchPremium()">SEARCH</button>
+                                </div>
+                            </div>
+                            @*<div class="form-row mt-2">
+                                <div class="form-group col-md-12 text-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            DOWNLOAD AS
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @Html.ActionLink("All", "", null, new { @class = "dropdown-item" })
+                                            @Html.ActionLink("Filtered", "", null, new { @class = "dropdown-item" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>*@
+                            <div class="form-row mt-2">
+                                <div class="form-group col-md-12">
+                                    @Html.Label("Summary of Retro Premium (Movement) as at " + (Model.SoaQuarter), htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" v-cloak>
+                                            <thead>
+                                                <tr>
+                                                    <th class="w-20">Treaty Code</th>
+                                                    <th class="w-15">Total Gross Premium</th>
+                                                    <th class="w-15">Total Net Premium</th>
+                                                    <th class="w-15">Total Discount</th>
+                                                    <th class="w-15">Total Policy Count</th>
+                                                    <th class="w-15">% Total Net Premium</th>
+                                                    <th class="text-center w-5">&nbsp;</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-if="!RetroPremiumsByMovement().length">
+                                                    <td colspan="7" class="no-data">No available data found.</td>
+                                                </tr>
+                                                <tr v-for="premium in RetroPremiumsByMovement()">
+                                                    <td>{{ premium.TreatyCode }}</td>
+                                                    <td>{{ premium.MovementTotalGrossPremiumStr }}</td>
+                                                    <td>{{ premium.MovementTotalNetPremiumStr }}</td>
+                                                    <td>{{ premium.MovementTotalDiscountStr }}</td>
+                                                    <td>{{ premium.MovementTotalPolicyCount }}</td>
+                                                    <td></td>
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row mt-2">
+                                @Html.Label("Retro Premium (Movement) by Treaty and Risk Quarter", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-soa" v-cloak>
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2" class="text-header">&nbsp;</th>
+                                                <th colspan="4" class="text-center text-header">@(Model.SoaQuarter)</th>
+                                                <th colspan="4" class="text-center text-header">@(Model.PreviousSoaQuarter)</th>
+                                                <th colspan="4" class="text-center text-header">Movement</th>
+                                                <th class="text-header">&nbsp;</th>
+                                            </tr>
+                                            <tr>
+                                                <th class="w-20">Treaty Code</th>
+                                                <th class="w-10">Processing Period</th>
+                                                <th class="w-10">Total Retro Amount</th>
+                                                <th class="w-10">Total Gross Premium</th>
+                                                <th class="w-10">Total Discount</th>
+                                                <th class="w-10">Total Policy Count</th>
+                                                <th class="w-10">Total Retro Amount</th>
+                                                <th class="w-10">Total Gross Premium</th>
+                                                <th class="w-10">Total Discount</th>
+                                                <th class="w-10">Total Policy Count</th>
+                                                <th class="w-10">Total Retro Amount</th>
+                                                <th class="w-10">Total Gross Premium</th>
+                                                <th class="w-10">Total Discount</th>
+                                                <th class="w-10">Total Policy Count</th>
+                                                <th class="text-center w-5">&nbsp;</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-if="!RetroPremiums.length">
+                                                <td colspan="15" class="no-data">No available data found.</td>
+                                            </tr>
+                                            <tr v-for="premium in RetroPremiums">
+                                                <td>{{ premium.TreatyCode }}</td>
+                                                <td>{{ premium.ProcessingPeriod }}</td>
+                                                <td>{{ premium.TotalRetroAmountStr }}</td>
+                                                <td>{{ premium.TotalGrossPremiumStr }}</td>
+                                                <td>{{ premium.TotalDiscountStr }}</td>
+                                                <td>{{ premium.TotalPolicyCount }}</td>
+                                                <td>{{ premium.PrevTotalRetroAmountStr }}</td>
+                                                <td>{{ premium.PrevTotalGrossPremiumStr }}</td>
+                                                <td>{{ premium.PrevTotalDiscountStr }}</td>
+                                                <td>{{ premium.PrevTotalPolicyCount }}</td>
+                                                <td>{{ premium.MovementTotalRetroAmountStr }}</td>
+                                                <td>{{ premium.MovementTotalGrossPremiumStr }}</td>
+                                                <td>{{ premium.MovementTotalDiscountStr }}</td>
+                                                <td>{{ premium.MovementTotalPolicyCount }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="tab-pane fade" id="retroOutput" role="tabpanel" aria-labelledby="retroOutput-tab">
+                        @Html.Action("PerLifeSoaRiData", new { id = Model.Id, Category = 1 })
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="claims" role="tabpanel" aria-labelledby="claims-tab">
+
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#paidClaims" class="active underline-tab">Paid Claims</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#pendingClaims">Pending Claims</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#claimsRemoved">Claims Removed</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="paidClaims" role="tabpanel" aria-labelledby="paidClaims-tab">
+                        @*@{ Html.RenderAction("PerLifeSoaClaims", "PerLifeSoa", new { id = Model.Id, ClaimCategory = BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPaidClaim }); }*@
+                        @Html.Action("PerLifeSoaClaims", new { id = Model.Id, ClaimCategory = BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPaidClaim })
+                    </div>
+                    <div class="tab-pane fade" id="pendingClaims" role="tabpanel" aria-labelledby="pendingClaims-tab">
+                        @Html.Action("PerLifeSoaClaims", new { id = Model.Id, ClaimCategory = BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPendingClaim })
+                    </div>
+                    <div class="tab-pane fade" id="claimsRemoved" role="tabpanel" aria-labelledby="claimsRemoved-tab">
+                        @Html.Action("PerLifeSoaClaims", new { id = Model.Id, ClaimCategory = BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryReversed })
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="inforceListing" role="tabpanel" aria-labelledby="inforceListing-tab">
+                @Html.Action("PerLifeSoaRiData", new { id = Model.Id, Category = 2 })
+            </div>
+
+            <div class="tab-pane fade" id="remarks" role="tabpanel" aria-labelledby="remarks-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showFollowUp", true }, { "showPermission", true }, { "showDocuments", true } })
+            </div>
+
+            <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-40">Status</th>
+                                <th class="w-25">Update Date & time</th>
+                                <th class="w-25">Updated By</th>
+                                <th class="w-10">Log File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!StatusHistories.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(statusHistory, index) in StatusHistories">
+                                <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                                <td>{{ statusHistory.CreatedAtStr }}</td>
+                                <td>{{ statusHistory.CreatedByName }}</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   var Model = @Html.Raw(Json.Encode(Model));
+
+    // Others
+    var QuarterFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var DateTimeFormat = "@(Shared.Util.GetDateTimeFormatMomentJs())";
+    var AuthUserName = "@ViewBag.AuthUserName";
+    var WMWithin = '@BusinessObject.Retrocession.PerLifeSoaSummariesBo.WMOMWithin';
+    var OMOutside = '@BusinessObject.Retrocession.PerLifeSoaSummariesBo.WMOMOutside';
+    var TypePremium = '@BusinessObject.Retrocession.PerLifeSoaSummariesSoaBo.PremiumClaimPremium';
+    var TypeClaim = '@BusinessObject.Retrocession.PerLifeSoaSummariesSoaBo.PremiumClaimClaim';
+
+
+    // List
+    var SoaWMOMs = @Html.Raw(Json.Encode(ViewBag.SoaWMOMs));
+    var RetroStatements = @Html.Raw(Json.Encode(ViewBag.RetroStatements));
+    var SoaSummaries = @Html.Raw(Json.Encode(ViewBag.SoaSummaries));
+    var SoaSummaryByTreaties = @Html.Raw(Json.Encode(ViewBag.SoaSummaryByTreaties));
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+    var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistoryBos));
+    var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+    var DocumentTypeItems = @Html.Raw(Json.Encode(ViewBag.DropDownDocumentTypes));
+    var DropDownTreatyCodes = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyCodes));
+
+    // Url
+    var GetRetroTreatyUrl = "@(Url.Action("GetRetroTreatyByRetroParty"))";
+    var SearchSummaryByTreatyUrl = "@(Url.Action("SearchSummaryByTreaty"))";
+    var ViewRetroStatementUrl = '@Url.Action("RetroStatement", "PerLifeSoa")?perLifeSoaId=@Model.Id' + "&id=";
+    var DownloadRetroStatementUrl = '@Url.Action("DownloadRetroStatement", "PerLifeSoa")?id=';
+    var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var SaveTempFileUrl = "@(Url.Action("Upload", "Document"))";
+    var DeleteTempFileUrl = "@(Url.Action("Remove", "Document"))";
+    var RefreshUrl = "@(Url.Action("RefreshUserSession", "Account"))";
+    var LoginUrl = "@(Url.Action("Login", "Account"))";
+
+    // Status
+    var StatusPending = @BusinessObject.Retrocession.PerLifeSoaBo.StatusPending;
+    var StatusSubmitForProcessing = @BusinessObject.Retrocession.PerLifeSoaBo.StatusSubmitForProcessing;
+    var StatusProcessing = @BusinessObject.Retrocession.PerLifeSoaBo.StatusProcessing;
+    var StatusPendingName = "@BusinessObject.Retrocession.PerLifeSoaBo.GetStatusName(BusinessObject.Retrocession.PerLifeSoaBo.StatusPending)";
+</script>

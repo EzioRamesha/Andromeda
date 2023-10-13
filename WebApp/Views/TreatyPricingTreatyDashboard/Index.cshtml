@@ -1,0 +1,622 @@
+﻿@{
+    ViewBag.Title = "Treaty Dashboard";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="my-1 text-right">
+            <button type="button" class="btn btn-download" data-toggle="modal" data-target="#calendarModal"><span class="fas fa-calendar-alt" /> &nbsp; DRAFT CALENDER</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Drafting Status Overview</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="row m-0" v-cloak>
+                    <div class="col-md-3 col-sm-6 py-2" v-for="(DraftingStatusOverview, index) in DraftingStatusOverviews">
+                        <div class="dashboard-clickable-wrapper">
+                            <div class="row m-0">
+                                <div class="col-10">
+                                    <span class="col-form-label font-weight-bold">{{ DraftingStatusOverview.DraftingStatusCategoryName }}</span>
+                                    <br />
+                                    <span class="col-form-label small">Drafting Status Category</span>
+                                    <br />
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span class="col-form-label font-weight-bold font-xl">{{ DraftingStatusOverview.AllCount }}</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row m-0">
+                                <div class="col-10">
+                                    <span class="col-form-label">&le; 6 Months</span>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">{{ DraftingStatusOverview.LessThan6MonthCount }}</span>
+                                </div>
+                                <div class="col-10">
+                                    <span class="col-form-label">7 - 12 Months</span>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">{{ DraftingStatusOverview.LessThan12MonthCount }}</span>
+                                </div>
+                                <div class="col-10">
+                                    <span class="col-form-label">> 12 Months</span>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">{{ DraftingStatusOverview.MoreThan12MonthCount }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 v-if="!DraftingStatusOverviewByPicTotals">Draft Overview by Person In-Charge <span class="small">&bull; 0 Case(s)</span></h4>
+                <h4>Draft Overview by Person In-Charge <span class="small">&bull; {{ DraftingStatusOverviewByPicTotals.TotalCountForAll }} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Outstanding</th>
+                                <th class="w-30" colspan="3">Treaty</th>
+                                <th class="w-30" colspan="3">Addendum</th>
+                                <th class="w-30" colspan="3">Other</th>
+                                <th class="w-10 bg-white"></th>
+                                <th class="w-5 bg-white"></th>
+                            </tr>
+                            <tr class="second-row-header">
+                                <th>Person In-Charge</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>Total</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!DraftingStatusOverviewByPics.length">
+                                <td colspan="12" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DraftingStatusOverviewByPic, index) in DraftingStatusOverviewByPics" v-on:click="openPicDraftOverviewModal(DraftingStatusOverviewByPic.PersonInChargeId)">
+                                <td class="w-20 font-weight-bold">{{ DraftingStatusOverviewByPic.PersonInChargeName }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.LessThan6MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.LessThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.MoreThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.LessThan6MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.LessThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.MoreThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.LessThan6MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.LessThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.MoreThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPic.TotalCountPic }}</td>
+                                <td class="w-5 text-center"><span class="fas fa-eye" /></td>
+                            </tr>
+                            <tr v-if="DraftingStatusOverviewByPics.length" v-on:click="openPicDraftOverviewModal(0)">
+                                <td class="w-20 font-weight-bold">Total</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalLessThan6MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalLessThan12MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalMoreThan12MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalLessThan6MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalLessThan12MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalMoreThan12MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalLessThan6MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalLessThan12MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalMoreThan12MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPicTotals.TotalCountForAll }}</td>
+                                <td class="w-5 text-center"><span class="fas fa-eye" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 v-if="!DraftingStatusOverviewByPendingReviewerTotals">Draft Overview - Pending Reviewer <span class="small">&bull; 0 Case(s)</span></h4>
+                <h4>Draft Overview - Pending Reviewer <span class="small">&bull; {{ DraftingStatusOverviewByPendingReviewerTotals.TotalCountForAll }} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Outstanding</th>
+                                <th class="w-30" colspan="3">Treaty</th>
+                                <th class="w-30" colspan="3">Addendum</th>
+                                <th class="w-30" colspan="3">Other</th>
+                                <th class="w-10 bg-white" colspan="2"></th>
+                            </tr>
+                            <tr class="second-row-header">
+                                <th>Reviewer</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!DraftingStatusOverviewByPendingReviewers.length">
+                                <td colspan="12" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DraftingStatusOverviewByPendingReviewer, index) in DraftingStatusOverviewByPendingReviewers">
+                                <td class="w-20 font-weight-bold">{{ DraftingStatusOverviewByPendingReviewer.PersonInChargeName }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.LessThan6MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.LessThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.MoreThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.LessThan6MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.LessThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.MoreThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.LessThan6MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.LessThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.MoreThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewer.TotalCountPic }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectPendingReviewer(index)" />
+                                </td>
+                            </tr>
+                            <tr v-if="DraftingStatusOverviewByPendingReviewers.length">
+                                <td class="w-20 font-weight-bold">Total</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalLessThan6MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalLessThan12MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalMoreThan12MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalLessThan6MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalLessThan12MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalMoreThan12MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalLessThan6MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalLessThan12MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalMoreThan12MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingReviewerTotals.TotalCountForAll }}</td>
+                                <td class="w-5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Draft Overview - Pending HOD <span class="small">&bull; @ViewBag.TotalDraftingStatusOverviewByPendingHod Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Outstanding</th>
+                                <th class="w-30" colspan="3">Treaty</th>
+                                <th class="w-30" colspan="3">Addendum</th>
+                                <th class="w-30" colspan="3">Other</th>
+                                <th class="w-10 bg-white" colspan="2"></th>
+                            </tr>
+                            <tr class="second-row-header">
+                                <th>PIC</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!DraftingStatusOverviewByPendingHods.length">
+                                <td colspan="12" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DraftingStatusOverviewByPendingHod, index) in DraftingStatusOverviewByPendingHods">
+                                <td class="w-20 font-weight-bold">{{ DraftingStatusOverviewByPendingHod.PersonInChargeName }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.LessThan6MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.LessThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.MoreThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.LessThan6MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.LessThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.MoreThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.LessThan6MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.LessThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.MoreThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingHod.TotalCountPic }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectPendingHOD(index)" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 v-if="!DraftingStatusOverviewByPendingDepartmentTotals">Draft Overview - Pending Department / Party's Review <span class="small">&bull; 0 Case(s)</span></h4>
+                <h4>Draft Overview - Pending Department / Party's Review <span class="small">&bull; {{ DraftingStatusOverviewByPendingDepartmentTotals.TotalCountForAll }} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Outstanding</th>
+                                <th class="w-30" colspan="3">Treaty</th>
+                                <th class="w-30" colspan="3">Addendum</th>
+                                <th class="w-30" colspan="3">Other</th>
+                                <th class="w-10 bg-white" colspan="2"></th>
+                            </tr>
+                            <tr class="second-row-header">
+                                <th>Department/Party</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>&le; 6 Months</th>
+                                <th>7 - 12 Months</th>
+                                <th>> 12 Months</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!DraftingStatusOverviewByPendingDepartments.length">
+                                <td colspan="12" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DraftingStatusOverviewByPendingDepartment, index) in DraftingStatusOverviewByPendingDepartments">
+                                <td class="w-20 font-weight-bold">{{ DraftingStatusOverviewByPendingDepartment.Department }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.LessThan6MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.LessThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.MoreThan12MonthCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.LessThan6MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.LessThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.MoreThan12MonthCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.LessThan6MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.LessThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.MoreThan12MonthCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartment.TotalCountPic }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectPendingDepartment(index)" />
+                                </td>
+                            </tr>
+                            <tr v-if="DraftingStatusOverviewByPendingDepartments.length">
+                                <td class="w-20 font-weight-bold">Total</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalLessThan6MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalLessThan12MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalMoreThan12MonthsCountInTreaty }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalLessThan6MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalLessThan12MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalMoreThan12MonthsCountInAddendum }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalLessThan6MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalLessThan12MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalMoreThan12MonthsCountInOther }}</td>
+                                <td class="w-10">{{ DraftingStatusOverviewByPendingDepartmentTotals.TotalCountForAll }}</td>
+                                <td class="w-5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Draft Overview List - Within 2 Weeks from Target Sent Date <span class="small">&bull; @ViewBag.TotalDraftOverviewWithin2Weeks Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="table-responsive my-3" v-cloak>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-5">No</th>
+                                <th class="w-15">Reinsurance Type</th>
+                                <th class="w-15">Counter Party</th>
+                                <th class="w-15">Inward Retro Party</th>
+                                <th class="w-15">Document Type</th>
+                                <th class="w-15">Document Number</th>
+                                <th class="w-15">Description</th>
+                                <th class="w-15">Effective Date</th>
+                                <th class="w-15">Document Status</th>
+                                <th class="w-15">Drafting Status</th>
+                                <th class="w-15">Target Send Date</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!DraftingOverviewWithin2Weeks.length">
+                                <td colspan="12" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DraftingOverviewWithin2Week, index) in DraftingOverviewWithin2Weeks">
+                                <td>{{ index + 1 }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.ReinsuranceTypePickListDetailBo?.Description }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.CounterPartyDetailBo?.Code }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.InwardRetroPartyDetailBo?.Code }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.DocumentTypeName }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.DocumentId }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.Description }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.EffectiveAtStr }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.DocumentStatusName }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.DraftingStatusName }}</td>
+                                <td>{{ DraftingOverviewWithin2Week.TargetSentDateStr }}</td>
+                                <td class="text-center"><a v-bind:href="editPageHyperLink(DraftingOverviewWithin2Week.Id)"><span class="fas fa-eye" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="picDraftOverviewModal" tabindex="-1" role="dialog" aria-labelledby="picDraftOverviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="picDraftOverviewModalLabel">Draft Overview by Person In-Charge</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Person In-Charge</label>
+                        <input class="form-control" v-model="DraftingStatusOverviewByPicsDetailTotals.PersonInChargeName" readonly />
+                    </div>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-40">Drafting Status Category</th>
+                                    <th class="w-15">&le; 6 Months</th>
+                                    <th class="w-15">7 - 12 Months</th>
+                                    <th class="w-15">> 12 Months</th>
+                                    <th class="w-10">Total</th>
+                                    <th class="w-5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!DraftingStatusOverviewByPicsDetails.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(DraftingStatusOverviewByPicsDetail, index) in DraftingStatusOverviewByPicsDetails">
+                                    <td>{{ DraftingStatusOverviewByPicsDetail.DraftingStatusCategoryName }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetail.LessThan6MonthCount }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetail.LessThan12MonthCount }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetail.MoreThan12MonthCount }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetail.TotalCountPic }}</td>
+                                    <td class="w-5 text-center">
+                                        <span class="fas fa-eye" v-on:click="redirectPendingOverviewByPic(index)" />
+                                    </td>
+                                </tr>
+                                <tr v-if="DraftingStatusOverviewByPicsDetails.length">
+                                    <td class="font-weight-bold">Total</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetailTotals.TotalLessThan6MonthsCount }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetailTotals.TotalLessThan12MonthsCount }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetailTotals.TotalMoreThan12MonthsCount }}</td>
+                                    <td>{{ DraftingStatusOverviewByPicsDetailTotals.TotalCountForAll }}</td>
+                                    <td class="w-5"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="calendarModal" tabindex="-1" role="dialog" aria-labelledby="calendarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="calendarModalLabel">Calendar</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id='calendar'></div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/fullcalendar")
+
+<script>
+    var DraftCalendar = @Html.Raw(Json.Encode(@ViewBag.DraftCalendar));
+    var DraftingStatusOverviews = @Html.Raw(Json.Encode(@ViewBag.DraftingStatusOverviews));
+    var DraftingStatusOverviewByPics = @Html.Raw(Json.Encode(@ViewBag.DraftingStatusOverviewByPic));
+    var DraftingStatusOverviewByPicTotals = @Html.Raw(Json.Encode(@ViewBag.TotalDraftingStatusOverviewByPic));
+    var DraftingStatusOverviewByPendingReviewers = @Html.Raw(Json.Encode(ViewBag.DraftingStatusOverviewByPendingReviewer));
+    var DraftingStatusOverviewByPendingReviewerTotals = @Html.Raw(Json.Encode(ViewBag.TotalDraftingStatusOverviewByPendingReviewer));
+    var DraftingStatusOverviewByPendingHods = @Html.Raw(Json.Encode(ViewBag.DraftingStatusOverviewByPendingHod));
+    var DraftingStatusOverviewByPendingDepartments = @Html.Raw(Json.Encode(ViewBag.DraftingStatusOverviewByPendingDepartment));
+    var DraftingStatusOverviewByPendingDepartmentTotals = @Html.Raw(Json.Encode(ViewBag.TotalDraftingStatusOverviewByPendingDepartment));
+    var DraftingOverviewWithin2Weeks = @Html.Raw(Json.Encode(ViewBag.DraftOverviewWithin2Weeks));
+    var PendingHODReview = @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.DraftingStatusPendingHODReview;
+    var PendingInternalReview = @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.DraftingStatusCategoryInternalReview;
+
+    // Urls
+    var TreatyWorkflowEditUrl = "@Url.Action("Edit", "TreatyPricingTreatyWorkflow")";
+    var GetDraftingStatusOverviewbyPicDetailUrl = "@Url.Action("GetDraftingStatusOverviewByPicDetail", "TreatyPricingTreatyDashboard")";
+    var TreatyPricingTreatyWorkflowIndexUrl = "@(Url.Action("Index", "TreatyPricingTreatyWorkflow"))";
+
+    $(document).ready(function () {
+
+        var draftCalendar = new Array();
+        function addDraftCalendar(item) {
+            let dc = {
+                "title": item.Title,
+                "start": item.Start
+            }
+            draftCalendar.push(dc);
+        }
+        DraftCalendar.forEach(addDraftCalendar);
+
+        console.log(draftCalendar);
+            var calendarDiv = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarDiv, {
+                initialView: 'dayGridMonth',
+                events: draftCalendar
+                //[
+                //    {
+                //        title: 'event1',
+                //        start: '/Date(1625846400000)/'
+                //    },
+                //    {
+                //        title: 'event1.2',
+                //        start: '2021-02-01'
+                //    },
+                //    {
+                //        title: 'event2',
+                //        start: '2021-02-05',
+                //        end: '2010-02-07'
+                //    },
+                //    {
+                //        title: 'event3',
+                //        start: '2021-02-09T12:30:00',
+                //        allDay: false // will make the time show
+                //    }
+                //]
+            });
+
+            $('#calendarModal').on('shown.bs.modal', function () {
+                calendar.render();
+            });
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                DraftingStatusOverviews: DraftingStatusOverviews,
+                DraftingStatusOverviewByPics: DraftingStatusOverviewByPics,
+                DraftingStatusOverviewByPicTotals: DraftingStatusOverviewByPicTotals,
+                DraftingStatusOverviewByPicsDetails: "",
+                DraftingStatusOverviewByPicsDetailTotals: "",
+                DraftingStatusOverviewByPendingReviewers: DraftingStatusOverviewByPendingReviewers,
+                DraftingStatusOverviewByPendingReviewerTotals: DraftingStatusOverviewByPendingReviewerTotals,
+                DraftingStatusOverviewByPendingHods: DraftingStatusOverviewByPendingHods,
+                DraftingStatusOverviewByPendingDepartments: DraftingStatusOverviewByPendingDepartments,
+                DraftingStatusOverviewByPendingDepartmentTotals: DraftingStatusOverviewByPendingDepartmentTotals,
+
+                DraftOverviewLists: [],
+                PicDraftOverviewModal: {
+                    PersonInCharge: "",
+                    Total: "",
+                },
+                PicDraftOverviewDetails: [],
+            },
+            methods: {
+                openPicDraftOverviewModal: function (id) {
+                    var draftingStatusOverviewByPicDetail = this.DraftingStatusOverviewByPicsDetails;
+                    var total = this.DraftingStatusOverviewByPicsDetailTotals;
+
+                    if (id != 0) {
+                        $.ajax({
+                            url: GetDraftingStatusOverviewbyPicDetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { picId: id },
+                            success: function (data) {
+                                draftingStatusOverviewByPicDetail = data.draftingStatusCategoryCount;
+                                total = data.total;
+                            }
+                        });
+                    } else {
+                        $.ajax({
+                            url: GetDraftingStatusOverviewbyPicDetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { picId: null },
+                            success: function (data) {
+                                draftingStatusOverviewByPicDetail = data.draftingStatusCategoryCount;
+                                total = data.total;
+                            }
+                        });
+                    }
+
+                    console.log(draftingStatusOverviewByPicDetail);
+                    this.DraftingStatusOverviewByPicsDetails = draftingStatusOverviewByPicDetail;
+                    this.DraftingStatusOverviewByPicsDetailTotals = total;
+
+                    $("#picDraftOverviewModal").modal()
+                },
+                editPageHyperLink(id) {
+                    var url = TreatyWorkflowEditUrl + '/' + id;
+                    return url
+                },
+                redirectPendingOverviewByPic(index) {
+                    var draftingStatusCategory = this.DraftingStatusOverviewByPicsDetails[index].DraftingStatusCategory;
+                    var picId = this.DraftingStatusOverviewByPics[index].PersonInChargeId;
+                    var url = TreatyPricingTreatyWorkflowIndexUrl;
+                    url = url + '?' + "PersonInChargeId=" + picId + "&DraftingStatusCategory=" + draftingStatusCategory;
+                    window.location.href = url;
+                },
+                redirectPendingReviewer(index) {
+                    var reviewer = this.DraftingStatusOverviewByPendingReviewers[index].Reviewer;
+                    var internalReviewConst = PendingInternalReview;
+                    var url = TreatyPricingTreatyWorkflowIndexUrl;
+                    url = url + '?' + "Reviewer=" + reviewer + "&DraftingStatusCategory=" + internalReviewConst;
+                    window.location.href = url;
+                },
+                redirectPendingHOD(index) {
+                    var picId = this.DraftingStatusOverviewByPendingHods[index].PersonInChargeId;
+                    var url = TreatyPricingTreatyWorkflowIndexUrl;
+                    var pendingHodConst = PendingHODReview;
+                    url = url + '?' + "PersonInChargeId=" + picId + "&DraftingStatus=" + pendingHodConst;
+                    window.location.href = url;
+                },
+                redirectPendingDepartment(index) {
+                    var draftingStatus = this.DraftingStatusOverviewByPendingDepartments[index].DraftingStatus;
+                    var url = TreatyPricingTreatyWorkflowIndexUrl;
+                    url = url + '?' + "DraftingStatus=" + draftingStatus;
+                    window.location.href = url;
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+</script>
+}

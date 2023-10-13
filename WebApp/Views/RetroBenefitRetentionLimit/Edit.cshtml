@@ -1,0 +1,137 @@
+﻿@model WebApp.Models.RetroBenefitRetentionLimitViewModel
+
+@{
+    ViewBag.Title = "Retention Limit by Retro Benefit";
+    ViewBag.Action = "Edit";
+
+    ViewBag.ListPageUrl = Url.Action("Index");
+    if (Model.Type == BusinessObject.Retrocession.RetroBenefitRetentionLimitBo.TypeGroup)
+    {
+        ViewBag.ListPageUrl = Url.Action("Group");
+    }
+
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly != null && ViewBag.ReadOnly);
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetroBenefitCodeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RetroBenefitCodeId, (List<SelectListItem>)ViewBag.DropDownRetroBenefitCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.RetroBenefitCodeId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Type, (List<SelectListItem>)ViewBag.DropDownTypes, htmlAttributes: new { @class = "form-control selectpicker", disabled = "disabled" })
+                        @Html.HiddenFor(model => model.Type)
+                        @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.EffectiveStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.EffectiveStartDateStr, new { htmlAttributes = new { id = "EffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveStartDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.EffectiveStartDateStr, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EffectiveEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.EffectiveEndDateStr, new { htmlAttributes = new { id = "EffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveEndDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.EffectiveEndDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.MinRetentionLimitStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.MinRetentionLimitStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.MinRetentionLimitStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @if (Model.Type == 0 || Model.Type == BusinessObject.Retrocession.RetroBenefitRetentionLimitBo.TypeIndividual)
+                        {
+                            @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("CANCEL", "Group", null, new { @class = "btn btn-cancel" })
+                        }
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True' || '@disabled' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('.selectpicker').selectpicker('refresh');
+            }
+
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $('button').prop("disabled", true);
+            } else {
+                $("[name='__RequestVerificationToken']").prop("disabled", false);
+            }
+
+            $('#Description').autoResize();
+            $('#Description').trigger('keyup');
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/RetroBenefitRetentionLimit.js")
+}

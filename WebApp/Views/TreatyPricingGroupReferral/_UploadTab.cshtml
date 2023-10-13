@@ -1,0 +1,173 @@
+﻿@using PagedList.Mvc
+@using BusinessObject.TreatyPricing
+
+@model PagedList.IPagedList<TreatyPricingGroupReferralFileBo>
+
+<div id="UploadErrors" class="alert alert-danger" role="alert" style="display: none;">
+    <ul>
+        <li v-for="(error, index) in Errors">{{ error }}</li>
+    </ul>
+</div>
+
+<div class="form-horizontal">
+    <div class="form-row">
+        <div class="form-group col-md-6 mid-line-1 pb-0">
+            <span class="font-weight-bold">@Html.Label("Download File", htmlAttributes: new { @class = "col-form-label" })</span>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label" })
+                    <select v-model="DownloadParams.CedantId" class="form-control selectpicker" ref="select" id="PreferredCedantId" name="PreferredCedantId" data-container="body">
+                        <option v-for="cedant in DropDownCedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <div class="row">
+                        <div class="col">@Html.Label("Coverage Start Date", htmlAttributes: new { @class = "col-form-label" })</div>
+                        <div class="col text-right">
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.Label("Include Blank Date", htmlAttributes: new { @class = "col-form-label mr-3" })
+                                <label class="col-form-label mr-2 pt-0 va-middle" style="position: relative;" for="CoverageBlankDate">No</label>
+                                <input type="checkbox" class="custom-control-input" id="CoverageBlankDate" v-model = "DownloadParams.IncludeBlankCoverageDate" />
+                                <label class="custom-control-label pb-1 va-middle" for="CoverageBlankDate">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <div class="input-group">
+                                <input v-model.lazy="DownloadParams.CoverageStartDate" class="form-control" :name="'DownloadParam_CoverageStartDate'" v-on:click="openDatePicker('DownloadParam_CoverageStartDate')" :id="'DownloadParam_CoverageStartDate'" placeholder="DD MM YYYY" autocomplete="off" />
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">-</span>
+                                </div>
+                                <input v-model.lazy="DownloadParams.CoverageEndDate" class="form-control" :name="'DownloadParam_CoverageEndDate'" v-on:click="openDatePicker('DownloadParam_CoverageEndDate')" :id="'DownloadParam_CoverageEndDate'" placeholder="DD MM YYYY" autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-12">
+                    <div class="row">
+                        <div class="col">@Html.Label("Request Received Date", htmlAttributes: new { @class = "col-form-label" })</div>
+                        <div class="col text-right">
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.Label("Include Blank Date", htmlAttributes: new { @class = "col-form-label mr-3" })
+                                <label class="col-form-label mr-2 pt-0 va-middle" style="position: relative;" for="RequestReceivedBlankDate">No</label>
+                                <input type="checkbox" class="custom-control-input" id="RequestReceivedBlankDate" v-model = "DownloadParams.IncludeBlankRequestReceivedDate" />
+                                <label class="custom-control-label pb-1 va-middle" for="RequestReceivedBlankDate">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <div class="input-group">
+                                <input v-model.lazy="DownloadParams.RequestReceivedStartDate" class="form-control" name="RequestReceivedStartDate" v-on:click="openDatePicker('RequestReceivedStartDate')" id="RequestReceivedStartDate" placeholder="DD MM YYYY" autocomplete="off" />
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">-</span>
+                                </div>
+                                <input v-model.lazy="DownloadParams.RequestReceivedEndDate" class="form-control" name="RequestReceivedEndDate" v-on:click="openDatePicker('RequestReceivedEndDate')" id="RequestReceivedEndDate" placeholder="DD MM YYYY" autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-right mt-2">
+                <button type="button" class="btn btn-add" style="width: auto;" id="downloadBtn" v-on:click="searchByDownloadParams()">DOWNLOAD</button>
+            </div>
+        </div>
+        <div class="form-group col-md-6 mid-line-2 pb-0">
+                <span class="font-weight-bold">@Html.Label("Upload File", htmlAttributes: new { @class = "col-form-label" })</span>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        @Html.Label("Upload File From Cedant To Update GR Status", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="file is-boxed">
+                            <label class="file-label">
+                                <input class="form-control-file" type="file" id="files" name="upload" accept=".xlsx, .xls">
+                                Drag and Drop File Here or <u>Browse your file</u>
+                                <br />
+                                <span class="file-desc">
+                                    Allowed file format: .xls .xlsx
+                                </span>
+                                <br />
+                                <span class="file-desc">
+                                    File size is up to 2GB
+                                </span>
+                            </label>
+                        </div>
+                        <div id="selectedFiles" class="file-list-display group-referral-files"></div>
+                        <div class="text-right mt-2">
+                            <button type="button" class="btn btn-add" style="width: auto;" v-on:click="uploadFile()">UPLOAD</button>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+    <div class="form-row mt-4">
+        <div class="form-group col-md-12 pb-0">
+            <span class="font-weight-bold">@Html.Label("Uploaded File", htmlAttributes: new { @class = "col-form-label" })</span>
+            <div id="UploadedFileList">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-45">Filename</th>
+                                <th class="w-20">Upload Date & Time</th>
+                                <th class="w-20">Uploaded by</th>
+                                <th class="w-10">Status</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.FileName</td>
+                                        <td>@item.CreatedAt.ToString(Shared.Util.GetDateTimeFormat())</td>
+                                        <td>@item.CreatedBy</td>
+                                        <td>@TreatyPricingGroupReferralFileBo.GetStatusName(item.Status)</td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @if (item.Status == TreatyPricingGroupReferralFileBo.StatusFailed)
+                                                    {
+                                                        <a class="dropdown-item" href="javascript:void(0);" @*data-toggle="modal" data-target="#errorModal"*@ v-on:click="getErrors('@item.Id')">View Error</a>
+                                                    }
+                                                    <a class="dropdown-item" href="@Url.Action("DownloadUpload", new { id = item.Id })">Download File</a>
+                                                    <a class="dropdown-item" href="javascript:void(0);" v-on:click="deleteUpload('@item.Id')">Delete File</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8" id="uploadPager">
+                            @Html.PagedListPager(Model, Page => Url.Action("UploadIndex", new { Page }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

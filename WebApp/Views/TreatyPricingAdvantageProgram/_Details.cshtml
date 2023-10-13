@@ -1,0 +1,298 @@
+﻿@model WebApp.Models.TreatyPricingAdvantageProgramViewModel
+@using Shared.Forms.Helpers
+
+<div class="form-row mt-4">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#version" class="active underline-tab">Version</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#product">Product</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarks">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelog">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="version" role="tabpanel" aria-labelledby="version-tab">
+
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Version Details", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.Version, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="input-group">
+                                        @if (ViewBag.IsHideSideBar is null || !ViewBag.IsHideSideBar)
+                                        {
+                                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            <div class="input-group-prepend">
+                                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal">CREATE NEW VERSION</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @Html.HiddenFor(model => model.CurrentVersion)
+                                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker", @disabled = true })
+                                            <div class="input-group-prepend">
+                                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal" disabled>CREATE NEW VERSION</button>
+                                            </div>
+                                        }
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.Version, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelForRequired(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                                    @Html.HiddenFor(model => model.PersonInChargeId)
+                                    @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Advantage Program Details", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelForRequired(model => model.EffcetiveAt, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="input-w-icon">
+                                        @Html.TextBoxFor(model => model.EffcetiveAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('EffcetiveAtStr')" } })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('EffcetiveAtStr')" />
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.EffcetiveAtStr, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelForRequired(model => model.Retention, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">MYR</div>
+                                        </div>
+                                        @Html.TextBoxFor(model => model.Retention, new { @class = "form-control text-right", placeholder = "0.00" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.Retention, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelForRequired(model => model.MlreShare, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">%</div>
+                                        </div>
+                                        @Html.TextBoxFor(model => model.MlreShare, new { @class = "form-control", placeholder = "0.00" })
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.MlreShare, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelForRequired(model => model.Remarks, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.TextAreaFor(model => model.Remarks, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                                    @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12">
+                            <div class="text-right">
+                                <button type="button" v-on:click="resetBenefitModal" data-toggle="modal" data-target="#benefitModal" class="btn btn-add-sub" :disabled="Disable">ADD BENEFIT</button>
+                            </div>
+
+                            <div class="mt-4">
+                                <ul class="list-group list-group-flush">
+
+                                    <li class="list-group-item px-0 accordion-item" v-for="(benefit, index) in Benefits">
+                                        <div class="row accordion-header">
+                                            <div class="col-md-6">{{ benefit.BenefitCode }}</div>
+                                            <div class="col-md-6 text-right">
+                                                <a v-if="!Disable" class="accordion-link" href="javascript:void(0);" v-on:click="cloneBenefit(index)" title="Duplicate Benefit"><span class="fas fa-clone" /></a>
+                                                <a v-if="!Disable" class="accordion-link" href="javascript:void(0);" v-on:click="removeBenefit(index)" title="Remove Benefit"><span class="fas fa-trash-alt" /></a>
+                                                <a class="btn collapsed accordion-link" data-toggle="collapse" v-bind:href="'#collapseExample' + index + ''" role="button" aria-expanded="true" :aria-controls="'collapseExample' + index + ''">
+                                                    <span class="mr-3"></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="collapse" :id="'collapseExample' + index + ''">
+                                            <div class="accordion-body mt-2">
+                                                <input type="hidden" :name="'verBenefitId[' + index + ']'" class="form-control" :value="benefit.Id">
+                                                <input type="hidden" :name="'benefitId[' + index + ']'" class="form-control" :value="benefit.BenefitId">
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-6 mid-line-1">
+                                                        @Html.Label("Extra Mortality", htmlAttributes: new { @class = "col-form-label" })
+                                                        <div class="input-group mb-2">
+                                                            <div class="input-group-prepend">
+                                                                <div class="input-group-text">%</div>
+                                                            </div>
+                                                            <input v-model="benefit.ExtraMortalityStr" class="form-control" :name="'extraMortality[' + index + ']'" placeholder="0.00" :readonly="Disable" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-6 mid-line-2">
+                                                        @Html.Label("Sum Assured Not Exceeding", htmlAttributes: new { @class = "col-form-label" })
+                                                        <div class="input-group mb-2">
+                                                            <div class="input-group-prepend">
+                                                                <div class="input-group-text">MYR</div>
+                                                            </div>
+                                                            <input v-model="benefit.SumAssuredStr" class="form-control text-right" :name="'sumAssured[' + index + ']'" placeholder="0.00" :readonly="Disable" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+                @Html.Partial("_ProductList")
+            </div>
+
+            <div class="tab-pane fade" id="remarks" role="tabpanel" aria-labelledby="remarks-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showDocuments", true }, { "showStatus", false }, { "showVersion", true }, { "showSubject", true }, { "dropdownVersions", ViewBag.DropDownVersions } })
+            </div>
+
+            <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+                @Html.Partial("_Changelog")
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newVersionModal" tabindex="-1" role="dialog" aria-labelledby="newVersionModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Version</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Person In-Charge (Business Development)</label>
+                        <input type="text" readonly class="form-control" id="userName" value="@ViewBag.AuthUserName">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Previous Version</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="duplicatePreviousVersion" name="duplicatePreviousVersion" type="checkbox" />
+                                <label class="custom-control-label" for="duplicatePreviousVersion">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" onclick="createVersion()" class="btn btn-submit" data-dismiss="modal">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="benefitModal" tabindex="-1" role="dialog" aria-labelledby="benefitModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Benefit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="BenefitDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in BenefitDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label required" for="userName">Benefit Code</label>
+                        <select v-model="BenefitModal.BenefitId" id="BenefitId" class="form-control selectpicker" ref="select">
+                            <option v-for="benefitCode in BenefitCodes" :value="benefitCode.Id">{{ benefitCode.Code }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" v-if="BenefitModal.IsDuplicateExisting">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Existing Benefit</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="isDuplicateExisting" name="isDuplicateExisting" type="checkbox" v-model="BenefitModal.IsDuplicateExisting" />
+                                <label class="custom-control-label" for="isDuplicateExisting">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" v-if="BenefitModal.IsDuplicateExisting">
+                        <label class="col-form-label" for="userName">Existing Benefit Code</label>
+                        <select v-model="BenefitModal.DuplicateBenefitId" id="DuplicateBenefitId" class="form-control selectpicker" ref="select">
+                            <option v-for="benefitCode in ExistingBenefitCodes" :value="benefitCode.Id">{{ benefitCode.Code }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" v-on:click="addBenefit()" class="btn btn-submit">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeBenefitModal" tabindex="-1" role="dialog" aria-labelledby="addBenefitModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Benefit Confirmation</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>Are you sure you want to remove benefit {{RemoveBenefitCode}}?</span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" v-on:click="confirmRemoveBenefit()" class="btn btn-submit">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.TreatyPricingAdvantageProgram.ToString()';
+
+    //Url
+    var CreateVersionUrl = "@(Url.Action("CreateVersion", "TreatyPricingAdvantageProgram"))";
+    var GetVersionDetailUrl = "@(Url.Action("GetVersionDetails"))";
+
+    //List
+    var Products = @Html.Raw(Json.Encode(ViewBag.Products));
+    var Benefits = @Html.Raw(Json.Encode(ViewBag.BenefitBos));
+    var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+    var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+    var Changelogs = @Html.Raw(Json.Encode(ViewBag.ObjectVersionChangelogs));
+    var AdvantageProgramBenefit = @Html.Raw(Json.Encode(ViewBag.AdvantageProgramBenefit));
+
+    //Other
+    var AuthUserName = '@ViewBag.AuthUserName';
+</script>
+

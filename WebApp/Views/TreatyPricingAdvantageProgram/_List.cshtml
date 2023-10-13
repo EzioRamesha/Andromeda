@@ -1,0 +1,186 @@
+﻿@using PagedList.Mvc
+
+@{
+    var IsEnabledAddAdvantageProgram = ViewBag.IsEnabledAddAdvantageProgram ? ViewBag.IsEnabledAddAdvantageProgram : false;
+    var TreatyPricingAdvantagePrograms = ViewBag.TreatyPricingAdvantagePrograms as PagedList.IPagedList<BusinessObject.TreatyPricing.TreatyPricingAdvantageProgramBo>;
+    var TreatyPricingCedantId = ViewBag.TreatyPricingCedantId;
+}
+
+<div class="text-right">
+    @if (IsEnabledAddAdvantageProgram)
+    {
+        <button type="button" v-on:click="resetAdvantageProgramModal(false)" data-toggle="modal" data-target="#addAPModal" class="btn btn-add-sub">ADD NEW</button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-add-sub" disabled="disabled">ADD NEW</button>
+    }
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+        @Html.Label("Search Product Name", htmlAttributes: new { @class = "col-form-label col-md-6 p-0 font-weight-bold" })
+        <div class="input-group mb-2">
+            @Html.Editor("AdvantageProgramProduct", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+            <div class="input-group-append">
+                <button type="button" class="input-group-text" onclick="SearchAdvantageProgram()"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="advantageProgramTable table-responsive">
+    <table class="table table-hover mt-3" v-cloak id="advantageProgramList">
+        <thead>
+            <tr>
+                <th class="w-15">Advantage Program ID</th>
+                <th class="w-20">Advantage Program Name</th>
+                <th class="w-20">Description</th>
+                <th class="w-10">Benefit Code</th>
+                <th class="w-10">Sum Assured</th>
+                <th class="w-10">Underwriting Ratings(EM)</th>
+                <th class="w-10">Status</th>
+                <th class="w-5 text-center">Action</th>
+            </tr>
+            <tr id="advantageProgramFilterRow">
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="advantageProgramFilter-AdvantageProgramID" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="advantageProgramFilter-AdvantageProgramName" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="advantageProgramFilter-Description" />
+                </th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="advantageProgramFilter-BenefitCode">
+                        @foreach (SelectListItem item in ViewBag.DropDownAdvantageProgramBenefitCodes)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Value)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th></th>
+                <th></th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="advantageProgramFilter-Status">
+                        @foreach (SelectListItem item in ViewBag.DropDownAdvantageProgramStatus)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th class="text-center align-middle">
+                    <div class="btn-row-action">
+                        <button type="button" title="Clear" class="btn-circle prevent-disable"><span class="fas fa-backspace" onclick="clearTableFilters('TreatyPricingAdvantagePrograms', 'advantageProgram', 'advantageProgramCodeFilters')" /></button>
+                        <button type="button" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" onclick="filterTable('TreatyPricingAdvantagePrograms', 'advantageProgram', 'advantageProgramCodeFilters')" /></button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!TreatyPricingAdvantagePrograms.length">
+                <td colspan="8" class="no-data">No available data found.</td>
+            </tr>
+            <tr id="advantageProgramNoData" style="display: none;">
+                <td colspan="8" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(TreatyPricingAdvantageProgram, index) in TreatyPricingAdvantagePrograms">
+                <td>{{ TreatyPricingAdvantageProgram.Code }}</td>
+                <td>{{ TreatyPricingAdvantageProgram.Name }}</td>
+                <td>{{ TreatyPricingAdvantageProgram.Description }}</td>
+                <td>{{ TreatyPricingAdvantageProgram.BenefitCodeNames }}</td>
+                <td>{{ TreatyPricingAdvantageProgram.BenefitSumAssured }}</td>
+                <td>{{ TreatyPricingAdvantageProgram.BenefitEMs }}</td>
+                <td class="va-middle"><span class="status-badge">{{ TreatyPricingAdvantageProgram.StatusName }}</span></td>
+                <td class="text-center">
+                    <a v-bind:href="editAdvantageProgramLink(index)" title="Edit Advantage Program">
+                        <span class="fas fa-pencil-alt" />
+                    </a>
+                    @*<a href="javascript:void(0);" v-on:click="cloneAdvantageProgram(index)" title="Duplicate Advantage Program" class="ml-2">
+                            <span class="fas fa-clone" />
+                        </a>*@
+                    <span class="fas fa-clone ml-2" style="cursor:pointer" v-on:click="resetCloneModal('Advantage Program', TreatyPricingAdvantageProgram.Code, index)" data-toggle="modal" data-target="#cloneModal" title="Duplicate Advantage Program" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-footer">
+    <div class="row">
+        <div class="col-md-4">
+            @{
+                ViewBag.CurrentPageNumber = TreatyPricingAdvantagePrograms.PageNumber;
+                ViewBag.CurrentPageItems = TreatyPricingAdvantagePrograms.Count;
+                ViewBag.PageSize = TreatyPricingAdvantagePrograms.PageSize;
+                ViewBag.Total = ViewBag.TreatyPricingAdvantageProgramTotal;
+            }
+            @Html.Partial("_PageInfo")
+        </div>
+        <div class="col-md-8" id="contentPager">
+            @Html.PagedListPager(TreatyPricingAdvantagePrograms, Page => Url.Action("Edit", "TreatyPricingCedant", new { id = TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexAdvantageProgram, Page, }), Shared.Html.GetPagedListRenderOptions())
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addAPModal" tabindex="-1" role="dialog" aria-labelledby="addAPModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Advantage Program</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addAdvantageProgramError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label">Advantage Program Name</label>
+                        <input type="text" class="form-control" v-model="AdvantageProgramModal.Name" placeholder="Type Here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Duplicate Existing Advantage Program</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="hasAPDuplicate" name="hasAPDuplicate" type="checkbox" v-model="AdvantageProgramModal.IsDuplicateExisting" v-on:change="resetAdvantageProgramDuplicate()" />
+                                <label class="custom-control-label" for="hasAPDuplicate">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Company</label>
+                        <select v-model="AdvantageProgramModal.CedantId" class="form-control selectpicker" id="dropDownAdvantageProgramCedants" v-on:change="updateDropDownDuplicateObjects(GetAdvantageProgramByCedantUrl, 'AdvantageProgram')">
+                            <option v-for="cedant in DropDownTreatyPricingCedants" :value="cedant.Value">
+                                {{ cedant.Text }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Advantage Program</label>
+                        <select v-model="AdvantageProgramModal.DuplicateTreatyPricingAdvantageProgramId" id="dropDownTreatyPricingAdvantagePrograms" class="form-control selectpicker" v-on:change="updateDropDownDuplicateObjectVersions(GetAdvantageProgramVersionByIdUrl, 'AdvantageProgram')">
+                            <option v-for="AdvantageProgram in DropDownTreatyPricingAdvantagePrograms" :value="AdvantageProgram.Id">
+                                {{ AdvantageProgram.Code }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Version</label>
+                        <select v-model="AdvantageProgramModal.DuplicateTreatyPricingAdvantageProgramVersionId" id="dropDownTreatyPricingAdvantageProgramVersions" class="form-control selectpicker">
+                            <option v-for="advantageProgramVersion in DropDownTreatyPricingAdvantageProgramVersions" :value="advantageProgramVersion.Id">
+                                {{ advantageProgram.Version }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button v-on:click="saveAdvantageProgram()" type="button" class="btn btn-submit">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>

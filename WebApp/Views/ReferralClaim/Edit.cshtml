@@ -1,0 +1,268 @@
+﻿@model WebApp.Models.ReferralClaimViewModel
+
+@{
+    ViewBag.Title = "Referral Claim";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.ReferralClaimBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.ReferralClaimBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.Status)
+
+            <div class="form-horizontal">
+                @Html.Partial("_Details")
+            </div>
+
+
+            <div class="card mt-4">
+                @if (Model.Status == BusinessObject.ReferralClaimBo.StatusClosedRegistered)
+                {
+                    <div class="card-header">
+                        <h4>Related Claim Register Record(s)</h4>
+                    </div>
+                    <div class="card-body" style="min-height: 1px;">
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Policy No</th>
+                                        <th class="w-10">Claim Type</th>
+                                        <th class="w-10">Claim ID</th>
+                                        <th class="w-10">Ceding Company</th>
+                                        <th class="w-10">Sum Insured (MYR)</th>
+                                        <th class="w-15">Cause of Event</th>
+                                        <th class="w-15">Total Retro Amount (MYR)</th>
+                                        <th class="w-15">Claim Recovery Amount (MYR)</th>
+                                        <th class="w-10">Person In-Charge</th>
+                                        <th class="w-10">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!RelatedClaimRegisters.length">
+                                        <td colspan="9" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(relatedClaimRegister, index) in RelatedClaimRegisters">
+                                        <td> {{ relatedClaimRegister.PolicyNumber }} </td>
+                                        <td>  </td>
+                                        <td> <a v-bind:href="urlClaimRegisterEditLink(index)" target="_blank" class="linkbtn"><u>{{ relatedClaimRegister.ClaimId }}</u></a></td>
+                                        <td> {{ relatedClaimRegister.CedingCompany }} </td>
+                                        <td> {{ relatedClaimRegister.SumInsStr }} </td>
+                                        <td> {{ relatedClaimRegister.CauseOfEvent }} </td>
+                                        <td> {{ relatedClaimRegister.TotalRetroAmountStr }}</td>
+                                        <td> {{ relatedClaimRegister.ClaimRecoveryAmountStr }} </td>
+                                        <td> {{ relatedClaimRegister.PersonInChargeBo?.UserName }} </td>
+                                        <td> {{ relatedClaimRegister.StatusName }} </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                    @if (Model.Status == BusinessObject.ReferralClaimBo.StatusPendingChecklist)
+                    {
+                        <div class="dropdown dropdownActionMenu float-right">
+                            <button type="button" class="btn btn-submit dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                <button type="submit" class="dropdown-item" formaction="@Url.Action("CloseRegister", new { id = Model.Id })">Register Claim</button>
+                                <button type="submit" onclick="submitClosed()" class="dropdown-item">Close Claim</button>
+                                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#sanctionModal" v-on:click="matchSanction()">Check for Sanction</button>
+                                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#duplicateModal" v-on:click="getDuplicate()">Check for Duplication</button>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Status == BusinessObject.ReferralClaimBo.StatusClosed)
+                    {
+                        <button type="submit" class="btn btn-submit float-right mr-2 prevent-disable" formaction="@Url.Action("CloseRegister", new { id = Model.Id })">REGISTER CLAIM</button>
+                    }
+                    @if (Model.Status != BusinessObject.ReferralClaimBo.StatusPendingAssessment)
+                    {
+                        <button type="submit" class="btn btn-submit float-right mr-2">SAVE</button>
+                    }
+                    @if (Model.Status == BusinessObject.ReferralClaimBo.StatusNewCase || Model.Status == BusinessObject.ReferralClaimBo.StatusPendingClarification)
+                    {
+                        <button type="submit" onclick="submitForAssessment()" class="btn btn-submit float-right mr-2">SUBMIT FOR ASSESSMENT</button>
+                    }
+                    @if (Model.Status == BusinessObject.ReferralClaimBo.StatusPendingClarification)
+                    {
+                        <button type="submit" onclick="submitForChecklist()" class="btn btn-submit float-right mr-2">SUBMIT FOR CHECKLIST</button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog" aria-labelledby="duplicateModal" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Duplication Check</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="!DuplicateFound" class="alert alert-success" role="alert">
+                        <span>No Duplicate Found</span>
+                    </div>
+                    <div v-if="DuplicateFound" class="alert alert-warning" role="alert">
+                        <span>Duplicate Found</span>
+                    </div>
+
+                    <div class="table-responsive mb-1">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Claim ID / Referral ID</th>
+                                    <th class="w-10">Insured Name</th>
+                                    <th class="w-10">Policy No</th>
+                                    <th class="w-10">Date of Birth</th>
+                                    <th class="w-10">Date Registered</th>
+                                    <th class="w-10">Claim Code</th>
+                                    <th class="w-10">Treaty Code</th>
+                                    <th class="w-10">Claim Amount (MYR)</th>
+                                    <th class="w-10">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!DuplicateList.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(item, index) in DuplicateList">
+                                    <td>{{ item.ReferralId }}</td>
+                                    <td>{{ item.InsuredName }}</td>
+                                    <td>{{ item.PolicyNumber }}</td>
+                                    <td>{{ item.InsuredDateOfBirthStr }}</td>
+                                    <td>{{ item.RegisteredAtStr }}</td>
+                                    <td>{{ item.ClaimCode }}</td>
+                                    <td>{{ item.TreatyCode }}</td>
+                                    <td>{{ item.ClaimRecoveryAmountStr }}</td>
+                                    <td>{{ item.StatusName }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-submit" data-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="sanctionModal" tabindex="-1" role="dialog" aria-labelledby="sanctionModal" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sanction Check</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="!SanctionFound" class="alert alert-success" role="alert">
+                        <span>No Sanction Matched</span>
+                    </div>
+                    <div v-if="SanctionFound" class="alert alert-warning" role="alert">
+                        <span>This case is Sanctioned</span>
+                    </div>
+
+                    <div class="table-responsive mb-1">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Source</th>
+                                    <th class="w-10">Publication Information</th>
+                                    <th class="w-5">Category</th>
+                                    <th class="w-5">Ref Number</th>
+                                    <th class="w-15">Name</th>
+                                    <th class="w-15">Identity</th>
+                                    <th class="w-10">Date of Birth</th>
+                                    <th class="w-10">Year of Birth</th>
+                                    <th class="w-10">Country</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!SanctionList.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(item, index) in SanctionList">
+                                    <td>{{ item.SanctionBatchBo.SourceBo.Name }}</td>
+                                    <td>{{ item.PublicationInformation }}</td>
+                                    <td>{{ item.Category }}</td>
+                                    <td>{{ item.RefNumber }}</td>
+                                    <td>
+                                        <ul class="p-inline-20" v-if="item.SanctionNameBos.length">
+                                            <li v-for="name in item.SanctionNameBos">{{ name.Name }}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="p-inline-20" v-if="item.SanctionIdentityBos.length">
+                                            <li v-for="identity in item.SanctionIdentityBos">{{ identity.IdType }}: {{ identity.IdNumber }}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="p-inline-20" v-if="item.SanctionBirthDateBos.length">
+                                            <li v-for="birthDate in item.SanctionBirthDateBos" v-if="birthDate.DateOfBirth != null">{{ birthDate.DateOfBirthStr }}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="p-inline-20" v-if="item.SanctionBirthDateBos.length">
+                                            <li v-for="birthDate in item.SanctionBirthDateBos" v-if="birthDate.YearOfBirth != null">{{ birthDate.YearOfBirth }}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="p-inline-20" v-if="item.SanctionCountryBos.length">
+                                            <li v-for="country in item.SanctionCountryBos">{{ country.Country }}</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-submit" v-on:click="sanctionAction(2)">EXACT MATCH</button>
+                    <button type="button" class="btn btn-submit" v-on:click="sanctionAction(1)">MARK FOR WHITELIST</button>
+                    <button type="button" class="btn btn-submit" data-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/Scripts/models/ReferralClaim.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+}

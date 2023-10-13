@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNet.Identity
+
+<ul class="nav navbar-nav ml-auto">
+    @*<li class="nav-item mr-2">
+        <span class="fas fa-bell">
+            <span class="badge">4</span>
+        </span>
+    </li>*@
+
+    @if (Request.IsAuthenticated)
+    {
+        using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "form-inline my-2 my-lg-0" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <li class="nav-item dropdown mr-2">
+                <a class="nav-link nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                    <label class="usernamelbl">Hello, @User.Identity.GetUserName() !</label><img src="~/Image/user-circle-solid.png" style="width: 25px;height: 25px;" />
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <span class="dropdown-header">Account</span>
+
+                    <a class="dropdown-item" href="@Url.Action("Index", "Manage")">
+                        <i class="fas fa-lock"></i> Profile
+                    </a>
+
+                    <span class="dropdown-header">Configurations</span>
+
+                    <a class="dropdown-item" href="@Url.Action("RequestUser", "User")">
+                        <i class="fas fa-edit"></i> Request New/Modify User
+                    </a>
+                    
+                    <a class="dropdown-item" href="@Url.Action("RequestAccessGroup", "AccessGroup")">
+                        <i class="fas fa-edit"></i> Request New/Modify Access Group
+                    </a>
+
+                    <a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit()">
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                    </a>
+                </div>
+            </li>
+        }
+    }
+    else
+    {
+        @*
+            <li class="nav-item mr-2">
+                @Html.ActionLink("Register", "Register", "Account", new { }, new { @class = "nav-link", id = "registerLink" })
+            </li>
+        *@
+        <li class="nav-item mr-2">
+            @Html.ActionLink("Sign In", "Login", "Account", new { }, new { @class = "nav-link", id = "loginLink" })
+        </li>
+    }
+</ul>

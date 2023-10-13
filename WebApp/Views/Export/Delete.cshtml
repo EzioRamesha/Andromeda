@@ -1,0 +1,110 @@
+﻿@model WebApp.Models.ExportViewModel
+
+@{
+    ViewBag.Title = "Export";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Dashboard", "Home");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TypeName)</td>
+                            <td>@Html.DisplayFor(model => model.TypeName)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.Total)</td>
+                            <td>@Html.DisplayFor(model => model.Total)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.Processed)</td>
+                            <td>@Html.DisplayFor(model => model.Processed)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.GenerateStartAt)</td>
+                            <td>@Model.GenerateStartAtStr</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.GenerateEndAtStr)</td>
+                            <td>@Model.GenerateEndAtStr</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.CreatedAtStr)</td>
+                            <td>@Model.CreatedAtStr</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt-4">
+                    <span class="font-weight-bold">@Html.LabelFor(model => model.Parameters, htmlAttributes: new { @class = "col-form-label" })</span>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-50">
+                                    Label
+                                </th>
+                                <th class="w-50">
+                                    Value
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ParameterDic)
+                            {
+                                if (item.Key == "Id")
+                                {
+                                    continue;
+                                }
+                                var v = BusinessObject.ExportBo.GetValue(item.Key, item.Value);
+
+                                <tr>
+                                    <td>@item.Key</td>
+                                    <td>@v</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Dashboard", "Home", null, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

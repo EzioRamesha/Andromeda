@@ -1,0 +1,109 @@
+﻿@model WebApp.Models.PerLifeRetroCountryViewModel
+
+@{
+    ViewBag.Title = "Per Life Retro Country";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @*@Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.Country, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", maxlength = @ViewBag.CountryMaxLength } })
+                            @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })*@
+                        @Html.LabelFor(model => model.TerritoryOfIssueCodePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TerritoryOfIssueCodePickListDetailId, (List<SelectListItem>)ViewBag.DropDownTerritoryOfIssueCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.TerritoryOfIssueCodePickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.EffectiveStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.EffectiveStartDateStr, new { htmlAttributes = new { id = "EffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveStartDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.EffectiveStartDateStr, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EffectiveEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.EffectiveEndDateStr, new { htmlAttributes = new { id = "EffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveEndDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.EffectiveEndDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#EffectiveStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+            $('#EffectiveEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            $(document).ready(function () {
+                if ('@ViewBag.ReadOnly' == 'True') {
+                    $("input").prop("disabled", true);
+                    $("select").prop("disabled", true);
+                    $('button').prop("disabled", true);
+                }
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+    </script>
+}

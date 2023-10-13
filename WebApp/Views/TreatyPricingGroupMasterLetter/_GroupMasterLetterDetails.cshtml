@@ -1,0 +1,138 @@
+﻿@model WebApp.Models.TreatyPricingGroupMasterLetterViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row mt-4">
+    <div class="form-group col-md-12">
+        <span class="font-weight-bold">@Html.Label("List of RI Group Slip", htmlAttributes: new { @class = "col-form-label" })</span>
+        <div class="text-right">
+            <input class="btn btn-upload" id="summaryButton" :disabled="!GroupMasterLetter.Id" type="submit" href="#" formaction="@(Url.Action("Download", new { id = Model.Id }))" value="Download" />
+            <button type="button" class="btn btn-add-sub" style="width: auto;" v-on:click="resetModalData()" data-toggle="modal" data-target="#addRiGroupSlipModal" disabled="@disabled">ADD NEW</button>
+            @*<button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>*@
+        </div>
+        <input type="hidden" v-model="GroupMasterLetterDetailMaxIndex" name="GroupMasterLetterDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3" v-cloak>
+                <thead>
+                    <tr>
+                        <th class="text-center w-5">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-25">Insured Group Name</th>
+                        <th class="w-25">Ri Group Slip ID</th>
+                        <th class="w-20">Coverage Start Date</th>
+                        <th class="w-20">Coverage End Date</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!GroupMasterLetterDetails.length">
+                        <td colspan="6" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in GroupMasterLetterDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'detailId[' + index + ']'" class="form-control" :value="detail.Id">
+                            <input type="hidden" :name="'groupReferralId[' + index + ']'" class="form-control" :value="detail.TreatyPricingGroupReferralId">
+                        </td>
+                        <td>{{ detail.TreatyPricingGroupReferralBo.InsuredGroupNameBo.Name }}</td>
+                        <td>{{ detail.TreatyPricingGroupReferralBo.RiGroupSlipCode }}</td>
+                        <td>{{ detail.TreatyPricingGroupReferralBo.CoverageStartDateStr }}</td>
+                        <td>{{ detail.TreatyPricingGroupReferralBo.CoverageEndDateStr }}</td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addRiGroupSlipModal" tabindex="-1" role="dialog" aria-labelledby="addRiGroupSlipModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Ri Group Slip</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="GroupMasterLetterDetailDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in GroupMasterLetterDetailDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="cedantId" class="col-form-label">Ceding Company</label>
+                            <select v-model="GroupMasterLetterDetailData.cedantId" id="cedantId" class="form-control selectpicker" ref="select" data-container="body">
+                                <option v-for="cedant in DropDownCedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                                        
+                    <div class="table-responsive mt-4 mb-4">
+                        <span class="font-weight-bold"><label class="col-form-label">Search Result(s): {{ !GroupReferralDetail || !GroupReferralDetail.length ? 0 : GroupReferralDetail.length }} Record(s)</label></span>
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-20">Ceding Company</th>
+                                    <th class="w-20">Insured Group Name</th>
+                                    <th class="w-20">RI Group Slip ID</th>
+                                    <th class="w-15">Coverage Start Date</th>
+                                    <th class="w-15">Coverage End Date</th>
+                                    <th class="w-10">Action &nbsp; <input type="checkbox" @@click='checkAll()' v-model='isCheckAll' :disabled="!GroupReferralDetail || !GroupReferralDetail.length" /></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!GroupReferralDetail || !GroupReferralDetail.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(detail, index) in GroupReferralDetail">
+                                    <td>{{ detail.CedantBo ? detail.CedantBo.Code + ' - ' + detail.CedantBo.Name  : null }}</td>
+                                    <td>{{ detail.InsuredGroupNameBo.Name }}</td>
+                                    <td>{{ detail.RiGroupSlipCode }}</td>
+                                    <td>{{ detail.CoverageStartDateStr }}</td>
+                                    <td>{{ detail.CoverageEndDateStr }}</td>
+                                    <td><input type="checkbox" v-model="selected" :value="detail.Id" @@change='updateCheckall()' /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit" v-on:click="searchGroupReferral()" style="width: auto;">SEARCH</button>
+                <button type="button" class="btn btn-submit" v-on:click="addGroupReferral()" :disabled="!GroupReferralDetail || !GroupReferralDetail.length">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    // Url
+    var GetByCedantIdHasRiGroupSlipUrl = '@Url.Action("GetByCedantIdHasRiGroupSlip", "TreatyPricingGroupMasterLetter")';
+
+    // List
+    var GroupMasterLetterDetails = @Html.Raw(Json.Encode(ViewBag.GroupMasterLetterDetailBos));
+    var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

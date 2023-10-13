@@ -1,0 +1,213 @@
+﻿<div class="tab-pane fade" id="remarkTab" role="tabpanel" aria-labelledby="remark-tab">
+    <div class="text-right">
+        <button id="addRemarkButton" type="button" class="btn btn-add-sub mt-2" style="width: auto;" v-on:click="resetRemarkInfo()" data-toggle="modal" data-target="#remarkModal">ADD REMARK</button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover my-3">
+            <thead>
+                <tr>
+                    <th class="w-10">Created Date & time</th>
+                    <th class="w-15">Created By</th>
+                    <th class="w-10">Processing Status</th>
+                    <th class="w-15">Remarks</th>
+                    <th class="w-15">Attachment(s)</th>
+                    <th class="w-10">Follow Up Date</th>
+                    <th class="w-10">Follow Up Status</th>
+                    <th class="w-10">Permission</th>
+                    <th class="w-5">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="!Remarks || !Remarks.length">
+                    <td colspan="4" class="no-data">No available data found.</td>
+                </tr>
+                <tr v-for="(remark, index) in Remarks">
+                    <td>
+                        <input type="hidden" v-model="remark.CreatedAtStr" :name="'r.CreatedAtStr[' + index + ']'">
+                        {{ remark.CreatedAtStr }}
+                    </td>
+                    <td>{{ remark.CreatedByName }}</td>
+                    <td>
+                        <input type="hidden" v-model="remark.Status" :name="'r.Status[' + index + ']'">
+                        <input type="hidden" v-model="remark.StatusName" :name="'r.StatusName[' + index + ']'">
+                        {{ remark.StatusName }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="remark.Content" :name="'r.Content[' + index + ']'">
+                        {{ remark.Content }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="remark.DocumentMaxIndex" :name="'r.DocumentMaxIndex[' + index + ']'">
+                        <ul style="list-style: none; padding: 0;">
+                            <li v-for="(document, docIndex) in remark.DocumentBos" class="row">
+                                <input type="hidden" v-model="document.Index" :name="'r.DocumentIndex[' + index + '][' + docIndex + ']'" />
+                                <div class="col-md-1"> <i class="fas fa-paperclip" style="display:inline-block"></i> </div>
+                                <div class="col-md-10"> {{ document.FileName }} </div>
+                            </li>
+                        </ul>
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="remark.HasFollowUp" :name="'r.HasFollowUp[' + index + ']'">
+                        <input type="hidden" v-model="remark.FollowUpAtStr" :name="'r.FollowUpAtStr[' + index + ']'">
+                        <input type="hidden" v-model="remark.FollowUpUserId" :name="'r.FollowUpUserId[' + index + ']'">
+                        {{ remark.FollowUpAtStr }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="remark.FollowUpStatus" :name="'r.FollowUpStatus[' + index + ']'">
+                        {{ remark.FollowUpStatusName }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="remark.RemarkIsPrivate" :name="'r.IsPrivate[' + index + ']'">
+                        {{ remark.PermissionName }}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="fas fa-ellipsis-v dropbtn" />
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" data-dismiss="dropdown" v-if="remark.FollowUpStatus == FollowUpStatusPending" v-on:click="completeFollowUp(index)">Mark As Completed</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-pane fade" id="documentTab" role="tabpanel" aria-labelledby="document-tab">
+    <input type="hidden" v-model="DocumentMaxIndex" name="documentMaxIndex" />
+    <div class="table-responsive">
+        <table class="table table-hover table-sm my-3">
+            <thead>
+                <tr>
+                    <th class="w-25">Upload Date & Time</th>
+                    <th class="w-30">Filename</th>
+                    <th class="w-20">Uploaded By</th>
+                    <th class="w-20">Permission</th>
+                    <th class="text-center w-5">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="!Documents.length">
+                    <td colspan="6" class="no-data">No available data found.</td>
+                </tr>
+                <tr v-for="(document, index) in Documents">
+                    <td>
+                        <input type="hidden" v-model="document.Id" :name="'documentId[' + index + ']'" />
+                        <input type="hidden" v-model="document.CreatedAtStr" :name="'createdAtStr[' + index + ']'" />
+                        {{ document.CreatedAtStr }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="document.FileName" :name="'filename[' + index + ']'" />
+                        <input type="hidden" v-model="document.TempFilePath" :name="'tempFilePath[' + index + ']'" />
+                        <input type="hidden" v-model="document.HashFileName" :name="'hashFileName[' + index + ']'" />
+                        {{ document.FileName }}
+                    </td>
+                    <td>
+                        {{ document.CreatedByName }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="document.IsPrivate" :name="'isPrivate[' + index + ']'">
+                        {{ document.PermissionName }}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="fas fa-ellipsis-v dropbtn" />
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" v-if="document.Id != null && document.FileExists === true" data-dismiss="dropdown" v-bind:href="document.DownloadLink">Download</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="remarkModal" tabindex="-1" role="dialog" aria-labelledby="remarkModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Remark</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="remarkIsPrivate">Remarks Permission</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">Public</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="remarkIsPrivate" name="remarkIsPrivate" type="checkbox" v-model="RemarkModal.RemarkIsPrivate" />
+                                <label class="custom-control-label" for="remarkIsPrivate">Private</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label" for="remarkContent">Please write your remark here</label>
+                        <textarea rows="1" v-on:focus="autoExpandTextarea('remarkContent')" v-on:blur="autoCollapseTextarea('remarkContent')" v-model="RemarkModal.Content" class="form-control textarea-auto-expand" id="remarkContent" placeholder="Type here"></textarea>
+                    </div>
+                    <hr />
+                    <span class="font-weight-bold">@Html.Label("Document", htmlAttributes: new { @class = "col-form-label" })</span>
+                    <div class="form-group">
+                        <label class="col-form-label" for="documentIsPrivate">File Permission</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">Public</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="documentIsPrivate" name="documentIsPrivate" type="checkbox" v-model="RemarkModal.DocumentIsPrivate" />
+                                <label class="custom-control-label" for="documentIsPrivate">Private</label>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="col-form-label">File Upload</label>
+                    <div class="file is-boxed">
+                        <label class="file-label">
+                            <input class="form-control-file" type="file" id="files" name="upload" multiple v-on:change="uploadFile()">
+                            Drag and Drop File Here or <u>Browse your file</u>
+                            <br />
+                            <span class="file-desc">
+                                Allowed file format: .pdf
+                            </span>
+                            <br />
+                            <span class="file-desc">
+                                File size is up to 10MB
+                            </span>
+                        </label>
+                    </div>
+                    <div id="selectedFiles" class="file-list-display"></div>
+                    <hr />
+                    <div class="form-group">
+                        <label class="col-form-label" for="hasFollowUp">Follow Up</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="hasFollowUp" name="hasFollowUp" type="checkbox" v-model="RemarkModal.HasFollowUp" v-on:click="clearFollowUpDetails()" />
+                                <label class="custom-control-label" for="hasFollowUp">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="col-form-label" for="RemarkModalFollowUpAtStr">Follow Up Date</label>
+                        <input type="text" class="form-control" id="RemarkModalFollowUpAtStr" :disabled="!RemarkModal.HasFollowUp" v-on:click="openDatePicker('RemarkModalFollowUpAtStr')" placeholder="DD MM YYYY" v-model="RemarkModal.FollowUpAtStr" autocomplete="off">
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="col-form-label" for="FollowUpUserId">Follow Up with User</label>
+                        @Html.DropDownList("FollowUpUserId", (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "RemarkModal.FollowUpUserId" })
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" v-on:click="addRemark()" class="btn btn-submit" data-dismiss="modal">SUBMIT</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,444 @@
+﻿@using PagedList.Mvc
+
+@{
+    ViewBag.Title = "Dashboard";
+
+    PagedList.IPagedList<WebApp.Models.ExportViewModel> ExportQueueList = ViewBag.ExportQueueList as PagedList.IPagedList<WebApp.Models.ExportViewModel>;
+    PagedList.IPagedList<WebApp.Models.ExportViewModel> ExportList = ViewBag.ExportList as PagedList.IPagedList<WebApp.Models.ExportViewModel>;
+    PagedList.IPagedList<WebApp.Models.TreatyPricingReportGenerationViewModel> ReportList = ViewBag.TreatyPricingReportList as PagedList.IPagedList<WebApp.Models.TreatyPricingReportGenerationViewModel>;
+    var exportRouteValue = (RouteValueDictionary)ViewBag.ExportRouteValue;
+}
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="card-body card-listing">
+        @*<h1>ASP.NET</h1>
+            <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+            <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>*@
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#exportQueue" class="@(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "active" : "") underline-tab">Export Queue</a></li>
+            @*<li class="nav-item"><a data-toggle="tab" href="#export" class="@(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "active" : "") underline-tab">Export</a></li>*@
+            <li class="nav-item"><a class="@(ViewBag.ActiveTab == 2 ? "active" : "") underline-tab" data-toggle="tab" href="#export">Export</a></li>
+            <li class="nav-item"><a class="@(ViewBag.ActiveTab == 3 ? "active" : "") underline-tab" data-toggle="tab" href="#reportGeneration">Report Generation</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "show active" : "")" id="exportQueue" role="tabpanel" aria-labelledby="exportQueue-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10">
+                                    Total
+                                </th>
+                                <th class="w-10">
+                                    Processed
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        exportRouteValue["ExportQueueSortOrder"] = ViewBag.ExportQueueGenerateStartAt;
+                                        exportRouteValue["ActiveTab"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Generate Start At", "ExportQueueGenerateStartAt", @Url.Action("Dashboard", exportRouteValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        exportRouteValue["ExportQueueSortOrder"] = ViewBag.ExportQueueRequestedAt;
+                                        exportRouteValue["ActiveTab"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Requested At", "ExportQueueRequestedAt", @Url.Action("Dashboard", exportRouteValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    Type
+                                </th>
+                                <th class="w-15">
+                                    Submitted By
+                                </th>
+                                <th class="w-10">
+                                    Status
+                                </th>
+                            </tr>
+                            @*<tr>
+                                @using (Html.BeginForm("Dashboard", "Home", FormMethod.Get))
+                                {
+                                    @Html.Hidden("ExportQueueSortOrder", (string)ViewBag.ExportQueueSortOrder)
+                                    @Html.Hidden("ActiveTab", 1)
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>
+                                        @Html.DropDownList("ExportQueueType", (List<SelectListItem>)ViewBag.ExportTypeItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th></th>
+                                    <th></th>
+                                }
+                            </tr>*@
+                        </thead>
+                        <tbody>
+                            @if (ExportQueueList.Count > 0)
+                            {
+                                foreach (var item in ExportQueueList)
+                                {
+                                    <tr>
+                                        <td class="text-right">@string.Format("{0:N0}", item.Total)</td>
+                                        <td class="text-right">@string.Format("{0:N0}", item.Processed)</td>
+                                        <td>@(item.GenerateStartAt != null ? item.GenerateStartAt.Value.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>@(item.CreatedAt != null ? item.CreatedAt.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>@BusinessObject.ExportBo.GetTypeName(item.Type)</td>
+                                        <td>@Services.Identity.UserService.GetNameById(item.CreatedById)</td>
+                                        <td>
+                                            <span class="@BusinessObject.ExportBo.GetStatusClass(item.Status)">
+                                                @BusinessObject.ExportBo.GetStatusName(item.Status)
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @{
+                    ViewBag.CurrentPageNumber = ExportQueueList.PageNumber;
+                    ViewBag.CurrentPageItems = ExportQueueList.Count;
+                    ViewBag.PageSize = ExportQueueList.PageSize;
+                    ViewBag.Total = ViewBag.ExportQueueTotal;
+                }
+                <div class="pagination-footer btn-row">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(ExportQueueList, Page => Url.Action("Dashboard", new
+                            {
+                                ExportQueueType = exportRouteValue["ExportQueueType"],
+                                //ExportStatus = exportRouteValue["ExportStatus"],
+                                ExportQueueSortOrder = ViewBag.ExportQueueSortOrder,
+                                ExportQueuePage = Page,
+                                ActiveTab = 1
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="export" role="tabpanel" aria-labelledby="export-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10">
+                                    Total
+                                </th>
+                                <th class="w-10">
+                                    Processed
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        exportRouteValue["ExportSortOrder"] = ViewBag.ExportGenerateStartAt;
+                                        exportRouteValue["ActiveTab"] = 2;
+                                        @Shared.Html.Sorter(ViewBag, "Generate Start At", "ExportGenerateStartAt", @Url.Action("Dashboard", exportRouteValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        exportRouteValue["ExportSortOrder"] = ViewBag.ExportGenerateEndAt;
+                                        exportRouteValue["ActiveTab"] = 2;
+                                        @Shared.Html.Sorter(ViewBag, "Generate End At", "ExportGenerateEndAt", @Url.Action("Dashboard", exportRouteValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    Requested At
+                                </th>
+                                <th class="w-10">
+                                    Type
+                                </th>
+                                <th class="w-10">
+                                    Status
+                                </th>
+                                <th class="w-5">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Dashboard", "Home", FormMethod.Get))
+                                {
+                                    @Html.Hidden("ExportSortOrder", (string)ViewBag.SortOrder)
+                                    @Html.Hidden("ActiveTab", 2)
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>
+                                        @Html.DropDownList("ExportType", (List<SelectListItem>)ViewBag.ExportTypeItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExportStatus", (List<SelectListItem>)ViewBag.ExportStatusItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Dashboard")" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ExportList.Count > 0)
+                            {
+                                foreach (var item in ExportList)
+                                {
+                                    <tr>
+                                        <td class="text-right">@string.Format("{0:N0}", item.Total)</td>
+                                        <td class="text-right">@string.Format("{0:N0}", item.Processed)</td>
+                                        <td>@(item.GenerateStartAt != null ? item.GenerateStartAt.Value.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>@(item.GenerateEndAt != null ? item.GenerateEndAt.Value.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>@(item.CreatedAt != null ? item.CreatedAt.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>
+                                            @if (item.Type == BusinessObject.ExportBo.TypeRiData)
+                                            {
+                                                <a class="" href="@Url.Action("Edit", "RiData", new { Id = item.ObjectId })" target="_blank"><i class="fas fa-search"></i></a>
+                                            }
+                                            @BusinessObject.ExportBo.GetTypeName(item.Type)
+                                        </td>
+                                        <td>
+                                            <span class="@BusinessObject.ExportBo.GetStatusClass(item.Status)">
+                                                @BusinessObject.ExportBo.GetStatusName(item.Status)
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @Html.ActionLink("View", "Edit", "Export", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                    @Html.ActionLink("Delete", "Delete", "Export", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @{
+                    ViewBag.CurrentPageNumber = ExportList.PageNumber;
+                    ViewBag.CurrentPageItems = ExportList.Count;
+                    ViewBag.PageSize = ExportList.PageSize;
+                    ViewBag.Total = ViewBag.ExportTotal;
+                }
+                <div class="pagination-footer btn-row">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(ExportList, Page => Url.Action("Dashboard", new
+                            {
+                                ExportType = exportRouteValue["ExportType"],
+                                ExportStatus = exportRouteValue["ExportStatus"],
+                                ExportSortOrder = ViewBag.ExportSortOrder,
+                                ExportPage = Page,
+                                ActiveTab = 2
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="reportGeneration" role="tabpanel" aria-labelledby="reportGeneration-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-20">
+                                    Date & Time Generated
+                                </th>
+                                <th class="w-25">
+                                    Report Name
+                                </th>
+                                <th class="w-25">
+                                    File Name
+                                </th>
+                                <th class="w-15">
+                                    Submitted By
+                                </th>
+                                <th class="w-10">
+                                    Status
+                                </th>
+                                <th class="w-5 text-center">
+                                    Action
+                                </th>
+                            </tr>
+                            @*<tr>
+                            <th class="w-20">
+                                @{
+                                    exportRouteValue["ReportSortOrder"] = ViewBag.CreatedAt;
+                                    @Shared.Html.Sorter(ViewBag, "Date & Time Generated", "CreatedAt", @Url.Action("Dashboard", exportRouteValue))
+                                }
+                            </th>
+                            <th class="w-25">
+                                @{
+                                    exportRouteValue["ReportSortOrder"] = ViewBag.ReportName;
+                                    @Shared.Html.Sorter(ViewBag, "Report Name", "ReportName", @Url.Action("Dashboard", exportRouteValue))
+                                }
+                            </th>
+                            <th class="w-25">
+                                @{
+                                    exportRouteValue["ReportSortOrder"] = ViewBag.FileName;
+                                    @Shared.Html.Sorter(ViewBag, "File Name", "FileName", @Url.Action("Dashboard", exportRouteValue))
+                                }
+                            </th>
+                            <th class="w-15">
+                                @{
+                                    exportRouteValue["ReportSortOrder"] = ViewBag.CreatedById;
+                                    @Shared.Html.Sorter(ViewBag, "Submitted By", "CreatedById", @Url.Action("Dashboard", exportRouteValue))
+                                }
+                            </th>
+                            <th class="w-10">
+                                @{
+                                    exportRouteValue["ReportSortOrder"] = ViewBag.Status;
+                                    @Shared.Html.Sorter(ViewBag, "Status", "Status", @Url.Action("Dashboard", exportRouteValue))
+                                }
+                            </th>
+                            <th class="w-5 text-center">
+                                Action
+                            </th>
+                        </tr>*@
+                        <tr>
+                            @using (Html.BeginForm("Dashboard", "Home", FormMethod.Get))
+                            {
+                                @Html.Hidden("ReportSortOrder", (string)ViewBag.ReportSortOrder)
+                                @Html.Hidden("ActiveTab", 3)
+                                <th>
+                                    @Html.TextBox("ReportCreatedAt", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReportCreatedAt')" />
+                                </th>
+                                <th>
+                                    @Html.DropDownList("ReportName", (List<SelectListItem>)ViewBag.DropDownTreatyPricingReportGenerationReportType, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                </th>
+                                <th>
+                                    @Html.TextBox("ReportFileName", null, new { @class = "form-control", placeholder = "Type here" })
+                                </th>
+                                <th>
+                                    @Html.DropDownList("ReportSubmittedBy", (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                </th>
+                                <th>
+                                    @Html.DropDownList("ReportStatus", (List<SelectListItem>)ViewBag.ReportStatusItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                </th>
+                                <th class="text-center">
+                                    <div class="btn-row-action">
+                                        <a href="@Url.Action("Dashboard")" class="btn btn-circle" title="Clear">
+                                            <span class="fas fa-backspace" />
+                                        </a>
+                                        <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                    </div>
+                                </th>
+                            }
+                        </tr>
+                        </thead>
+                        <tbody>
+                            @if (ReportList.Count > 0)
+                            {
+                                foreach (var item in ReportList)
+                                {
+                                    <tr>
+                                        <td>@(item.CreatedAt != null ? item.CreatedAt.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>@item.ReportName</td>
+                                        <td>@item.FileName</td>
+                                        <td>
+                                            @Services.Identity.UserService.GetNameById(item.CreatedById)
+                                        </td>
+                                        <td>
+                                            <span class="@BusinessObject.TreatyPricing.TreatyPricingReportGenerationBo.GetStatusClass(item.Status)">
+                                                @BusinessObject.TreatyPricing.TreatyPricingReportGenerationBo.GetStatusName(item.Status)
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.Status == BusinessObject.TreatyPricing.TreatyPricingReportGenerationBo.StatusCompleted)
+                                            {
+                                                @Html.ActionLink(" ", "DownloadReportGenerationFile", new { id = item.Id }, new { @class = "fas fa-download" })
+                                            }
+                                            else
+                                            {
+                                                <a href="javascript:void(0);">
+                                                    <span class="fas fa-download" />
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @{
+                    ViewBag.CurrentPageNumber = ReportList.PageNumber;
+                    ViewBag.CurrentPageItems = ReportList.Count;
+                    ViewBag.PageSize = ReportList.PageSize;
+                    ViewBag.Total = ViewBag.TreatyPricingReportTotal;
+                }
+                <div class="pagination-footer btn-row">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(ReportList, Page => Url.Action("Dashboard", new
+                            {
+                                //ExportType = exportRouteValue["ExportType"],
+                                //ExportStatus = exportRouteValue["ExportStatus"],
+                                ReportCreatedAt = exportRouteValue["CreatedAt"],
+                                ReportName = exportRouteValue["ReportName"],
+                                ReportFileName = exportRouteValue["FileName"],
+                                ReportSubmittedBy = exportRouteValue["CreatedById"],
+                                ReportStatus = exportRouteValue["Status"],
+                                ReportSortOrder = ViewBag.ReportSortOrder,
+                                ReportPage = Page,
+                                ActiveTab = 3
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+    </script>
+}

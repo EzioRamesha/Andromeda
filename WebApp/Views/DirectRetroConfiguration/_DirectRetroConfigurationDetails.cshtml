@@ -1,0 +1,121 @@
+﻿@model WebApp.Models.DirectRetroConfigurationViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="DirectRetroConfigurationDetailMaxIndex" name="directRetroConfigurationDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center w-5">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-15">Risk Effective Start Date</th>
+                        <th class="w-15">Risk Effective End Date</th>
+                        <th class="w-15">Policy Issue Start Date</th>
+                        <th class="w-15">Policy Issue End Date</th>
+                        <th class="w-15">Reinsurance Effective Start Date</th>
+                        <th class="w-15">Reinsurance Effective End Date</th>
+                        <th class="w-10">Default</th>
+                        <th class="w-15">Retro Party</th>
+                        <th class="w-15">Treaty No.</th>
+                        <th class="w-15">Schedule</th>
+                        <th class="w-10">Share (%)</th>
+                        <th class="w-15">Premium Spread Table</th>
+                        <th class="w-15">Treaty Discount Table</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!DirectRetroConfigurationDetails.length">
+                        <td colspan="13" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in DirectRetroConfigurationDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'directRetroConfigurationDetailId[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input v-model="detail.RiskPeriodStartDateStr" class="form-control" :name="'riskPeriodStartDateStr[' + index + ']'" v-on:click="openDatePicker('RiskPeriodStartDateStr_' + index)" :id="'RiskPeriodStartDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.RiskPeriodEndDateStr" class="form-control" :name="'riskPeriodEndDateStr[' + index + ']'" v-on:click="openDatePicker('RiskPeriodEndDateStr_' + index)" :id="'RiskPeriodEndDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.IssueDatePolStartDateStr" class="form-control" :name="'issueDatePolStartDateStr[' + index + ']'" v-on:click="openDatePicker('IssueDatePolStartDateStr_' + index)" :id="'IssueDatePolStartDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.IssueDatePolEndDateStr" class="form-control" :name="'issueDatePolEndDateStr[' + index + ']'" v-on:click="openDatePicker('IssueDatePolEndDateStr_' + index)" :id="'IssueDatePolEndDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.ReinsEffDatePolStartDateStr" class="form-control" :name="'reinsEffDatePolStartDateStr[' + index + ']'" v-on:click="openDatePicker('ReinsEffDatePolStartDateStr_' + index)" :id="'ReinsEffDatePolStartDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.ReinsEffDatePolEndDateStr" class="form-control" :name="'reinsEffDatePolEndDateStr[' + index + ']'" v-on:click="openDatePicker('ReinsEffDatePolEndDateStr_' + index)" :id="'ReinsEffDatePolEndDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <select v-model="detail.IsDefault" class="form-control selectpicker" ref="select" :name="'isDefault[' + index + ']'" data-container="body" disabled=@disabled>
+                                <option v-for="yN in YesNo" :value="yN.Value">{{ yN.Text }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="detail.RetroPartyId" class="form-control selectpicker" ref="select" :name="'retroPartyId[' + index + ']'" data-container="body" disabled=@disabled>
+                                <option v-for="retroParty in RetroParties" :value="retroParty.Value">{{ retroParty.Text }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input v-model="detail.TreatyNo" :name="'treatyNo[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.TreatyNo">
+                        </td>
+                        <td>
+                            <input v-model="detail.Schedule" :name="'schedule[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.Schedule">
+                        </td>
+                        <td>
+                            <input v-model="detail.ShareStr" :name="'shareStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.ShareStr">
+                        </td>
+                        <td>
+                            <select v-model="detail.PremiumSpreadTableId" class="form-control selectpicker" ref="select" :name="'premiumSpreadTableId[' + index + ']'" data-container="body" disabled=@disabled>
+                                <option v-for="premiumSpreadTable in PremiumSpreadTables" :value="premiumSpreadTable.Value">{{ premiumSpreadTable.Text }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="detail.TreatyDiscountTableId" class="form-control selectpicker" ref="select" :name="'treatyDiscountTableId[' + index + ']'" data-container="body" disabled=@disabled>
+                                <option v-for="treatyDiscountTable in TreatyDiscountTables" :value="treatyDiscountTable.Value">{{ treatyDiscountTable.Text }}</option>
+                            </select>
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeDirectRetroConfigurationDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var DirectRetroConfigurationModel = @Html.Raw(Json.Encode(Model));
+    var DirectRetroConfigurationDetails = @Html.Raw(Json.Encode(ViewBag.DirectRetroConfigurationDetailBos));
+    var YesNo = @Html.Raw(Json.Encode(ViewBag.DropDownYesNo));
+    var RetroParties = @Html.Raw(Json.Encode(ViewBag.DropDownRetroParties));
+    var PremiumSpreadTables = @Html.Raw(Json.Encode(ViewBag.DropDownPremiumSpreadTables));
+    var TreatyDiscountTables = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyDiscountTables));
+    var RetroPartyParties = @Html.Raw(Json.Encode(ViewBag.RetroPartyParties));
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

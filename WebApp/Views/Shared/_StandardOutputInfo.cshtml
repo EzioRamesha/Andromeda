@@ -1,0 +1,104 @@
+﻿<div class="text-right">
+    <button type="button" class="btn btn-upload" data-toggle="modal" data-target="#stdOutputInfoModal" onclick="openStdOutputInfoModal()"><span class="fa fa-question-circle"></span> Info</button>
+</div>
+
+<div class="modal fade" id="stdOutputInfoModal" tabindex="-1" role="dialog" aria-labelledby="infoModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Information</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#riData" class="active underline-tab">RI Data</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#claimData" v-if="typeof StandardClaimDataOutputList != 'undefined'">Claim Data</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="riData" role="tabpanel" aria-labelledby="riData-tab">
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="riDataInput" onkeyup="searchStandardOutput('riData')" placeholder="Search for Standard Output">
+                        </div>
+                        <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                            <table class="table sticky-top-table" id="riDataTable">
+                                <thead>
+                                    <tr>
+                                        <th>Standard Output</th>
+                                        <th>Data Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!StandardOutputList.length">
+                                        <td colspan="2" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(standardOutput, index) in StandardOutputList">
+                                        <td>{{standardOutput.Code}}</td>
+                                        <td>{{standardOutput.DataTypeName}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="claimData" role="tabpanel" aria-labelledby="claimData-tab" v-if="typeof StandardClaimDataOutputList != 'undefined'">
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="claimDataInput" onkeyup="searchStandardOutput('claimData')" placeholder="Search for Standard Output">
+                        </div>
+                        <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                            <table class="table sticky-top-table" id="claimDataTable">
+                                <thead>
+                                    <tr>
+                                        <th>Standard Output</th>
+                                        <th>Data Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!StandardClaimDataOutputList.length">
+                                        <td colspan="2" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(standardOutput, index) in StandardClaimDataOutputList">
+                                        <td>{{standardOutput.Code}}</td>
+                                        <td>{{standardOutput.DataTypeName}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openStdOutputInfoModal() {
+        $('#riDataInput').val('');
+        $('#claimDataInput').val('');
+        searchStandardOutput();
+    }
+
+    function searchStandardOutput(type) {
+        // Declare variables
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById(type + "Input");
+        filter = input.value.toUpperCase();
+        table = document.getElementById(type + "Table");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>

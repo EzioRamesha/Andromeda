@@ -1,0 +1,390 @@
+﻿@model WebApp.Models.TreatyBenefitCodeMappingViewModel
+
+@{
+    ViewBag.Title = "Product Feature Mapping";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_LoadingSpinner")
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="col-md-6 mid-line-1">
+                        <div class="col-form-label">
+                            <span class="font-weight-bold">Parameters</span>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { id = "inputCedantId", @class = "form-control selectpicker", @onchange = "getTreatyCode(this.value)" })
+                            @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label" for="CedingPlanCode">Ceding Plan Code <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.CedingPlanCode, new { htmlAttributes = new { id = "CedingPlanCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.CedingPlanCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label" for="CedingBenefitTypeCode">Ceding Benefit Type Code <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.CedingBenefitTypeCode, new { htmlAttributes = new { id = "CedingBenefitTypeCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.CedingBenefitTypeCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label" for="CedingBenefitRiskCode">Ceding Benefit Risk Code <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.CedingBenefitRiskCode, new { htmlAttributes = new { id = "CedingBenefitRiskCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.CedingBenefitRiskCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label" for="CedingTreatyCode">Ceding Treaty Code <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.CedingTreatyCode, new { htmlAttributes = new { id = "CedingTreatyCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.CedingTreatyCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label" for="CampaignCode">Campaign Code <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.CampaignCode, new { htmlAttributes = new { id = "CampaignCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.CampaignCode, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReinsEffDatePolStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.ReinsEffDatePolStartDateStr, new { id = "ReinsEffDatePolStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolStartDate')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ReinsEffDatePolStartDateStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReinsEffDatePolEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.ReinsEffDatePolEndDateStr, new { id = "ReinsEffDatePolEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolEndDate')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ReinsEffDatePolEndDateStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReinsBasisCodePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.ReinsBasisCodePickListDetailId, (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.ReinsBasisCodePickListDetailId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AttainedAgeFrom, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.AttainedAgeFrom, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.AttainedAgeFrom, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AttainedAgeTo, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.AttainedAgeTo, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.AttainedAgeTo, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReportingStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.ReportingStartDateStr, new { id = "ReportingStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReportingStartDate')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ReportingStartDateStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReportingEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.ReportingEndDateStr, new { id = "ReportingEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReportingEndDate')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ReportingEndDateStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UnderwriterRatingFromStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.UnderwriterRatingFromStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.UnderwriterRatingFromStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UnderwriterRatingToStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.UnderwriterRatingToStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.UnderwriterRatingToStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.OriSumAssuredFromStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.OriSumAssuredFromStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.OriSumAssuredFromStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.OriSumAssuredToStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.OriSumAssuredToStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.OriSumAssuredToStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReinsuranceIssueAgeFrom, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.ReinsuranceIssueAgeFrom, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.ReinsuranceIssueAgeFrom, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ReinsuranceIssueAgeTo, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.ReinsuranceIssueAgeTo, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.ReinsuranceIssueAgeTo, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mid-line-2">
+                        <div class="col-form-label">
+                            <span class="font-weight-bold">Mapped Values</span>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.TreatyCodeId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.TreatyCodeId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.TreatyCodeId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.BenefitId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.BenefitId, (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.BenefitId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ProfitCommPickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.ProfitCommPickListDetailId, (List<SelectListItem>)ViewBag.DropDownProfitComms, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.ProfitCommPickListDetailId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MaxExpiryAge, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.MaxExpiryAge, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.MaxExpiryAge, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MinIssueAge, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.MinIssueAge, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.MinIssueAge, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MaxIssueAge, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.MaxIssueAge, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.MaxIssueAge, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MaxUwRatingStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.MaxUwRatingStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.MaxUwRatingStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ApLoadingStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.ApLoadingStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.ApLoadingStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MinAarStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.MinAarStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.MinAarStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.MaxAarStr, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.EditorFor(model => model.MaxAarStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.MaxAarStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.AblAmountStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">MYR</div>
+                                </div>
+                                @Html.EditorFor(model => model.AblAmountStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.AblAmountStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.RetentionShareStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">%</div>
+                                </div>
+                                @Html.EditorFor(model => model.RetentionShareStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.RetentionShareStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.RetentionCapStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">MYR</div>
+                                </div>
+                                @Html.EditorFor(model => model.RetentionCapStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.RetentionCapStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.RiShareStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">%</div>
+                                </div>
+                                @Html.EditorFor(model => model.RiShareStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.RiShareStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.RiShareCapStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">MYR</div>
+                                </div>
+                                @Html.EditorFor(model => model.RiShareCapStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.RiShareCapStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.RiShare2Str, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">%</div>
+                                </div>
+                                @Html.EditorFor(model => model.RiShare2Str, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.RiShare2Str, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.RiShareCap2Str, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">MYR</div>
+                                </div>
+                                @Html.EditorFor(model => model.RiShareCap2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.RiShareCap2Str, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ServiceFeeStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">%</div>
+                                </div>
+                                @Html.EditorFor(model => model.ServiceFeeStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ServiceFeeStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.WakalahFeeStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">%</div>
+                                </div>
+                                @Html.EditorFor(model => model.WakalahFeeStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+                            @Html.ValidationMessageFor(model => model.WakalahFeeStr, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.EffectiveDateStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.EffectiveDateStr, new { id = "EffectiveDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveDate')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.EffectiveDateStr, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+<script>
+        var model = @Html.Raw(Json.Encode(Model));
+        var treatyCodeActive = '@BusinessObject.TreatyCodeBo.StatusActive';
+        var getTreatyCodeByCedantUrl = '@Url.Action("Index", "TreatyCode")';
+
+        var CedingBenefitTypeCodes = @Html.Raw(Json.Encode(ViewBag.CedingBenefitTypeCodes));
+        var defaultTreatyCodeId = @Model.TreatyCodeId;
+        var cedingPlanCodeCount = 0;
+        var cedingBenefitTypeCodeCount = 0;
+        var cedingBenefitRiskCodeCount = 0;
+        var cedingTreatyCodeCount = 0;
+        var campaignCodeCount = 0;
+
+        var tokenfieldReady = {
+            cedingPlanCode: false,
+            cedingBenefitTypeCode: false,
+            cedingBenefitRiskCode: false,
+            cedingTreatyCode: false,
+            campaignCode: false,
+        };
+
+        var loadingDiv = $("#loadingSpinner");
+
+        $(document).ready(function () {
+            $('#Description').autoResize();
+        });
+</script>
+
+    @Scripts.Render("~/Scripts/models/ProductFeatureMapping.js")
+}

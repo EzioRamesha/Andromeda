@@ -1,0 +1,161 @@
+﻿@{
+    ViewBag.Title = "Premium Info by MFRS17 Cell Name Report (Snapshot)";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>@ViewBag.Title</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Invoice Type</div>
+                            <select class="form-control selectpicker" multiple name="invoiceType" id="InvoiceType" v-model="ReportParams.InvoiceType" data-actions-box="true" ref="select">
+                                <option v-for="invoiceType in InvoiceTypes" :value="invoiceType.Value">{{ invoiceType.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Reporting Quarter</div>
+                            <select class="form-control selectpicker" name="reportingQuarter" id="ReportingQuarter" v-model="ReportParams.ReportingQuarter" ref="select">
+                                <option v-for="cutOff in CutOffs" :value="cutOff.Value">{{ cutOff.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">&nbsp;</div>
+                    </div>
+
+                    <div class="w-100 text-right">
+                        <button type="button" class="btn btn-download" v-on:click="generate()">GENERATE</button>
+                    </div>
+
+                    <div id="reportBody">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var CutOffs = @Html.Raw(Json.Encode(ViewBag.DropDownCutOffQuarters));
+        var InvoiceTypes = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterSnapshotInvoiceTypes));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                ReportParams: {
+                    InvoiceType: "",
+                    ReportingQuarter: "",
+                },
+                // Dropdownlists
+                CutOffs: CutOffs,
+                InvoiceTypes: InvoiceTypes,
+            },
+            methods: {
+                resetToDefaultSelection: function () {
+                    this.ReportParams.ReportingQuarter = "";
+
+                    this.$nextTick(function () {
+                        $('#ReportingQuarter').selectpicker('refresh');
+
+                        $('#InvoiceType').selectpicker('selectAll');
+                    });
+                },
+                generate: function () {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                    var errorList = [];
+                    
+                    if (this.ReportParams.InvoiceType == null || this.ReportParams.InvoiceType == "") {
+                        errorList.push("Invoice Type is required.");
+                    }
+                    if (this.ReportParams.ReportingQuarter == null || this.ReportParams.ReportingQuarter == "") {
+                        errorList.push("Reporting Quarter is required.");
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    } else {
+
+                        var obj = {
+                            invoiceType: this.ReportParams.InvoiceType.join(","),
+                            cutOff: this.ReportParams.ReportingQuarter,
+                        };
+
+                        $.ajax({
+                            url: "@(Url.Action("GeneratePremiumInfoByMfrs17CellNameSnapshotReport", "Report"))",
+                            type: "POST",
+                            data: obj,
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                            }
+                        }).done(function (result) {
+                            $("#reportBody").html(result);
+                        });
+                    }
+                },
+                // Date Picker
+                openDatePicker: function (currentId) {
+
+                    var id = "#" + currentId;
+                    if ($(id).data("datepicker") != null) {
+                        $(id).datepicker("destroy");
+                    }
+
+                    $(id).datepicker({
+                        format: DateFormatDatePickerJs,
+                        autoclose: true,
+                    });
+
+                    var updateDateValue = this.updateDateValue;
+                    $(id).on('changeDate', function () {
+                        updateDateValue(currentId, $(id).val());
+                    });
+
+                    $(id).focus();
+                },
+                updateDateValue: function (field, value) {
+                    var typeStr = "ReportParams";
+                    this[typeStr][field] = value;
+                },
+            },
+            created: function () {
+                this.resetToDefaultSelection();
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

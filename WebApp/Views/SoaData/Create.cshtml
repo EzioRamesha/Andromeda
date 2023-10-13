@@ -1,0 +1,319 @@
+﻿@model WebApp.Models.SoaDataBatchViewModel
+
+@{
+    ViewBag.Title = "SOA Data Batch";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "SoaData", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.DataUpdateStatus)
+            @Html.HiddenFor(model => model.ModuleId)
+            @Html.HiddenFor(model => model.RiDataBatchId)
+            @Html.HiddenFor(model => model.ClaimDataBatchId)
+            @Html.HiddenFor(model => model.Type)
+            @Html.HiddenFor(model => model.IsRiDataAutoCreate)
+            @Html.HiddenFor(model => model.IsClaimDataAutoCreate)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getTreaty(this.value)", @v_model = "SoaDataModel.CedantId" })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getBusinessType(this.value)", @v_model = "SoaDataModel.TreatyId" })
+                        @Html.ValidationMessageFor(model => model.TreatyId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Quarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Quarter, new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY MM", autocomplete = "off" } })
+                        @Html.ValidationMessageFor(model => model.Quarter, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CurrecncyRate, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                @Html.DropDownListFor(model => model.CurrecncyCodePickListDetailId, (List<SelectListItem>)ViewBag.DropDownCurrencyCodes, htmlAttributes: new { @class = "form-control selectpicker w-20" })
+                            </div>
+                            @Html.EditorFor(model => model.CurrecncyRateStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00" } })
+                        </div>
+                        <div>@Html.ValidationMessageFor(model => model.CurrecncyCodePickListDetailId, "", new { @class = "text-danger" })</div>
+                        <div>@Html.ValidationMessageFor(model => model.CurrecncyRateStr, "", new { @class = "text-danger" })</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.StatementReceivedAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.StatementReceivedAtStr, new { id = "StatementReceivedAt", @class = "form-control", placeholder = "DD MM YYYY" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('StatementReceivedAt')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.StatementReceivedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.Editor("TypeStr", new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.HiddenFor(model => model.PersonInChargeId)
+                        <input type="text" readonly class="form-control" value="@Model.PersonInChargeBo.FullName">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="from-group col-md-6 mid-line-1">
+                        @Html.Label("Profit Commission Data", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        <div class="row m-0 p-0">
+                            <div> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch" style="padding-left:1rem;">
+                                @Html.CheckBoxFor(model => model.IsProfitCommissionData, new { @class = "custom-control-input", id = "PCSwitch" })
+                                <label class="custom-control-label" for="PCSwitch">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Ri Data & Claims Data", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                @Html.Label("Ri Data Matching Status", htmlAttributes: new { @class = "col-form-label" })
+                                <div class="input-group">
+                                    <input class="form-control" id="SoaRiDataMatchStr" readonly v-model="RiDataMatchStatus" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-generate" type="button" v-on:click="viewRiDataBatch()" :disabled="!SoaDataModel.RiDataBatchId"><i class="fas fa-search"></i></button>
+                                        <input type="button" class="btn btn-generate" id="matchRiData" data-toggle="modal" data-target="#matchRiDataModal" value="MATCH RI DATA" v-on:click="searchRiDataBatch()" />
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.RiDataBatchId, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">&nbsp;</div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Claims Data Matching Status", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <input class="form-control" id="SoaClaimMatchStr" readonly v-model="ClaimDataMatchStatus" />
+                            <div class="input-group-append">
+                                <button class="btn btn-generate" type="button" v-on:click="viewClaimDataBatch()" :disabled="!SoaDataModel.ClaimDataBatchId"><i class="fas fa-search"></i></button>
+                                <input type="button" class="btn btn-generate" id="matchClaimsData" data-toggle="modal" data-target="#matchClaimsDataModal" value="MATCH CLAIMS DATA" v-on:click="searchClaimDataBatch()" />
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ClaimDataBatchId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-12" style="padding-bottom: 0;">
+                        @Html.Label("Data File Upload", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.Label("Upload File", htmlAttributes: new { @class = "col-form-label" })
+                                <div class="file is-boxed">
+                                    <label class="file-label">
+                                        <input class="form-control-file" type="file" id="files" name="upload" multiple>
+                                        Drag and Drop File Here or <u>Browse your file</u>
+                                        <br />
+                                        <span class="file-desc">
+                                            Allowed file format: .xls, .xlsx
+                                        </span>
+                                        <br />
+                                        <span class="file-desc">
+                                            File size is up to 2GB
+                                        </span>
+                                    </label>
+                                </div>
+                                <div id="selectedFiles" class="file-list-display"></div>
+                                <div class="field-validation-error text-danger" id="errorSizeExceeds" style="display: none;"></div>
+                                @Html.ValidationMessageFor(model => model.Upload, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <div class="row m-0 p-0 float-right">
+                            <div class="mr-1">
+                                <button type="submit" class="btn btn-submit float-left">SAVE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="modal fade" id="matchRiDataModal" tabindex="-1" role="dialog" aria-labelledby="matchRiDataTitle" aria-hidden="true">
+            <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Match Ri Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="MatchRiDataBatchesValidation.length" class="alert alert-danger" role="alert">
+                            <ul>
+                                <li v-for="(validation, index) in MatchRiDataBatchesValidation">{{validation}}</li>
+                            </ul>
+                        </div>
+                        <div class="table-responsive" v-if="RiDataBatches.length != 0">
+                            <table class="table table-hover">
+                                <thead style="width: unset;">
+                                    <tr>
+                                        <th class="w-35">Ceding Company</th>
+                                        <th class="w-30">Treaty Id</th>
+                                        <th class="w-15">Upload Date</th>
+                                        <th class="w-15">Quarter</th>
+                                        <th class="w-5">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="RiDataBatches.length == 0">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(riDataBatch, index) in RiDataBatches">
+                                        <td>{{ riDataBatch.CedantBo.Code }} - {{ riDataBatch.CedantBo.Name }}</td>
+                                        <td>{{ riDataBatch.TreatyBo != null ? riDataBatch.TreatyBo.TreatyIdCode : null }}</td>
+                                        <td>{{ setDateFormat(riDataBatch.ReceivedAt) }}</td>
+                                        <td>{{ riDataBatch.Quarter }}</td>
+                                        <td><input type="radio" name="checkedRidataBatch" :value="index" :checked="riDataBatch.Id == SoaDataModel.RiDataBatchId"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                        <button type="button" class="btn btn-submit" v-on:click="selectRiDataBatch()" :disabled="RiDataBatches.length == 0">SELECT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="matchClaimsDataModal" tabindex="-1" role="dialog" aria-labelledby="matchClaimsDataTitle" aria-hidden="true">
+            <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Match Claims Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="MatchClaimDataBatchesValidation.length" class="alert alert-danger" role="alert">
+                            <ul>
+                                <li v-for="(validation, index) in MatchClaimDataBatchesValidation">{{validation}}</li>
+                            </ul>
+                        </div>
+                        <div class="table-responsive" v-if="ClaimDataBatches.length != 0">
+                            <table class="table table-hover">
+                                <thead style="width: unset;">
+                                    <tr>
+                                        <th class="w-35">Ceding Company</th>
+                                        <th class="w-30">Treaty Id</th>
+                                        <th class="w-15">Upload Date</th>
+                                        <th class="w-15">Quarter</th>
+                                        <th class="w-5">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="ClaimDataBatches.length == 0">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(claimDataBatch, index) in ClaimDataBatches">
+                                        <td>{{ claimDataBatch.CedantBo.Code }} - {{ claimDataBatch.CedantBo.Name }}</td>
+                                        <td>{{ claimDataBatch.TreatyBo != null ? claimDataBatch.TreatyBo.TreatyIdCode : null }}</td>
+                                        <td>{{ setDateFormat(claimDataBatch.ReceivedAt) }}</td>
+                                        <td>{{ claimDataBatch.Quarter }}</td>
+                                        <td><input type="radio" name="checkedClaimdataBatch" :value="index" :checked="claimDataBatch.Id == SoaDataModel.ClaimDataBatchId"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                        <button type="button" class="btn btn-submit" v-on:click="selectClaimDataBatch()" :disabled="ClaimDataBatches.length == 0">SELECT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script type="text/javascript">
+        var Model = @Html.Raw(Json.Encode(Model));
+
+        // Others
+        var QuarterFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+        var StatusDraft = @BusinessObject.SoaDatas.SoaDataBatchBo.StatusPending;
+        var AuthUserName = "@ViewBag.AuthUserName";
+        var DateTimeFormat = "@(Shared.Util.GetDateTimeFormatMomentJs())";
+        var StatusReject = @BusinessObject.SoaDatas.SoaDataBatchBo.StatusRejected;
+        var StatusApprove = '@BusinessObject.SoaDatas.SoaDataBatchBo.StatusApproved';
+        var DefaultType = '@BusinessObject.SoaDatas.SoaDataBatchBo.TypeReinsuranceData';
+        var DefaultTypeName = '@BusinessObject.SoaDatas.SoaDataBatchBo.GetTypeName(BusinessObject.SoaDatas.SoaDataBatchBo.TypeReinsuranceData)';
+
+        // List
+        var RemarksList = [];
+        var StatusHistoriesList = [];
+        var FileHistoriesList = [];
+        var BatchStatusFileList = [];
+        var CheckedExclude = [];
+        var WMCompiledSummaryMYRList = [];
+        var WMCompiledSummaryOCList = [];
+        var SFCompiledSummaryList = [];
+        var AccountForList = [];
+        var InvoiceTypeList = [];
+
+        // Url
+        var GetTreatyUrl = "@(Url.Action("GetTreatyByCedant"))";
+        var SearchRIDataBatchUrl = "@(Url.Action("SearchRiDataBatch"))";
+        var SearchClaimDataBatchUrl = "@(Url.Action("SearchClaimDataBatch"))";
+        var DownloadSoaDataFileUrl = '@Url.Action("DownloadSoaDataFile")';
+        var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+        var GetTypeUrl = "@(Url.Action("GetBusinessOriginType"))";
+        var ViewRiDataBatchUrl = "@(Url.Action("Edit", "RiData"))";
+        var ViewClaimDataBatchUrl = "@(Url.Action("Edit", "ClaimData"))";
+    </script>
+
+    @Scripts.Render("~/Scripts/models/SoaDataBatch.js")
+}

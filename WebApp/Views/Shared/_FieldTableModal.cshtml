@@ -1,0 +1,104 @@
+﻿
+<div class="modal fade" id="fieldTableModal" tabindex="-1" role="dialog" aria-labelledby="fieldTableModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fieldTableTitle"></h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-right">
+                    <button type="button" v-on:click="addRow" class="btn btn-add-sub mt-2">ADD NEW</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th class="w-45">Value 1</th>
+                                <th class="w-45">Value 2</th>
+                                <th class="text-center w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!Rows.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(row, index) in Rows">
+                                <td class="text-center">
+                                    {{ index+1 }}
+                                    <input v-model="row.Id" type="hidden" class="form-control">
+                                </td>
+                                <td>
+                                    <input v-model="row.Col1" class="form-control" :disabled="Disable">
+                                </td>
+                                <td>
+                                    <input v-model="row.Col2" class="form-control" :disabled="Disable">
+                                </td>
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" v-on:click="removeRow(index)" v-if="!Disable"><span class="fas fa-trash-alt" /></a>
+                                    <span class="fas fa-trash-alt" v-else />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto prevent-disable" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" id="saveRowsBtn" v-on:click="saveRows()" class="btn btn-submit" data-dismiss="modal">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var fieldTableVue;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fieldTableVue = new Vue({
+            el: '#fieldTableModal',
+            data: {
+                Model: Model,
+                FieldId: '',
+                Rows: [],
+                Disable: false,
+            },
+            methods: {
+                addRow: function () {
+                    this.Rows.push({ Id: 0, Col1: "", Col2: "" });
+                },
+                removeRow: function (index) {
+                    this.Rows.splice(index, 1);
+                },
+                saveRows: function (index) {
+                    var json = JSON.stringify(this.Rows);
+                    $(this.FieldId).val(json);
+                },
+            }
+        });
+    });
+
+    function openFieldTableModal(title, id) {
+        $('#fieldTableTitle').html(title);
+
+        var fieldId = '#' + id;
+        var value = $(fieldId).val();
+
+        fieldTableVue.FieldId = fieldId;
+        if (value) {
+            fieldTableVue.Rows = JSON.parse(value);
+        } else {
+            fieldTableVue.Rows = [];
+        }
+
+        fieldTableVue.Disable = disableVersion;
+        $("#saveRowsBtn").prop('disabled', disableVersion);
+
+        $('#fieldTableModal').modal('show');
+    }
+
+</script>

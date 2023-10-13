@@ -1,0 +1,275 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.PerLifeSoaDataClaimViewModel>
+
+@{
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    string claimName = "";
+    switch (routeValue["ClaimCategory"].ToString())
+    {
+        case "1": claimName = "PaidClaims"; break;
+        case "2": claimName = "PendingClaims"; break;
+        case "3": claimName = "ClaimsRemoved"; break;
+    }
+}
+
+<div class="form-horizontal">
+    <div class="form-row">
+        <div class="form-group col-md-12 text-right">
+            <div class="btn-group">
+                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    DOWNLOAD AS
+                </button>
+                <div class="dropdown-menu">
+                    @Html.ActionLink("All", "DownloadPerLifeSoaClaims", new { type = 1, id = routeValue["Id"], ClaimCategory = routeValue["ClaimCategory"] }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                    @Html.ActionLink("Filtered", "DownloadPerLifeSoaClaims", new
+                        {
+                            type = 2,
+                            id = routeValue["Id"],
+                            ClaimCategory = routeValue["ClaimCategory"],
+                            ClaimTransactionType = routeValue["ClaimTransactionType"],
+                            ClaimStatus = routeValue["ClaimStatus"],
+                            OffsetStatus = routeValue["OffsetStatus"],
+                            SoaQuarter = routeValue["SoaQuarter"],
+                            EntryNo = routeValue["EntryNo"],
+                            ClaimId = routeValue["ClaimId"],
+                            InsuredName = routeValue["InsuredName"],
+                            PolicyNumber = routeValue["PolicyNumber"],
+                            InsuredGenderCode = routeValue["InsuredGenderCode"],
+                            CedantDateOfNotification = routeValue["CedantDateOfNotification"],
+                            InsuredDob = routeValue["InsuredDob"],
+                            ReinsEffDatePol = routeValue["ReinsEffDatePol"],
+                            TreatyCode = routeValue["TreatyCode"],
+                            ReinsBasisCode = routeValue["ReinsBasisCode"],
+                            ClaimCode = routeValue["ClaimCode"],
+                            MlreBenefitCode = routeValue["MlreBenefitCode"],
+                            ClaimRecoveryAmount = routeValue["ClaimRecoveryAmount"],
+                            LateInterest = routeValue["LateInterest"],
+                            ExGratia = routeValue["ExGratia"],
+                            MlreRetainAmount = routeValue["MlreRetainAmount"],
+                            RetroRecoveryAmount = routeValue["RetroRecoveryAmount"],
+                            RetroLateInterest = routeValue["RetroLateInterest"],
+                            RetroExGratia = routeValue["RetroExGratia"],
+                            DateOfEvent = routeValue["DateOfEvent"],
+                            CauseOfEvent = routeValue["CauseOfEvent"],
+                        }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-row mt-2">
+        <div class="form-group col-md-12">
+            <div class="table-responsive">
+                @using (Html.BeginForm("PerLifeSoaClaims", "PerLifeSoa", new { id = routeValue["Id"] }, FormMethod.Get, new { id = claimName + "Form" }))
+                {
+                    @Html.Hidden("ClaimCategory", routeValue["ClaimCategory"])
+                    <table class="table table-hover" id="@(claimName)Table">
+                        <thead>
+                            <tr>
+                                <th class="w-10">Retro SOA Quarter</th>
+                                <th class="w-10">Entry No</th>
+                                <th class="w-20">Claim ID</th>
+                                <th class="w-10">Claim Transaction Type</th>
+                                <th class="w-10">Insured Name</th>
+                                <th class="w-10">Policy Number</th>
+                                <th class="w-10">Insured Gender Code</th>
+                                <th class="w-10">Cedant Date of Notification</th>
+                                <th class="w-10">Insured Date of Birth</th>
+                                <th class="w-10">Reins Effective Date Policy</th>
+                                <th class="w-10">Treaty Code</th>
+                                <th class="w-10">Reins Basis Code</th>
+                                <th class="w-10">Claim Code</th>
+                                <th class="w-10">MLRe Benefit Code</th>
+                                <th class="w-10">Claim Recovery Amount</th>
+                                <th class="w-10">Late Interest</th>
+                                <th class="w-10">Ex Gratia</th>
+                                <th class="w-10">MLRe Retain Amount</th>
+                                <th class="w-10">Recovery Amount</th>
+                                <th class="w-10">Late Interest</th>
+                                <th class="w-10">Ex-Gratia</th>
+                                <th class="w-10">Date of Event</th>
+                                <th class="w-30">Cause Of Event</th>
+                                @if (routeValue["ClaimCategory"].ToString() == BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPendingClaim.ToString())
+                                {
+                                    <th class="w-10">Claim Status</th>
+                                    <th class="w-10">Offset Status</th>
+                                    <th class="w-10">Claim Category</th>
+                                }
+                                <th class="text-center w-5">&nbsp;</th>
+                            </tr>
+                            <tr>
+                                @*<form action="/PerLifeSoa" method="get" id="form-bs-select-1">
+
+                        </form>*@
+
+                                @*@Html.Hidden("SortOrder", (string)ViewBag.SortOrder)*@
+
+                                <th>@Html.TextBox("SoaQuarter", null, new { id = "RetroSoaQuarter", @class = "form-control", placeholder = "YYYY MM", autocomplete = "off" })</th>
+                                <th>@Html.TextBox("EntryNo", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("ClaimId", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.DropDownList("ClaimTransactionType", (List<SelectListItem>)ViewBag.DropDownClaimTransactionTypes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                <th>@Html.TextBox("InsuredName", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("PolicyNumber", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.DropDownList("InsuredGenderCode", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                <th>
+                                    @Html.TextBox("CedantDateOfNotification", null, new { id = "CedantDateOfNotification", @class = "form-control", placeholder = "DD MM YYYY" })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('CedantDateOfNotification')" />
+                                </th>
+                                <th>
+                                    @Html.TextBox("InsuredDob", null, new { id = "InsuredDob", @class = "form-control", placeholder = "DD MM YYYY" })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InsuredDob')" />
+                                </th>
+                                <th>
+                                    @Html.TextBox("ReinsEffDatePol", null, new { id = "ReinsEffDatePol", @class = "form-control", placeholder = "DD MM YYYY" })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePol')" />
+                                </th>
+                                <th>@Html.DropDownList("TreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                <th>@Html.DropDownList("ReinsBasisCode", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                <th>@Html.DropDownList("ClaimCode", (List<SelectListItem>)ViewBag.DropDownClaimCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                <th>@Html.DropDownList("MlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                <th>@Html.TextBox("ClaimRecoveryAmount", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("LateInterest", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("ExGratia", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("MlreRetainAmount", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("RetroRecoveryAmount", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("RetroLateInterest", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                <th>@Html.TextBox("RetroExGratia", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+
+                                <th>
+                                    @Html.TextBox("DateOfEvent", null, new { id = "DateOfEvent", @class = "form-control", placeholder = "DD MM YYYY" })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateOfEvent')" />
+                                </th>
+                                <th>@Html.TextBox("CauseOfEvent", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })</th>
+                                @if (routeValue["ClaimCategory"].ToString() == BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPendingClaim.ToString())
+                                {
+                                    <th>@Html.DropDownList("ClaimStatus", (List<SelectListItem>)ViewBag.DropDownClaimStatuses, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                    <th>@Html.DropDownList("OffsetStatus", (List<SelectListItem>)ViewBag.DropDownOffsetStatuses, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })</th>
+                                    <th></th>
+                                }
+                                <th class="text-center align-middle">
+                                    <div class="btn-row-action" id="@(claimName)Act">
+                                        <a href="@Url.Action("PerLifeSoaClaims", new { id = routeValue["Id"], ClaimCategory = routeValue["ClaimCategory"] })" class="btn btn-circle" title="Clear">
+                                            <span class="fas fa-backspace" />
+                                        </a>
+                                        @*<input type="submit" name="Search" value="Search"><span class="fas fa-search" /></input>*@
+                                        <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        @*<button type="button" title="Search" class="btn-circle" id="submitSearch"><span class="fas fa-search" /></button>*@
+                                    </div>
+                                </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.RetroSoaQuarter</td>
+                                        <td>@item.EntryNo</td>
+                                        <td>@item.ClaimId</td>
+                                        <td>@item.ClaimTransactionType</td>
+                                        <td>@item.InsuredName</td>
+                                        <td>@item.PolicyNumber</td>
+                                        <td>@item.InsuredGenderCode</td>
+                                        <td>
+                                            @if (item.CedantDateOfNotification.HasValue)
+                                            {
+                                                @item.CedantDateOfNotification.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.InsuredDateOfBirth.HasValue)
+                                            {
+                                                @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReinsEffDatePol.HasValue)
+                                            {
+                                                @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>@item.TreatyCode</td>
+                                        <td>@item.ReinsBasisCode</td>
+                                        <td>@item.ClaimCode</td>
+                                        <td>@item.MlreBenefitCode</td>
+                                        <td>@Shared.Util.DoubleToString(item.ClaimRecoveryAmt, 2)</td>
+                                        <td>@item.LateInterest</td>
+                                        <td>@Shared.Util.DoubleToString(item.ExGratia, 2)</td>
+                                        <td>@Shared.Util.DoubleToString(item.MlreRetainAmount, 2)</td>
+                                        <td>@Shared.Util.DoubleToString(item.RetroRecoveryAmount, 2)</td>
+                                        <td>@item.RetroLateInterest</td>
+                                        <td>@Shared.Util.DoubleToString(item.RetroExGratia, 2)</td>
+                                        <td>
+                                            @if (item.DateOfEvent.HasValue)
+                                            {
+                                                @item.DateOfEvent.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>@item.CauseOfEvent</td>
+                                        @if (routeValue["ClaimCategory"].ToString() == BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPendingClaim.ToString())
+                                        {
+                                            <td>@BusinessObject.ClaimRegisterBo.GetStatusName(item.ClaimStatus)</td>
+                                            <td>@BusinessObject.ClaimRegisterBo.GetOffsetStatusName(item.OffsetStatus)</td>
+                                            <td></td>
+                                        }
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="@(routeValue["ClaimCategory"].ToString() == BusinessObject.Retrocession.PerLifeClaimDataBo.ClaimCategoryPendingClaim.ToString() ? 27 : 24)" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            <div class="pagination-footer">
+                <div class="row">
+                    <div class="col-md-4">
+                        @Html.Partial("_PageInfo")
+                    </div>
+                    <div class="col-md-8" id="@(claimName)Pager">
+                        @Html.PagedListPager(Model, Page => Url.Action("PerLifeSoaClaims", new
+                        {
+                            id = routeValue["Id"],
+                            ClaimCategory = routeValue["ClaimCategory"],
+                            ClaimTransactionType = routeValue["ClaimTransactionType"],
+                            ClaimStatus = routeValue["ClaimStatus"],
+                            OffsetStatus = routeValue["OffsetStatus"],
+                            SoaQuarter = routeValue["SoaQuarter"],
+                            EntryNo = routeValue["EntryNo"],
+                            ClaimId = routeValue["ClaimId"],
+                            InsuredName = routeValue["InsuredName"],
+                            PolicyNumber = routeValue["PolicyNumber"],
+                            InsuredGenderCode = routeValue["InsuredGenderCode"],
+                            CedantDateOfNotification = routeValue["CedantDateOfNotification"],
+                            InsuredDob = routeValue["InsuredDob"],
+                            ReinsEffDatePol = routeValue["ReinsEffDatePol"],
+                            TreatyCode = routeValue["TreatyCode"],
+                            ReinsBasisCode = routeValue["ReinsBasisCode"],
+                            ClaimCode = routeValue["ClaimCode"],
+                            MlreBenefitCode = routeValue["MlreBenefitCode"],
+                            ClaimRecoveryAmount = routeValue["ClaimRecoveryAmount"],
+                            LateInterest = routeValue["LateInterest"],
+                            ExGratia = routeValue["ExGratia"],
+                            MlreRetainAmount = routeValue["MlreRetainAmount"],
+                            RetroRecoveryAmount = routeValue["RetroRecoveryAmount"],
+                            RetroLateInterest = routeValue["RetroLateInterest"],
+                            RetroExGratia = routeValue["RetroExGratia"],
+                            DateOfEvent = routeValue["DateOfEvent"],
+                            CauseOfEvent = routeValue["CauseOfEvent"],
+                           Page,
+                        }), Shared.Html.GetPagedListRenderOptions())
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

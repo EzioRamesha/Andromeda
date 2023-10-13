@@ -1,0 +1,571 @@
+﻿@using PagedList.Mvc
+
+@model WebApp.Models.PerLifeRetroConfigurationViewModel
+
+@{
+    ViewBag.Title = "Per Life Retro Configuration";
+
+    var activeTab = ViewBag.ActiveTab;
+
+    PagedList.IPagedList<WebApp.Models.PerLifeRetroConfigurationTreatyViewModel> TreatyList = ViewBag.TreatyList as PagedList.IPagedList<WebApp.Models.PerLifeRetroConfigurationTreatyViewModel>;
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    PagedList.IPagedList<WebApp.Models.PerLifeRetroConfigurationRatioViewModel> RatioList = ViewBag.RatioList as PagedList.IPagedList<WebApp.Models.PerLifeRetroConfigurationRatioViewModel>;
+    var raRouteValue = (RouteValueDictionary)ViewBag.RaRouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a href="@Url.Action("Index", "PerLifeRetroConfiguration")" class="@(activeTab == null || activeTab == 1 ? "active" : "") underline-tab">Treaty</a></li>
+            <li class="nav-item"><a class="@(activeTab == 2 ? "active" : "") underline-tab" href="@Url.Action("Ratio", "PerLifeRetroConfiguration")">Retro Ratio</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(activeTab == null || activeTab == 1 ? "show active" : "")" id="treatyTab" role="tabpanel" aria-labelledby="treatyTab-tab">
+                <div class="form-row mb-4">
+                    <div class="form-group col-md-12 text-right btn-row-inline">
+                        <div class="file btn btn-upload" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                            <label>UPLOAD</label>
+                            @using (Html.BeginForm("UploadTreaty", "PerLifeRetroConfiguration", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="file" id="dataFile" name="upload" accept=".csv" onchange="this.form.submit()" />
+                            }
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                DOWNLOAD AS
+                            </button>
+                            <div class="dropdown-menu">
+                                @Html.ActionLink("All", "DownloadTreaty", new { type = 1 }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Filtered", "DownloadTreaty", new
+                                {
+                                    type = 2,
+                                    TcTreatyCodeId = routeValue["TcTreatyCodeId"],
+                                    TcTreatyTypePickListDetailId = routeValue["TcTreatyTypePickListDetailId"],
+                                    TcFundsAccountingTypePickListDetailId = routeValue["TcFundsAccountingTypePickListDetailId"],
+                                    TcReinsEffectiveStartDate = routeValue["TcReinsEffectiveStartDate"],
+                                    TcReinsEffectiveEndDate = routeValue["TcReinsEffectiveEndDate"],
+                                    TcRiskQuarterStartDate = routeValue["TcRiskQuarterStartDate"],
+                                    TcRiskQuarterEndDate = routeValue["TcRiskQuarterEndDate"],
+                                    TcIsToAggregate = routeValue["TcIsToAggregate"],
+                                    TcRemark = routeValue["TcRemark"],
+                                }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Template", "DownloadTreaty", new { type = 3 }, new { @class = "dropdown-item" })
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Create", "PerLifeRetroConfigurationTreaty")" class="btn btn-add">ADD NEW</a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcTreatyCodeId;
+                                        @Shared.Html.Sorter(ViewBag, "Treaty Code", "TcTreatyCodeId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcTreatyTypePickListDetailId;
+                                        @Shared.Html.Sorter(ViewBag, "Treaty Type", "TcTreatyTypePickListDetailId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcFundsAccountingTypePickListDetailId;
+                                        @Shared.Html.Sorter(ViewBag, "Funds Accounting Type", "TcFundsAccountingTypePickListDetailId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcReinsEffectiveStartDate;
+                                        @Shared.Html.Sorter(ViewBag, "Reinsurance Effective Start Date", "TcReinsEffectiveStartDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcReinsEffectiveEndDate;
+                                        @Shared.Html.Sorter(ViewBag, "Reinsurance Effective End Date", "TcReinsEffectiveEndDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcRiskQuarterStartDate;
+                                        @Shared.Html.Sorter(ViewBag, "Risk Quarter Start Date", "TcRiskQuarterStartDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcRiskQuarterEndDate;
+                                        @Shared.Html.Sorter(ViewBag, "Risk Quarter End Date", "TcRiskQuarterEndDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortTcIsToAggregate;
+                                        @Shared.Html.Sorter(ViewBag, "To Aggregate", "TcIsToAggregate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    Remark
+                                </th>
+                                <th class="text-center w-5">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Index", "PerLifeRetroConfiguration", FormMethod.Get, new { id = "TreatyTabForm" }))
+                                {
+                                    @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+
+                                    <th>
+                                        @Html.DropDownList("TcTreatyCodeId", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("TcTreatyTypePickListDetailId", (List<SelectListItem>)ViewBag.DropDownTreatyTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("TcFundsAccountingTypePickListDetail", (List<SelectListItem>)ViewBag.DropDownFundsAccountingTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("TcReinsEffectiveStartDate", null, new { id = "TcReinsEffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TcReinsEffectiveStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("TcReinsEffectiveEndDate", null, new { id = "TcReinsEffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TcReinsEffectiveEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("TcRiskQuarterStartDate", null, new { id = "TcRiskQuarterStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TcRiskQuarterStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("TcRiskQuarterEndDate", null, new { id = "TcRiskQuarterEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TcRiskQuarterEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("TcIsToAggregate", (List<SelectListItem>)ViewBag.DropDownYesNoWithSelect, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("TcRemark", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (TreatyList.Count > 0)
+                            {
+                                foreach (var item in TreatyList)
+                                {
+                                    <tr>
+                                        <td>@item.TreatyCode.ToString()</td>
+                                        <td>@item.TreatyTypePickListDetail.ToString()</td>
+                                        <td>@item.FundsAccountingTypePickListDetail.ToString()</td>
+                                        <td>
+                                            @if (item.ReinsEffectiveStartDate.HasValue)
+                                            {
+                                                @item.ReinsEffectiveStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReinsEffectiveEndDate.HasValue)
+                                            {
+                                                @item.ReinsEffectiveEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RiskQuarterStartDate.HasValue)
+                                            {
+                                                @item.RiskQuarterStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RiskQuarterEndDate.HasValue)
+                                            {
+                                                @item.RiskQuarterEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.IsToAggregate)
+                                            {
+                                                @Html.Raw("Yes")
+                                            }
+                                            else
+                                            {
+                                                @Html.Raw("No")
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.Remark
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @Html.ActionLink("Edit", "Edit", "PerLifeRetroConfigurationTreaty", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                    @Html.ActionLink("Delete", "Delete", "PerLifeRetroConfigurationTreaty", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="10" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @{
+                                ViewBag.CurrentPageNumber = TreatyList.PageNumber;
+                                ViewBag.CurrentPageItems = TreatyList.Count;
+                                ViewBag.PageSize = TreatyList.PageSize;
+                                ViewBag.Total = ViewBag.TreatyTotal;
+                            }
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(TreatyList, Page => Url.Action("Index", new
+                            {
+                                SortOrder = ViewBag.SortOrder,
+                                TcTreatyCodeId = routeValue["TcTreatyCodeId"],
+                                TcTreatyTypePickListDetailId = routeValue["TcTreatyTypePickListDetailId"],
+                                TcFundsAccountingTypePickListDetailId = routeValue["TcFundsAccountingTypePickListDetailId"],
+                                TcReinsEffectiveStartDate = routeValue["TcReinsEffectiveStartDate"],
+                                TcReinsEffectiveEndDate = routeValue["TcReinsEffectiveEndDate"],
+                                TcRiskQuarterStartDate = routeValue["TcRiskQuarterStartDate"],
+                                TcRiskQuarterEndDate = routeValue["TcRiskQuarterEndDate"],
+                                TcIsToAggregate = routeValue["TcIsToAggregate"],
+                                TcRemark = routeValue["TcRemark"],
+                                Page = Page
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(activeTab == 2 ? "show active" : "")" id="ratioTab" role="tabpanel" aria-labelledby="groupTab-tab">
+                <div class="form-row mb-4">
+                    <div class="form-group col-md-12 text-right btn-row-inline">
+                        <div class="file btn btn-upload" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                            <label>UPLOAD</label>
+                            @using (Html.BeginForm("UploadRatio", "PerLifeRetroConfiguration", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="file" id="dataFile" name="upload" accept=".csv" onchange="this.form.submit()" />
+                            }
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                DOWNLOAD AS
+                            </button>
+                            <div class="dropdown-menu">
+                                @Html.ActionLink("All", "DownloadRatio", new { type = 1 }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Filtered", "DownloadRatio", new
+                                {
+                                    type = 2,
+                                    RaTreatyCodeId = raRouteValue["RaTreatyCodeId"],
+                                    RaRetroRatio = raRouteValue["RaRetroRatio"],
+                                    RaRetainRatio = raRouteValue["RaRetainRatio"],
+                                    RaRuleValue = raRouteValue["RaRuleValue"],
+                                    RaReinsEffectiveStartDate = raRouteValue["RaReinsEffectiveStartDate"],
+                                    RaReinsEffectiveEndDate = raRouteValue["RaReinsEffectiveEndDate"],
+                                    RaRiskQuarterStartDate = raRouteValue["RaRiskQuarterStartDate"],
+                                    RaRiskQuarterEndDate = raRouteValue["RaRiskQuarterEndDate"],
+                                    RaRuleEffectiveDate = raRouteValue["RaRuleEffectiveDate"],
+                                    RaRuleCeaseDate = raRouteValue["RaRuleCeaseDate"],
+                                    RaDescription = raRouteValue["RaDescription"],
+                                }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Template", "DownloadRatio", new { type = 3 }, new { @class = "dropdown-item" })
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Create", "PerLifeRetroConfigurationRatio")" class="btn btn-add">ADD NEW</a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaTreatyCodeId;
+                                        @Shared.Html.Sorter(ViewBag, "Treaty Code", "RaTreatyCodeId", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRetroRatio;
+                                        @Shared.Html.Sorter(ViewBag, "Retro Ratio", "RaRetroRatio", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRetainRatio;
+                                        @Shared.Html.Sorter(ViewBag, "MLRe Retain Ratio", "RaRetainRatio", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRuleValue;
+                                        @Shared.Html.Sorter(ViewBag, "Rule Value", "RaRuleValue", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaReinsEffectiveStartDate;
+                                        @Shared.Html.Sorter(ViewBag, "Reinsurance Effective Start Date", "RaReinsEffectiveStartDate", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaReinsEffectiveEndDate;
+                                        @Shared.Html.Sorter(ViewBag, "Reinsurance Effective End Date", "RaReinsEffectiveEndDate", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRiskQuarterStartDate;
+                                        @Shared.Html.Sorter(ViewBag, "Risk Quarter Start Date", "RaRiskQuarterStartDate", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRiskQuarterEndDate;
+                                        @Shared.Html.Sorter(ViewBag, "Risk Quarter End Date", "RaRiskQuarterEndDate", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRuleEffectiveDate;
+                                        @Shared.Html.Sorter(ViewBag, "Rule Effective Date", "RaRuleEffectiveDate", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        raRouteValue["SortOrder"] = ViewBag.SortRaRuleCeaseDate;
+                                        @Shared.Html.Sorter(ViewBag, "Rule Cease Date", "RaRuleCeaseDate", @Url.Action("Ratio", raRouteValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    Description
+                                </th>
+                                <th class="text-center w-5">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Ratio", "PerLifeRetroConfiguration", FormMethod.Get, new { id = "RatioTabForm" }))
+                                {
+                                    @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+
+                                    <th>
+                                        @Html.DropDownList("RaTreatyCodeId", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRetroRatio", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRetainRatio", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRuleValue", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaReinsEffectiveStartDate", null, new { id = "RaReinsEffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RaReinsEffectiveStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaReinsEffectiveEndDate", null, new { id = "RaReinsEffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RaReinsEffectiveEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRiskQuarterStartDate", null, new { id = "RaRiskQuarterStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RaRiskQuarterStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRiskQuarterEndDate", null, new { id = "RaRiskQuarterEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RaRiskQuarterEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRuleEffectiveDate", null, new { id = "RaRuleEffectiveDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RaRuleEffectiveDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaRuleCeaseDate", null, new { id = "RaRuleCeaseDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RaRuleCeaseDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RaDescription", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Ratio")" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (RatioList.Count > 0)
+                            {
+                                foreach (var item in RatioList)
+                                {
+                                    <tr>
+                                        <td>@item.TreatyCode.ToString()</td>
+                                        <td>@Shared.Util.DoubleToString(item.RetroRatio)</td>
+                                        <td>@Shared.Util.DoubleToString(item.MlreRetainRatio)</td>
+                                        <td>@Shared.Util.DoubleToString(item.RuleValue)</td>
+                                        <td>
+                                            @if (item.ReinsEffectiveStartDate.HasValue)
+                                            {
+                                                @item.ReinsEffectiveStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReinsEffectiveEndDate.HasValue)
+                                            {
+                                                @item.ReinsEffectiveEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RiskQuarterStartDate.HasValue)
+                                            {
+                                                @item.RiskQuarterStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RiskQuarterEndDate.HasValue)
+                                            {
+                                                @item.RiskQuarterEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RuleEffectiveDate.HasValue)
+                                            {
+                                                @item.RuleEffectiveDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RuleCeaseDate.HasValue)
+                                            {
+                                                @item.RuleCeaseDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.Description
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @Html.ActionLink("Edit", "Edit", "PerLifeRetroConfigurationRatio", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                    @Html.ActionLink("Delete", "Delete", "PerLifeRetroConfigurationRatio", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="12" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @{
+                                ViewBag.CurrentPageNumber = RatioList.PageNumber;
+                                ViewBag.CurrentPageItems = RatioList.Count;
+                                ViewBag.PageSize = RatioList.PageSize;
+                                ViewBag.Total = ViewBag.RatioTotal;
+                            }
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(RatioList, Page => Url.Action("Index", new
+                            {
+                                SortOrder = ViewBag.SortOrder,
+                                RaTreatyCodeId = raRouteValue["RaTreatyCodeId"],
+                                RaRetroRatio = raRouteValue["RaRetroRatio"],
+                                RaRetainRatio = raRouteValue["RaRetainRatio"],
+                                RaRuleValue = raRouteValue["RaRuleValue"],
+                                RaReinsEffectiveStartDate = raRouteValue["RaReinsEffectiveStartDate"],
+                                RaReinsEffectiveEndDate = raRouteValue["RaReinsEffectiveEndDate"],
+                                RaRiskQuarterStartDate = raRouteValue["RaRiskQuarterStartDate"],
+                                RaRiskQuarterEndDate = raRouteValue["RaRiskQuarterEndDate"],
+                                RaRuleEffectiveDate = raRouteValue["RaRuleEffectiveDate"],
+                                RaRuleCeaseDate = raRouteValue["RaRuleCeaseDate"],
+                                RaDescription = raRouteValue["RaDescription"],
+                                Page = Page
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            $('#TcReinsEffectiveStartDate, #TcReinsEffectiveEndDate, #TcRiskQuarterStartDate, #TcRiskQuarterEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            $('#RaReinsEffectiveStartDate, #RaReinsEffectiveEndDate, #RaRiskQuarterStartDate, #RaRiskQuarterEndDate, #RaRuleEffectiveDate, #RaRuleCeaseDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+    </script>
+}

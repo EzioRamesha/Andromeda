@@ -1,0 +1,291 @@
+﻿@model WebApp.Models.RiDataConfigViewModel
+
+@{
+    ViewBag.Title = "RI Data Config";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    var approval = ViewBag.ApprovalPower;
+    var disabled = ViewBag.Disabled || ViewBag.ReadOnly;
+    var inUse = ViewBag.InUse;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.RiDatas.RiDataConfigBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.RiDatas.RiDataConfigBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_LoadingSpinner")
+        @using (Html.BeginForm("Edit", "RiDataConfig", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+
+                @Html.HiddenFor(model => model.Id)
+                @Html.HiddenFor(model => model.Status, new { @Id = "configStatus" })
+                @Html.HiddenFor(model => model.ModuleId)
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants,
+                            htmlAttributes: new { @class = "form-control", @v_model = "RiDataConfig.CedantId", onchange = "getTreaty(this.value)" })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyId, (List<SelectListItem>)ViewBag.DropDownTreaties, htmlAttributes: new { @class = "form-control", onchange = "getTreatyCode(this.value)" })
+                        @Html.ValidationMessageFor(model => model.TreatyId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.FileType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.FileType, (List<SelectListItem>)ViewBag.DropDownFileTypes,
+                            htmlAttributes: new { @class = "form-control", onchange = "changeFileType(this.value)", @id = "fileTypeSelect" })
+                        @Html.ValidationMessageFor(model => model.FileType, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2" id="worksheetDiv">
+                        @Html.LabelFor(model => model.Worksheet, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Worksheet, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.Worksheet, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2" id="delimiterDiv" style="display: none;">
+                        @Html.LabelFor(model => model.Delimiter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Delimiter, (List<SelectListItem>)ViewBag.DropDownDelimiters,
+                            new Dictionary<string, object>() { { "class", "form-control" }, { "id", "delimiterSelect" }, { @"v-on:change", @"changeDelimiter()" } })
+                        @Html.ValidationMessageFor(model => model.Delimiter, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.HasHeader, htmlAttributes: new { @class = "col-form-label" })
+                        <select id="HasHeader" v-model="RiDataConfig.HasHeader" name="HasHeader" class="form-control" disabled=@disabled>
+                            <option selected="selected" value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.HasHeader, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2" v-if="RiDataConfig.HasHeader == true || RiDataConfig.HasHeader == 'true'">
+                        @Html.LabelFor(model => model.HeaderRow, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.HeaderRow, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.HeaderRow, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.StartRow, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.StartRow, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.StartRow, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EndRow, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.EndRow, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.EndRow, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.StartColumn, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.StartColumn, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.StartColumn, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EndColumn, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.EndColumn, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.EndColumn, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <br />
+                <br />
+
+                @Html.Partial("_RiDataConfigDetails")
+
+                <br />
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                    </div>
+                    <div class="form-group col-md-6">
+                        <div class="row m-0 p-0 float-right">
+                            <div class="mr-2">
+                                <button type="submit" class="btn btn-submit" onclick="saveBatch()" disabled=@disabled>Save</button>
+                            </div>
+                            <div class="dropdown dropdownActionMenu">
+                                <button type="button" class="btn btn-submit dropdown-toggle" data-toggle="dropdown" id="dropdownMenuButton" aria-haspopup="true" aria-expanded="false">Action</button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" data-toggle="modal" data-target="#statusModal" href="#" id="approvalButton">
+                                        <span id="approvalText"> Approval </span>
+                                        <span id="submitApprovalText"> Submit for Approval </span>
+                                    </a>
+                                    <a class="dropdown-item" href="javascript:document.getElementById('disableForm').submit()" id="disableButton">
+                                        Disable Config
+                                    </a>
+                                    <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("Export"))" value="Export Config File" />
+                                    <div id="importConfigButton" class="file dropdown-item" role="button" data-loading-text="Processing...<span></span>" style="font-weight: 300; text-align: left;">
+                                        Import Config File
+                                        <input type="file" id="importFile" :name="'importFile'" accept=".json" onchange="confirmImportConfig()" disabled=@disabled />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModal" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle" v-if="RiDataConfig.Status == @BusinessObject.RiDatas.RiDataConfigBo.StatusPending">RI Data Config Approval</h5>
+                            <h5 class="modal-title" id="exampleModalLongTitle" v-else>Submit for Approval</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form">
+                                <div class="form-group">
+                                    <label class="font-weight-bold" for="updatedByUser">Updated By</label>
+                                    <input type="text" readonly class="form-control" id="updatedByUser" value="@ViewBag.AuthUserName">
+                                </div>
+                                <div class="form-group">
+                                    <label class="font-weight-bold" for="remark">Remarks</label>
+                                    <input type="text" v-model="StatusRemark" class="form-control" id="remark" name="StatusRemark" placeholder="Type here">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a class="btn btn-del" href="javascript:document.getElementById('rejectForm').submit()" v-if="RiDataConfig.Status == @BusinessObject.RiDatas.RiDataConfigBo.StatusPending">
+                                <i class="fas fa-times"></i> Reject
+                            </a>
+                            <a class="btn btn-submit" href="javascript:document.getElementById('approveForm').submit()" v-if="RiDataConfig.Status == @BusinessObject.RiDatas.RiDataConfigBo.StatusPending">
+                                <i class="fas fa-check"></i> Approve
+                            </a>
+                            <button type="submit" onclick="updateStatus()" class="btn btn-submit" v-if="RiDataConfig.Status != @BusinessObject.RiDatas.RiDataConfigBo.StatusPending">
+                                <span v-if="RiDataConfig.Status == @BusinessObject.RiDatas.RiDataConfigBo.StatusDisabled">Enable</span>
+                                <span v-else>SUBMIT</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @using (Html.BeginForm("Approve", "RiDataConfig", FormMethod.Post, new { id = "approveForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            <input type="text" hidden v-model="StatusRemark" class="form-control" name="StatusRemark">
+        }
+        @using (Html.BeginForm("Reject", "RiDataConfig", FormMethod.Post, new { id = "rejectForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            <input type="text" hidden v-model="StatusRemark" class="form-control" name="StatusRemark">
+        }
+        @using (Html.BeginForm("Disable", "RiDataConfig", FormMethod.Post, new { id = "disableForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            <input type="text" hidden v-model="StatusRemark" class="form-control" name="StatusRemark">
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var RiDataConfigStatus = "@BusinessObject.RiDatas.RiDataConfigBo.StatusDraft";
+        var StatusPending = @BusinessObject.RiDatas.RiDataConfigBo.StatusPending;
+        var StatusDraft = "@BusinessObject.RiDatas.RiDataConfigBo.StatusDraft";
+        var TreatyId = '@Model.TreatyId';
+
+        $(document).ready(function () {
+            $('#submitApprovalText').hide();
+            $('#approvalText').hide();
+            $('#disableButton').hide();
+
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $('#dropdownMenuButton').prop("disabled", true);
+            }
+
+            if (@Model.Status == @BusinessObject.RiDatas.RiDataConfigBo.StatusPending) {
+                $('#importConfigButton').hide();
+                if ('@approval' == 'True')
+                    $('#approvalText').show();
+                else
+                    $('#approvalButton').hide();
+            } else if ('@inUse' == 'True') {
+                $('#approvalButton').hide();
+                $('#importConfigButton').hide();
+            } else {
+                $('#submitApprovalText').show();
+                if (@Model.Status != @BusinessObject.RiDatas.RiDataConfigBo.StatusApproved)
+                    $('#disableButton').hide();
+            }
+
+            if ('@disabled' == 'True' || '@ViewBag.ReadOnly' == 'True') {
+                //$("input").prop("disabled", true);
+                $("select:not('.prevent-disable')").prop("disabled", true);
+            }
+        });
+
+        function updateStatus() {
+            $('#configStatus').val(StatusPending);
+        }
+
+        function saveBatch() {
+            $('#configStatus').val(StatusDraft);
+        }
+    </script>
+    @Scripts.Render("~/Scripts/models/RiDataConfig.js")
+}

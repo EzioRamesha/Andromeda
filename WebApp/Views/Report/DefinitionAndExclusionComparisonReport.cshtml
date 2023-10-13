@@ -1,0 +1,642 @@
+﻿@{
+    ViewBag.Title = "Definition & Exclusion Comparison";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Definition & Exclusion Comparison</h4>
+            </div>
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="table-responsive my-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10 bh-white"></th>
+                                <th v-for="(comparison, index) in Comparisons" class="w-10">
+                                    {{ comparison.Name }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Definitions & Exclusions ID</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.DefinitionAndExclusionCode" class="form-control" v-on:change="changeDefinitionAndExclusionCode(index)">
+                                        <option v-for="definitionAndExclusionCodeDropDown in comparison.DefinitionAndExclusionCodeDropDowns" :value="definitionAndExclusionCodeDropDown.Value">{{ definitionAndExclusionCodeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Status" class="form-control">
+                                        <option v-for="statusDropDown in comparison.StatusDropDowns" :value="statusDropDown.Value">{{ statusDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.BenefitCode" :id="'benefitCode' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Person In-Charge</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.PersonInCharge" class="form-control">
+                                        <option v-for="personInChargeDropDown in comparison.PersonInChargeDropDowns" :value="personInChargeDropDown.Value">{{ personInChargeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Definitions & Exclusions ID</th>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20 font-weight-bold">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.Code }}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.TreatyPricingCedantBo?.Code }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.StatusName }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Definitions & Exclusions Name</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.Name }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Description</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.Description}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.BenefitCode }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Remarks</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.TreatyPricingDefinitionAndExclusionBo?.AdditionalRemarks }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.VersionStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Person In-Charge</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.PersonInChargeName }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.EffectiveAtStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Definitions</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.Definitions }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Exclusions</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20" >
+                                        {{ definitionAndExclusion.Exclusions }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Declined Risk</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20" >
+                                        {{ definitionAndExclusion.DeclinedRisk }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Referred Risk</td>
+                                    <td v-for="(definitionAndExclusion, index) in DefinitionAndExclusions" class="w-20">
+                                        {{ definitionAndExclusion.ReferredRisk }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingCedants));
+        var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        function initTokenfield(index) {
+            var benefitCodeCount = 0;
+
+            $(document).ready(function () {
+                $('#benefitCode' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (benefitCodeCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].BenefitCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        benefitCodeCount += 1;
+                        $("#benefitCode" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].BenefitCode = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        //app.changeBenefitCode(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].BenefitCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        //app.changeBenefitCode(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        benefitCodeCount -= 1;
+                        if (benefitCodeCount == 0) {
+                            $("#benefitCode" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].BenefitCode = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        //app.changeBenefitCode(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].BenefitCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+            });
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Comparison 1", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: "",
+                        DefinitionAndExclusionCodeDropDowns: DropDownEmpty, DefinitionAndExclusionCode: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        BenefitCodes: [], BenefitCode: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", DefinitionAndExclusionVersionId: 0,
+                        PersonInChargeDropDowns: DropDownEmpty, PersonInCharge: "",
+                    },
+                ],
+                DefinitionAndExclusions: [
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                    { TreatyPricingDefinitionAndExclusionBos: [] },
+                ],
+                IsGenerated: false,
+            },
+            methods: {
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.DefinitionAndExclusionCode = "";
+                    comparison.Status = "";
+                    comparison.BenefitCode = "";
+                    $('#benefitCode' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefitCode" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.PersonInCharge = "";
+                    comparison.DefinitionAndExclusionVersionId = 0;
+
+                    var definitionAndExclusionCodeDropDowns = comparison.DefinitionAndExclusionIdDropDowns;
+                    var statusDropDowns = comparison.StatusDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var personInChargeDropDowns = comparison.PersonInChargeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateDefinitionAndExclusionData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            definitionAndExclusionCodeDropDowns = data.definitionAndExclusionCodeDropDowns;
+                            statusDropDowns = data.statusDropDowns;
+                            benefitCodes = data.benefitCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            personInChargeDropDowns = data.personInChargeDropDowns;
+                        }
+                    });
+
+                    comparison.DefinitionAndExclusionCodeDropDowns = definitionAndExclusionCodeDropDowns;
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefitCode' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.PersonInChargeDropDowns = personInChargeDropDowns;
+                },
+                changeDefinitionAndExclusionCode: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Status = "";
+                    comparison.BenefitCode = "";
+                    $('#benefitCode' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefitCode" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.PersonInCharge = "";
+
+                    var statusDropDowns = comparison.StatusDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var personInChargeDropDowns = comparison.PersonInChargeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateDefinitionAndExclusionData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            definitionAndExclusionCode: comparison.DefinitionAndExclusionCode,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            statusDropDowns = data.statusDropDowns;
+                            benefitCodes = data.benefitCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            personInChargeDropDowns = data.personInChargeDropDowns;
+                        }
+                    });
+
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefitCode' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.PersonInChargeDropDowns = personInChargeDropDowns;
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.PersonInCharge = "";
+                    var definitionAndExclusionVersionId = 0;
+
+                    var personInChargeDropDowns = comparison.PersonInChargeDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("GetDefinitionAndExclusionVersionId", "Report"))",
+                        type: "POST",
+                        data: {
+                            definitionAndExclusionCode: comparison.DefinitionAndExclusionCode,
+                            version: comparison.Version,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            definitionAndExclusionVersionId = data.definitionAndExclusionVersionId;
+                        }
+                    });
+
+                    comparison.DefinitionAndExclusionVersionId = definitionAndExclusionVersionId;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateDefinitionAndExclusionData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            definitionAndExclusionCode: comparison.DefinitionAndExclusionCode,
+                            version: comparison.Version
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            personInChargeDropDowns = data.personInChargeDropDowns;
+                        }
+                    });
+
+                    comparison.PersonInChargeDropDowns = personInChargeDropDowns;
+                },
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var definitionAndExclusionVersionIds = [];
+                    var errorList = [];
+
+                    comparisons.forEach(function (comparison, index) {
+                        if (index == 0 && !comparison.Cedant) {
+                            errorList.push("Please select filter parameters in " + comparison.Name + ".");
+                        }
+                        if (comparison.Cedant) {
+                            if (!comparison.DefinitionAndExclusionCode) {
+                                errorList.push("Please select Definitions & Exclusions ID for " + comparison.Name + ".");
+                            }
+                            //if (!comparison.Status) {
+                            //    errorList.push("Please select Status for " + comparison.Name + ".");
+                            //}
+                            //if (comparison.BenefitCode) {
+                            //    var isValid = true;
+                            //    var benefitCodeArr = comparison.BenefitCode.split(",").map(function (item) {
+                            //        return item.trim();
+                            //    });
+                            //    benefitCodeArr.forEach(function (value) {
+                            //        if (!comparison.BenefitCodes.includes(value)) {
+                            //            isValid = false;
+                            //        }
+                            //    });
+                            //    if (!isValid)
+                            //        errorList.push("Please fill in correct Benefit Code for " + comparison.Name + ".");
+                            //}
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+                            //if (!comparison.PersonInCharge) {
+                            //    errorList.push("Please select Person In-Charge for " + comparison.Name + ".");
+                            //}
+                        }
+                    });
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    comparisons.forEach(function (comparison) {
+                        definitionAndExclusionVersionIds.push(comparison.DefinitionAndExclusionVersionId);
+                    });
+
+                    var definitionAndExclusions = this.DefinitionAndExclusions;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateDefinitionAndExclusionComparison", "Report"))",
+                        type: "POST",
+                        data: {
+                            definitionAndExclusionVersionIds: definitionAndExclusionVersionIds,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            definitionAndExclusions = data.definitionAndExclusions;
+                        },
+                    });
+
+                    this.DefinitionAndExclusions = definitionAndExclusions;
+                    this.IsGenerated = true;
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Definitions & Exclusions ID";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "DefinitionExclusion",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                }
+            },
+            created: function () {
+                var i = 0;
+                this.Comparisons.forEach(function (comparison) {
+                    if (comparison != null) {
+                        initTokenfield(i);
+                        i++;
+                    }
+                });
+            },
+        });
+</script>
+}

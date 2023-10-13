@@ -1,0 +1,1022 @@
+﻿@model WebApp.Models.ReferralClaimViewModel
+
+@{ 
+    var isClosedRegistered = ViewBag.IsClosedRegistered != null ? bool.Parse(ViewBag.IsClosedRegistered.ToString()) : false;
+}
+
+<link href="~/Content/timepicker.css" rel="stylesheet">
+<div class="form-row mt-2">
+    <div class="form-group col-md-12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="active underline-tab" data-toggle="tab" href="#generalTab">General</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#treatyTab">Treaty</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#riDataTab">RI Data</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#checklistTab">Checklist</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarkTab">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#documentTab">Documents</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistoryTab">Status History</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelogTab">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="generalTab" role="tabpanel" aria-labelledby="data-tab">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReferralId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.ReferralId, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ReferralClaim.ReferralId", @readonly = "readonly" } })
+                        @Html.ValidationMessageFor(model => model.ReferralId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RecordType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RecordType, (List<SelectListItem>)ViewBag.DropDownRecordTypes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.RecordType" })
+                        @Html.ValidationMessageFor(model => model.RecordType, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.InsuredName, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.InsuredName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ReferralClaim.InsuredName" } })
+                        @Html.ValidationMessageFor(model => model.InsuredName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.PolicyNumber, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.PolicyNumber, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ReferralClaim.PolicyNumber" } })
+                        @Html.ValidationMessageFor(model => model.PolicyNumber, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.InsuredGenderCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.InsuredGenderCode, (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.InsuredGenderCode" })
+                        @Html.ValidationMessageFor(model => model.InsuredGenderCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.InsuredTobaccoUsage, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.InsuredTobaccoUsage, (List<SelectListItem>)ViewBag.DropDownInsuredTobaccoUses, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.InsuredTobaccoUsage" })
+                        @Html.ValidationMessageFor(model => model.InsuredTobaccoUsage, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.InsuredIcNumber, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.InsuredIcNumber, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ReferralClaim.InsuredIcNumber" } })
+                        @Html.ValidationMessageFor(model => model.InsuredIcNumber, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.InsuredDateOfBirth, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.InsuredDateOfBirthStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('InsuredDateOfBirthStr')" }, { @"v-model.lazy", @"ReferralClaim.InsuredDateOfBirthStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('InsuredDateOfBirthStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.InsuredDateOfBirthStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReferralReasonId, htmlAttributes: new { @class = "col-form-label" })
+                        @if (isClosedRegistered)
+                        {
+                            @Html.EditorFor(model => model.ReferralReason, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.ReferralReasonId, (List<SelectListItem>)ViewBag.DropDownReasonCedantReferral, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.ReferralReasonId" })
+                        }
+                        @Html.ValidationMessageFor(model => model.ReferralReasonId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.GroupName, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.GroupName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ReferralClaim.GroupName" } })
+                        @Html.ValidationMessageFor(model => model.GroupName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.DateOfCommencement, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.DateOfCommencementStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateOfCommencementStr')" }, { @"v-model.lazy", @"ReferralClaim.DateOfCommencementStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfCommencementStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.DateOfCommencementStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CauseOfEvent, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CauseOfEvent, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @v_model = "ReferralClaim.CauseOfEvent" } })
+                        @Html.ValidationMessageFor(model => model.CauseOfEvent, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedingCompany, htmlAttributes: new { @class = "col-form-label" })
+                        @if (isClosedRegistered)
+                        {
+                            @Html.EditorFor(model => model.CedingCompany, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.CedingCompany, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.CedingCompany" })
+                        }
+                        @Html.ValidationMessageFor(model => model.CedingCompany, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CedingPlanCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CedingPlanCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ReferralClaim.CedingPlanCode" } })
+                        @Html.ValidationMessageFor(model => model.CedingPlanCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ClaimCode, htmlAttributes: new { @class = "col-form-label" })
+                        @if (isClosedRegistered)
+                        {
+                            @Html.EditorFor(model => model.ClaimCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.ClaimCode, (List<SelectListItem>)ViewBag.DropDownClaimCodes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.ClaimCode" })
+                        }
+                        @Html.ValidationMessageFor(model => model.ClaimCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.DateOfEvent, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.DateOfEventStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateOfEventStr')" }, { @"v-model.lazy", @"ReferralClaim.DateOfEventStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfEventStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.DateOfEventStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SumInsured, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.SumInsuredStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00", @v_model = "ReferralClaim.SumInsuredStr" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.SumInsuredStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.SumReinsured, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            <input id="SumReinsuredStr" name="SumReinsuredStr" class="form-control text-right" placeholder="0.00" v-model="ReferralClaim.SumReinsuredStr" v-on:change="updateClaimAmount()"/>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.SumReinsuredStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RiskQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBoxFor(model => model.RiskQuarter, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "YYYY MM" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('RiskQuarter')" }, { @"v-model.lazy", @"ReferralClaim.RiskQuarter" } })
+                        @Html.ValidationMessageFor(model => model.RiskQuarter, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.MlreBenefitCode, htmlAttributes: new { @class = "col-form-label" })
+                        @if (isClosedRegistered)
+                        {
+                            @Html.EditorFor(model => model.MlreBenefitCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.MlreBenefitCode, (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.MlreBenefitCode" })
+                        }
+                        @Html.ValidationMessageFor(model => model.MlreBenefitCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ClaimRecoveryAmount, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.ClaimRecoveryAmountStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00", @v_model = "ReferralClaim.ClaimRecoveryAmountStr", @readonly = "readonly" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ClaimRecoveryAmountStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ClaimCategoryId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ClaimCategoryId, (List<SelectListItem>)ViewBag.DropDownClaimCategories, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.ClaimCategoryId" })
+                        @Html.ValidationMessageFor(model => model.ClaimCategoryId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @if (isClosedRegistered)
+                        {
+                            @Html.HiddenFor(model => model.PersonInChargeId)
+                            @Html.EditorFor(model => model.PersonInChargeName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownPicClaims, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.PersonInChargeId" })
+                        }
+                        @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1 pb-0">
+                        @Html.LabelFor(model => model.IsRgalRetakaful, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.EditorFor(model => model.IsRgalRetakaful, new { htmlAttributes = new { @class = "custom-control-input", @v_model = "ReferralClaim.IsRgalRetakaful" } })
+                                <label class="custom-control-label" for="IsRgalRetakaful">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReceivedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="input-w-icon">
+                                    @Html.TextBoxFor(model => model.ReceivedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('ReceivedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.ReceivedAtStr" } })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('ReceivedAtStr')" />
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                @*<input class="form-control" type="time" name="ReceivedAtTime" v-model.lazy="ReferralClaim.ReceivedAtTime" v-on:change="calculateTurnAroundTime(1)" />*@
+                                <input class="form-control" type="text" id="ReceivedAtTime" name="ReceivedAtTime" autocomplete="false" v-model.lazy="ReferralClaim.ReceivedAtTime" v-on:click="openTimePicker('ReceivedAtTime')" />
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ReceivedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RespondedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="input-w-icon">
+                                    @Html.TextBoxFor(model => model.RespondedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('RespondedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.RespondedAtStr" } })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('RespondedAtStr')" />
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                @*<input class="form-control" type="time" name="RespondedAtTime" v-model.lazy="ReferralClaim.RespondedAtTime" v-on:change="calculateTurnAroundTime(1)" />*@
+                                <input class="form-control" type="text" id="RespondedAtTime" name="RespondedAtTime" autocomplete="false" v-model.lazy="ReferralClaim.RespondedAtTime" v-on:click="openTimePicker('RespondedAtTime')" />
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.RespondedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TurnAroundTime, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row">
+                            @Html.HiddenFor(model => model.TurnAroundTime, new { htmlAttributes = new { @v_model = "ReferralClaim.TurnAroundTime" } })
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Hour(s)</div>
+                                    </div>
+                                    @Html.EditorFor(model => model.TurnAroundTimeHours, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0", @v_model = "ReferralClaim.TurnAroundTimeHours", disabled = true } })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Minute(s)</div>
+                                    </div>
+                                    @Html.EditorFor(model => model.TurnAroundTimeMinutes, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0", @v_model = "ReferralClaim.TurnAroundTimeMinutes", disabled = true } })
+                                </div>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.TurnAroundTime, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.DelayReasonId, htmlAttributes: new { @class = "col-form-label" })
+                        @if (isClosedRegistered)
+                        {
+                            @Html.EditorFor(model => model.DelayReason, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(model => model.DelayReasonId, (List<SelectListItem>)ViewBag.DropDownReasonReferralDelay, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.DelayReasonId" })
+                        }
+                        @Html.ValidationMessageFor(model => model.DelayReasonId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.DateReceivedFullDocuments, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="input-w-icon">
+                                    @Html.TextBoxFor(model => model.DateReceivedFullDocumentsStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateReceivedFullDocumentsStr')" }, { @"v-model.lazy", @"ReferralClaim.DateReceivedFullDocumentsStr" } })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateReceivedFullDocumentsStr')" />
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                @*<input class="form-control" type="time" name="DateReceivedFullDocumentsTime" v-model.lazy="ReferralClaim.DateReceivedFullDocumentsTime" v-on:change="calculateTurnAroundTime(2)" />*@
+                                <input class="form-control" type="text" id="DateReceivedFullDocumentsTime" name="DateReceivedFullDocumentsTime" autocomplete="false" v-model.lazy="ReferralClaim.DateReceivedFullDocumentsTime" v-on:click="openTimePicker('DateReceivedFullDocumentsTime')" />
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.DateReceivedFullDocumentsStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.DocRespondedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="input-w-icon">
+                                    @Html.TextBoxFor(model => model.DocRespondedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DocRespondedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.DocRespondedAtStr" } })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DocRespondedAtStr')" />
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                @*<input class="form-control" type="time" name="DocRespondedAtTime" v-model.lazy="ReferralClaim.DocRespondedAtTime" v-on:change="calculateTurnAroundTime(2)" />*@
+                                <input class="form-control" type="text" id="DocRespondedAtTime" name="DocRespondedAtTime" autocomplete="false" v-model.lazy="ReferralClaim.DocRespondedAtTime" v-on:click="openTimePicker('DocRespondedAtTime')" />
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.DocRespondedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.DocTurnAroundTime, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row">
+                            @Html.HiddenFor(model => model.DocTurnAroundTime, new { htmlAttributes = new { @v_model = "ReferralClaim.DocTurnAroundTime" } })
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Hour(s)</div>
+                                    </div>
+                                    @Html.EditorFor(model => model.DocTurnAroundTimeHours, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0", @v_model = "ReferralClaim.DocTurnAroundTimeHours", disabled = true } })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">Minute(s)</div>
+                                    </div>
+                                    @Html.EditorFor(model => model.DocTurnAroundTimeMinutes, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0", @v_model = "ReferralClaim.DocTurnAroundTimeMinutes", disabled = true } })
+                                </div>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.DocTurnAroundTime, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.DocDelayReasonId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.DocDelayReasonId, (List<SelectListItem>)ViewBag.DropDownReasonReferralDelay, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.DocDelayReasonId" })
+                        @Html.ValidationMessageFor(model => model.DocDelayReasonId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1 pb-0">
+                        @Html.LabelFor(model => model.IsRetro, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.EditorFor(model => model.IsRetro, new { htmlAttributes = new Dictionary<string, object>() { { "class", "custom-control-input" }, { @"v-on:click", "resetRetro()" }, { @"v-model.lazy", @"ReferralClaim.IsRetro" } } })
+                                <label class="custom-control-label" for="IsRetro">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetrocessionaireName, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.RetrocessionaireName, new { htmlAttributes = new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { ":disabled", "!ReferralClaim.IsRetro" }, { @"v-model.lazy", @"ReferralClaim.RetrocessionaireName" } } })
+                        @Html.ValidationMessageFor(model => model.RetrocessionaireName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RetrocessionaireShare, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">%</div>
+                            </div>
+                            @Html.EditorFor(model => model.RetrocessionaireShareStr, new { htmlAttributes = new Dictionary<string, object>() { { "class", "form-control text-right" }, { "placeholder", "0.00" }, { ":disabled", "!ReferralClaim.IsRetro" }, { @"v-model.lazy", @"ReferralClaim.RetrocessionaireShareStr" } } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.RetrocessionaireShareStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetroReferralReasonId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RetroReferralReasonId, (List<SelectListItem>)ViewBag.DropDownReasonRetroReferral, htmlAttributes: new Dictionary<string, object>() { { "class", "form-control selectpicker" }, { ":disabled", "!ReferralClaim.IsRetro" }, { @"v-model.lazy", @"ReferralClaim.RetroReferralReasonId" } })
+                        @Html.ValidationMessageFor(model => model.RetroReferralReasonId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.MlreReferralReasonId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.MlreReferralReasonId, (List<SelectListItem>)ViewBag.DropDownReasonCedantReferral, htmlAttributes: new Dictionary<string, object>() { { "class", "form-control selectpicker" }, { ":disabled", "!ReferralClaim.IsRetro" }, { @"v-model.lazy", @"ReferralClaim.MlreReferralReasonId" } })
+                        @Html.ValidationMessageFor(model => model.MlreReferralReasonId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetroReviewedBy, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.RetroReviewedBy, new { htmlAttributes = new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { ":disabled", "!ReferralClaim.IsRetro" }, { @"v-model.lazy", @"ReferralClaim.RetroReviewedBy" } } })
+                        @Html.ValidationMessageFor(model => model.RetroReviewedBy, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RetroReviewedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.RetroReviewedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { ":disabled", "!ReferralClaim.IsRetro" }, { @"v-on:click", @"openDatePicker('RetroReviewedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.RetroReviewedAtStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('RetroReviewedAtStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.RetroReviewedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1 pb-0">
+                        @Html.LabelFor(model => model.IsValueAddedService, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.EditorFor(model => model.IsValueAddedService, new { htmlAttributes = new { @class = "custom-control-input", @v_model = "ReferralClaim.IsValueAddedService" } })
+                                <label class="custom-control-label" for="IsValueAddedService">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2 pb-0">
+                        @Html.LabelFor(model => model.IsClaimCaseStudy, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.EditorFor(model => model.IsClaimCaseStudy, new { htmlAttributes = new { @class = "custom-control-input", @v_model = "ReferralClaim.IsClaimCaseStudy" } })
+                                <label class="custom-control-label" for="IsClaimCaseStudy">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ValueAddedServiceDetails, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.ValueAddedServiceDetails, new { htmlAttributes = new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "Type here" }, { ":disabled", "!ReferralClaim.IsValueAddedService" }, { @"v-model.lazy", @"ReferralClaim.ValueAddedServiceDetails" } } })
+                        @Html.ValidationMessageFor(model => model.ValueAddedServiceDetails, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CompletedCaseStudyMaterialAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.CompletedCaseStudyMaterialAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { ":disabled", "!ReferralClaim.IsClaimCaseStudy" }, { @"v-on:click", @"openDatePicker('CompletedCaseStudyMaterialAtStr')" }, { @"v-model.lazy", @"ReferralClaim.CompletedCaseStudyMaterialAtStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('CompletedCaseStudyMaterialAtStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.CompletedCaseStudyMaterialAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Assessment", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.AssessedById, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.AssessedById, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.AssessedById" })
+                        @Html.ValidationMessageFor(model => model.AssessedById, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.AssessedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.AssessedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('AssessedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.AssessedAtStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('AssessedAtStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.AssessedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.AssessorComments, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextArea("AssessorComments", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.AssessorComments, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Reviews", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReviewedById, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ReviewedById, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.ReviewedById" })
+                        @Html.ValidationMessageFor(model => model.ReviewedById, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReviewedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.ReviewedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('ReviewedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.ReviewedAtStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('ReviewedAtStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ReviewedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReviewerComments, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextArea("ReviewerComments", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.ReviewerComments, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ClaimsDecision, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ClaimsDecision, (List<SelectListItem>)ViewBag.DropDownClaimsDecisions, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.ClaimsDecision, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ClaimsDecisionDate, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBoxFor(model => model.ClaimsDecisionDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('ClaimsDecisionDateStr')" }, { @"v-model.lazy", @"ReferralClaim.ClaimsDecisionDateStr" } })
+                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('ClaimsDecisionDateStr')" />
+                    </div>
+                    @Html.ValidationMessageFor(model => model.ClaimsDecisionDateStr, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-row mt-4">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Assignment", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.AssignedById, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.AssignedById, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ReferralClaim.AssignedById" })
+                        @Html.ValidationMessageFor(model => model.AssignedById, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.AssignedAt, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.AssignedAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('AssignedAtStr')" }, { @"v-model.lazy", @"ReferralClaim.AssignedAtStr" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('AssignedAtStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.AssignedAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="treatyTab" role="tabpanel" aria-labelledby="treaty-tab">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @*<div class="row">
+                            <div class="col-md-6">
+                                @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <a data-toggle="modal" data-target="#treatyCodeModal" v-on:click="resetTreatyModal()" href="#">Search Treaty Code</a>
+                            </div>
+                        </div>*@
+                        @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.TreatyCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = true, @v_model = "ReferralClaim.TreatyCode" } })
+                        @Html.ValidationMessageFor(model => model.TreatyCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReinsBasisCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.ReinsBasisCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = true, @v_model = "ReferralClaim.ReinsBasisCode" } })
+                        @Html.ValidationMessageFor(model => model.ReinsBasisCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TreatyType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.TreatyType, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = true, @v_model = "ReferralClaim.TreatyType" } })
+                        @Html.ValidationMessageFor(model => model.TreatyType, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyShare, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">%</div>
+                            </div>
+                            @Html.EditorFor(model => model.TreatyShareStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00", @readonly = true, @v_model = "ReferralClaim.TreatyShareStr" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.TreatyShareStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="riDataTab" role="tabpanel" aria-labelledby="riData-tab">
+                <button type="button" class="btn btn-submit float-right mt-2 mb-4" data-toggle="modal" v-on:click="resetRiDataModal" data-target="#searchRiDataModal">SEARCH RI DATA</button>
+                @Html.HiddenFor(model => model.RiDataWarehouseId)
+                @Html.HiddenFor(model => model.ReferralRiDataId)
+
+                <div class="table-responsive">
+                    <table class="table table-hover tableBodyScroll" id="riDataTable">
+                        <thead>
+                            <tr>
+                                <th class="w-50">Label</th>
+                                <th class="w-50">Value</th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.TextBox("RiDataLabel", null, new { @class = "form-control form-control-sm", @placeholder = "Type here", onkeyup = "toggleRowView()" })
+                                </th>
+                                <th>
+                                    @Html.CheckBox("HasValue", htmlAttributes: new { onclick = "toggleRowView()" }) @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (var item in ViewBag.StandardOutputList)
+                                {
+                                    string FieldName = null;
+                                    if (item.Type == BusinessObject.StandardOutputBo.TypeCustomField)
+                                    {
+                                        continue;
+                                    }
+                                    switch (item.DataType)
+                                    {
+                                        case BusinessObject.StandardOutputBo.DataTypeDate:
+                                        case BusinessObject.StandardOutputBo.DataTypeAmount:
+                                        case BusinessObject.StandardOutputBo.DataTypePercentage:
+                                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type) + "Str";
+                                            break;
+                                        default:
+                                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type);
+                                            break;
+                                    }
+                                    <tr>
+                                        <td>@item.Code</td>
+                                        <td>
+                                            <div v-if="RiData != null">
+                                                {{ RiData.@(FieldName) }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="checklistTab" role="tabpanel" aria-labelledby="checklist-tab">
+                @if (!string.IsNullOrEmpty(ViewBag.ChecklistError))
+                {
+                    <div class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem">
+                        @ViewBag.ChecklistError
+                    </div>
+                }
+
+                @if (ViewBag.ChecklistErrors != null)
+                {
+                    List<string> checklistErrors = (List<string>)ViewBag.ChecklistErrors;
+                    if (checklistErrors != null && checklistErrors.Count > 0)
+                    {
+                        <div class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem">
+                            <div class="ml-1" style="display: inline-block;">
+                                <div class="mb-1">The following document needed action: </div>
+                                <ul class="mb-0">
+                                    @{
+                                        foreach (string error in checklistErrors)
+                                        {
+                                            <li>@error</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                }
+
+                @if (ViewBag.Checklists != null)
+                {
+                    Dictionary<string, string> checklists = (Dictionary<string, string>)ViewBag.Checklists;
+                    if (checklists != null && checklists.Count > 0)
+                    {
+                        var dropDownChecklistStatuses = (List<SelectListItem>)ViewBag.DropDownChecklistStatuses;
+                        var formattedChecklists = checklists.Select((Entry, Index) => new { Entry, Index });
+                        for (int i = 0; i < checklists.Count; i += 2)
+                        {
+                            var firstChecklist = formattedChecklists.Where(q => q.Index == i).FirstOrDefault();
+                            var secondChecklist = formattedChecklists.Where(q => q.Index == i + 1).FirstOrDefault();
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.Label(firstChecklist.Entry.Key, htmlAttributes: new { @class = "col-form-label" })
+                                    @if (firstChecklist.Entry.Key == BusinessObject.ClaimChecklistDetailBo.RemarkCode)
+                                    {
+                                        string name = @firstChecklist.Entry.Key;
+                                        <textarea class="form-control textarea-auto-expand" id="@name" name="@name" placeholder="Type Here" v-on:focus="autoExpandTextarea('@name')" v-on:blur="autoCollapseTextarea('@name')" rows="1">@firstChecklist.Entry.Value</textarea>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-control selectpicker" name="@firstChecklist.Entry.Key">
+                                            @foreach (var item in dropDownChecklistStatuses)
+                                            {
+                                                var isSelected = item.Value == firstChecklist.Entry.Value;
+                                                <option value="@item.Value" selected="@isSelected">@item.Text</option>
+                                            }
+                                        </select>
+                                    }
+                                    @Html.ValidationMessage(firstChecklist.Entry.Key, "", new { @class = "text-danger" })
+                                </div>
+
+                                @if (secondChecklist != null)
+                                {
+                                    <div class="form-group col-md-6 mid-line-2">
+                                        @Html.Label(secondChecklist.Entry.Key, htmlAttributes: new { @class = "col-form-label" })
+                                        @if (secondChecklist.Entry.Key == BusinessObject.ClaimChecklistDetailBo.RemarkCode)
+                                        {
+                                            string name = @secondChecklist.Entry.Key;
+                                            <textarea class="form-control textarea-auto-expand" id="@name" name="@name" placeholder="Type Here" v-on:focus="autoExpandTextarea('@name')" v-on:blur="autoCollapseTextarea('@name')" rows="1">@secondChecklist.Entry.Value</textarea>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-control selectpicker" name="@secondChecklist.Entry.Key">
+                                                @foreach (var item in dropDownChecklistStatuses)
+                                                {
+                                                    var isSelected = item.Value == secondChecklist.Entry.Value;
+                                                    <option value="@item.Value" selected="@isSelected">@item.Text</option>
+                                                }
+                                            </select>
+                                        }
+                                        @Html.ValidationMessage(secondChecklist.Entry.Key, "", new { @class = "text-danger" })
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                }
+            </div>
+
+            <div class="tab-pane fade" id="remarkTab" role="tabpanel" aria-labelledby="remark-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showFollowUp", true }, { "showPermission", true }, { "showDocuments", true }, { "dropdownRemarkStatus", ViewBag.DropDownStatuses } })
+            </div>
+
+            <div class="tab-pane fade" id="documentTab" role="tabpanel" aria-labelledby="document-tab">
+                @Html.Partial("_Document", new ViewDataDictionary { { "showPermission", true }, { "hideDetail", true }, { "hideAddButton", true } })
+            </div>
+
+            <div class="tab-pane fade" id="statusHistoryTab" role="tabpanel" aria-labelledby="statusHistory-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-35">Status</th>
+                                <th class="w-35">Update Date & time</th>
+                                <th class="w-30">Updated By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!StatusHistories.length">
+                                <td colspan="3" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(statusHistory, index) in StatusHistories">
+                                <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                                <td>{{ statusHistory.CreatedAtStr }}</td>
+                                <td>{{ statusHistory.CreatedByName }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="changelogTab" role="tabpanel" aria-labelledby="changelog-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-5">No</th>
+                                <th class="w-20">Created By</th>
+                                <th class="w-20">Date & Time</th>
+                                <th class="w-45"></th>
+                                <th class="w-10"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!UserTrails.length">
+                                <td colspan="3" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(userTrail, index) in UserTrails">
+                                <td>{{ index + 1 }}</td>
+                                <td>{{ userTrail.CreatedByBo.FullName }}</td>
+                                <td>{{ userTrail.CreatedAtStr }}</td>
+                                <td classs="w-45">
+                                    <pre class="jsonView" :id="'showAll_' + index" style="display:none;"><code>{{ userTrail.Data }}</code></pre>
+                                    <span :id="'showLess_' + index">{ ... }</span>
+                                </td>
+                                <td>
+                                    <a href="javascript:void(0);" v-on:click="toggleChangelogDataView(index)">
+                                        <span class="far fa-plus-square" :id="'showAllBtn_' + index"> Expand All</span>
+                                        <span class="far fa-minus-square" :id="'collapseAllBtn_' + index" style="display:none;"> Collapse All</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="searchRiDataModal" tabindex="-1" role="dialog" aria-labelledby="searchRiDataModalTitle" aria-hidden="true">
+    <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Match RI Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="SearchRiDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in SearchRiDataValidation">{{ validation }}</li>
+                    </ul>
+                </div>
+                <div class="form-row">
+                    <div class="col-form-label col-12 pb-0 font-weight-bold">Search</div>
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="SearchRiDataTreatyCode">Treaty Code</label>
+                        <select v-model="SearchRiData.TreatyCode" class="form-control selectpicker" ref="select" id="SearchRiDataTreatyCode" data-container="body">
+                            <option v-for="treatyCode in TreatyCodes" :value="treatyCode.Value">{{ treatyCode.Text }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <label class="col-form-label" for="SearchRiDataInsuredName">Insured Name</label>
+                        <input type="text" class="form-control" v-model="SearchRiData.InsuredName" id="SearchRiDataInsuredName" placeholder="Type Here">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="SearchRiDataPolicyNumber">Policy Number</label>
+                        <input type="text" class="form-control" v-model="SearchRiData.PolicyNumber" id="SearchRiDataPolicyNumber" placeholder="Type Here">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <label class="col-form-label" for="SearchRiDataCedingPlanCode">Ceding Plan Code</label>
+                        <input type="text" class="form-control" v-model="SearchRiData.CedingPlanCode" id="SearchRiDataCedingPlanCode" placeholder="Type Here">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="SearchRiDataDateOfBirth">Date of Birth</label>
+                        <input type="text" class="form-control" v-model="SearchRiData.DateOfBirth" id="SearchRiDataDateOfBirth" v-on:click="openDatePicker('SearchRiDataDateOfBirth')" placeholder="DD MM YYYY" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4" v-if="SearchRiData.Searched">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-10">Treaty Code</th>
+                                <th class="w-10">Insured Name</th>
+                                <th class="w-10">Policy No</th>
+                                <th class="w-10">Product/Plan Code</th>
+                                <th class="w-10">Date Of Birth</th>
+                                <th class="w-10">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="MatchedRiDatas.length == 0">
+                                <td colspan="16" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(riData, index) in MatchedRiDatas">
+                                <td>{{ riData.TreatyCode }}</td>
+                                <td>{{ riData.InsuredName }}</td>
+                                <td>{{ riData.PolicyNumber }}</td>
+                                <td>{{ riData.CedingPlanCode }}</td>
+                                <td>{{ riData.InsuredDateOfBirthStr }}</td>
+                                <td>
+                                    <input type="radio" name="selectRiData" :value="index">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" class="btn btn-submit" v-on:click="searchRiData()" style="width: auto;">SEARCH</button>
+                <button type="button" class="btn btn-submit" v-on:click="selectRiData()" :disabled="MatchedRiDatas.length == 0">SELECT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="treatyCodeModal" tabindex="-1" role="dialog" aria-labelledby="treatyCodeModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Treaty</h5>
+            </div>
+            <div class="modal-body">
+                <div v-if="ShowNoTreatyCodeSelected" class="alert alert-danger" role="alert">
+                    <span>No Treaty Code Selected</span>
+                </div>
+                <div class="mb-2">
+                    <input type="text" class="form-control" id="searchTreaty" onkeyup="searchTreatyCode()" placeholder="Search here">
+                </div>
+                <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                    <table class="table sticky-top-table" id="infoTable">
+                        <thead>
+                            <tr>
+                                <th>Treaty Code</th>
+                                <th>Treaty Type</th>
+                                <th>Ceding Company Type</th>
+                                <th>Ceding Company</th>
+                                <th>Effective Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!TreatyCodeList.length">
+                                <td colspan="2" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(treatyCode, index) in TreatyCodeList">
+                                <td>{{ treatyCode.Code }}</td>
+                                <td>{{ treatyCode.TreatyType }}</td>
+                                <td>{{ treatyCode.CedingCompanyType }}</td>
+                                <td>{{ treatyCode.CedingCompany }}</td>
+                                <td>{{ treatyCode.CreatedAtStr }}</td>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="treatyCodeOptions" :value="index">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn btn-submit" v-on:click="selectTreatyCode()" :disabled="!TreatyCodeList.length">SELECT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.Remarks));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+    var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+    var UserTrails = @Html.Raw(Json.Encode(ViewBag.UserTrails));
+
+    // Status
+    var StatusNewCase = @BusinessObject.ReferralClaimBo.StatusNewCase;
+    var StatusNewCaseName = "@BusinessObject.ReferralClaimBo.GetStatusName(BusinessObject.ReferralClaimBo.StatusNewCase)";
+
+    // List
+    var TreatyCodeList = @Html.Raw(Json.Encode(ViewBag.TreatyCodeList));
+    var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyCodes));
+    var Cedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+    var ClaimCodes = @Html.Raw(Json.Encode(ViewBag.DropDownClaimCodes));
+    var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+    var RelatedClaimRegisters = @Html.Raw(Json.Encode(ViewBag.RelatedClaimRegisters));
+
+    // Url
+    var CalculateDateRangeUrl = "@(Url.Action("CalculateDateRange", "PublicHoliday"))";
+    var GetDuplicateUrl = "@(Url.Action("GetDuplicate"))";
+    var MatchSanctionUrl = "@(Url.Action("MatchSanction"))";
+    var UpdateSanctionVerificationDetailUrl = "@(Url.Action("UpdateSanctionVerificationDetail"))";
+    var SearchRiDataWarehouseUrl = "@(Url.Action("SearchFromReferralClaim", "RiDataWarehouse"))";
+    var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var SaveTempFileUrl = "@(Url.Action("Upload", "Document"))";
+    var UploadSaveDocumentUrl = "@(Url.Action("UploadSave", "Document"))";
+    var DeleteTempFileUrl = "@(Url.Action("Remove", "Document"))";
+    var FindClaimRegisterUrl = "@(Url.Action("FindForClaimRegister"))";
+    var UrlClaimRegisterLink = "@(Url.Action("Edit", "ClaimRegisterClaim"))";
+
+    // Constants
+    var StatusPendingAssessment = @BusinessObject.ReferralClaimBo.StatusPendingAssessment;
+    var StatusPendingChecklist = @BusinessObject.ReferralClaimBo.StatusPendingChecklist;
+    var StatusClosedRegistered = @BusinessObject.ReferralClaimBo.StatusClosedRegistered;
+    var StatusClosed = @BusinessObject.ReferralClaimBo.StatusClosed;
+
+    // Others
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var DateFormat = "@Shared.Util.GetDateFormatMomentJs()";
+    var isClosedRegistered = @(ViewBag.IsClosedRegistered != null ? ViewBag.IsClosedRegistered  .ToString().ToLower() : "false");;
+</script>

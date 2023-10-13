@@ -1,0 +1,1048 @@
+﻿@model WebApp.Models.RetroStatementViewModel
+
+@{
+    ViewBag.Title = "Retro Statement";
+    ViewBag.Action = "Delete";
+
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "Direct Retro";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", new { id = Model.DirectRetroId });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.RetroStatementBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.RetroStatementBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.DirectRetroId)
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.MlreRef)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetroPartyId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RetroPartyId, (List<SelectListItem>)ViewBag.DropDownRetroPartiesByRetroConfig, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "updateRetroValue(this.value)" })
+                        @Html.ValidationMessageFor(model => model.RetroPartyId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <div class="mt-3 border p-3">
+                    <table class="w-100 table-hover">
+                        <tbody>
+                            <tr>
+                                <td class="w-15"></td>
+                                <td class="w-20"></td>
+                                <td class="w-20"></td>
+                                <td class="w-15"></td>
+                                <td class="w-15"></td>
+                                <td class="w-15"></td>
+                            </tr>
+                            @*<tr>
+                                <td>
+                                    @Html.LabelFor(model => model.MlreRef, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.MlreRef, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>*@
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.CedingCompany, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.CedingCompany, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "true" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.TreatyCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "true" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.TreatyNo, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.TreatyNo, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "true" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.Schedule, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.Schedule, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "true" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.TreatyType, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.TreatyType, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "true" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">&nbsp;</td>
+                            </tr>
+                            <tr style="background-color: #e8f1fb">
+                                <td class="text-center col-form-label font-weight-bold" colspan="6">Retro Statement</td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.FromMlreTo, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.FromMlreTo, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "true" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.AccountsFor, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="ml-1">
+                                        @Html.EditorFor(model => model.AccountsFor, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.DateReportCompletedStr, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="input-w-icon ml-1">
+                                        @Html.TextBoxFor(model => model.DateReportCompletedStr, new { id = "DateReportCompleted", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateReportCompleted')" />
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.DateSendToRetroStr, htmlAttributes: new { @class = "col-form-label" })
+                                    <span class="float-right col-form-label">:</span>
+                                </td>
+                                <td colspan="2" class="col-form-label">
+                                    <div class="input-w-icon ml-1">
+                                        @Html.TextBoxFor(model => model.DateSendToRetroStr, new { id = "DateSendToRetro", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateSendToRetro')" />
+                                    </div>
+                                </td>
+                                <td colspan="3" class="col-form-label">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label font-weight-bold">
+                                    <div class="d-inline-flex">
+                                        <div>Accounting Period</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AccountingPeriod, new { htmlAttributes = new { @class = "form-control", @onchange = "validateQuarter(this.value, 'RiskQuarter')", placeholder = "YYYY MM", autocomplete = "off" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AccountingPeriod2, new { htmlAttributes = new { @class = "form-control", @onchange = "validateQuarter(this.value, 'RiskQuarter2')", placeholder = "YYYY MM", autocomplete = "off" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AccountingPeriod3, new { htmlAttributes = new { @class = "form-control", @onchange = "validateQuarter(this.value, 'RiskQuarter3')", placeholder = "YYYY MM", autocomplete = "off" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="col-form-label text-center font-weight-bold">
+                                    <span>RM</span>
+                                </td>
+                                <td class="col-form-label text-center font-weight-bold">
+                                    <span>RM</span>
+                                </td>
+                                <td class="col-form-label text-center font-weight-bold">
+                                    <span>RM</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(a)</div>
+                                        <div>Reserve Ceded at the begining of the Accounting Period</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ReserveCededBeginStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ReserveCededBegin2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ReserveCededBegin3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ReserveCededBeginStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ReserveCededBegin2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ReserveCededBegin3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(b)</div>
+                                        <div>Reserve Ceded at the end of the Accounting Period</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ReserveCededEndStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ReserveCededEnd2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ReserveCededEnd3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ReserveCededEndStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ReserveCededEnd2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ReserveCededEnd3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(c)</div>
+                                        <div>Risk Charge Ceded at the begining of the Accounting Period</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiskChargeCededBeginStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiskChargeCededBegin2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiskChargeCededBegin3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiskChargeCededBeginStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiskChargeCededBegin2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiskChargeCededBegin3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(d)</div>
+                                        <div>Risk Charge Ceded at the end of the Accounting Period</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiskChargeCededEndStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiskChargeCededEnd2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiskChargeCededEnd3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiskChargeCededEndStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiskChargeCededEnd2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiskChargeCededEnd3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(e)</div>
+                                        <div>Average Reserve Ceded</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AverageReserveCededStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AverageReserveCeded2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AverageReserveCeded3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.AverageReserveCededStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.AverageReserveCeded2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.AverageReserveCeded3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(f)</div>
+                                        <div class="font-weight-bold">Reinsurance Premium</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>New Business</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumNBStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumNB2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumNB3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumNBStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumNB2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumNB3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Renewal</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumRNStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumRN2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumRN3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumRNStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumRN2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumRN3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Alteration</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumALTStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumALT2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiPremiumALT3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumALTStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumALT2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiPremiumALT3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(g)</div>
+                                        <div>Quarterly Risk Premium</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.QuarterlyRiskPremiumStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.QuarterlyRiskPremium2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.QuarterlyRiskPremium3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.QuarterlyRiskPremiumStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.QuarterlyRiskPremium2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.QuarterlyRiskPremium3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(h)</div>
+                                        <div>Retrocession Marketing Fee</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RetrocessionMarketingFeeStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RetrocessionMarketingFee2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RetrocessionMarketingFee3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RetrocessionMarketingFeeStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RetrocessionMarketingFee2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RetrocessionMarketingFee3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(i)</div>
+                                        <div class="font-weight-bold">Reinsurance Discount</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>New Business</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountNBStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountNB2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountNB3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountNBStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountNB2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountNB3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Renewal</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountRNStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountRN2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountRN3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountRNStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountRN2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountRN3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Alteration</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountALTStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountALT2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.RiDiscountALT3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountALTStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountALT2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.RiDiscountALT3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(j)</div>
+                                        <div>Agreed Database Commission</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AgreedDatabaseCommStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AgreedDatabaseComm2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.AgreedDatabaseComm3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.AgreedDatabaseCommStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.AgreedDatabaseComm2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.AgreedDatabaseComm3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(k)</div>
+                                        <div>GST Payable</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.GstPayableStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.GstPayable2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.GstPayable3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.GstPayableStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.GstPayable2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.GstPayable3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(l)</div>
+                                        <div>No Claim Bonus</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.NoClaimBonusStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.NoClaimBonus2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.NoClaimBonus3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.NoClaimBonusStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.NoClaimBonus2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.NoClaimBonus3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(m)</div>
+                                        <div>Claims</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ClaimsStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.Claims2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.Claims3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ClaimsStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.Claims2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.Claims3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(n)</div>
+                                        <div>Profit Commission</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ProfitCommStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ProfitComm2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.ProfitComm3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ProfitCommStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ProfitComm2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.ProfitComm3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(o)</div>
+                                        <div>Surrender Value</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.SurrenderValueStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.SurrenderValue2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.SurrenderValue3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.SurrenderValueStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.SurrenderValue2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.SurrenderValue3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(p)</div>
+                                        <div class="font-weight-bold">Payment to the Reinsurer</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.PaymentToTheReinsurerStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.PaymentToTheReinsurer2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.PaymentToTheReinsurer3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.PaymentToTheReinsurerStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.PaymentToTheReinsurer2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.PaymentToTheReinsurer3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(q)</div>
+                                        <div class="font-weight-bold">Total No of Policies</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>New Business</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyNB, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyNB2, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyNB3, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Renewal</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyRN, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyRN2, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyRN3, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Alteration</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyALT, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyALT2, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalNoOfPolicyALT3, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="col-form-label">
+                                    <div class="d-inline-flex">
+                                        <div class="index-width">(r)</div>
+                                        <div class="font-weight-bold">Total Sum Reinsured</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>New Business</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredNBStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredNB2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredNB3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredNBStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredNB2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredNB3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Renewal</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredRNStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredRN2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredRN3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredRNStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredRN2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredRN3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="col-form-label pl-5">
+                                    <span>Alteration</span>
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredALTStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredALT2Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                                <td>
+                                    @Html.EditorFor(model => model.TotalSumReinsuredALT3Str, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredALTStr, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredALT2Str, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.ValidationMessageFor(model => model.TotalSumReinsuredALT3Str, "", new { @class = "text-danger" })
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Edit", "DirectRetro", new { id = Model.DirectRetroId, TabIndex = 4 }, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-del float-right">Delete</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        var QuarterFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+        var DropDownRetroParties = @Html.Raw(Json.Encode(ViewBag.DropDownRetroParties));
+
+        $(document).ready(function () {
+            $('#DateReportCompleted').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+
+            $('#DateSendToRetro').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+
+            $("input").prop("disabled", true);
+            $("select").prop("disabled", true);
+            $('.selectpicker').selectpicker('refresh');
+            $("[name='__RequestVerificationToken']").prop("disabled", false);
+        });
+
+        $('#RiskQuarter').datepicker({
+            format: QuarterFormat,
+            minViewMode: 1,
+            autoclose: true,
+            language: "qtrs",
+            forceParse: false
+        }).on('show', function (e) {
+            var datepickerDropDown = $('.datepicker');
+            datepickerDropDown.addClass('quarterpicker');
+        });
+
+        $('#RiskQuarter2').datepicker({
+            format: QuarterFormat,
+            minViewMode: 1,
+            autoclose: true,
+            language: "qtrs",
+            forceParse: false
+        }).on('show', function (e) {
+            var datepickerDropDown = $('.datepicker');
+            datepickerDropDown.addClass('quarterpicker');
+        });
+
+        $('#RiskQuarter3').datepicker({
+            format: QuarterFormat,
+            minViewMode: 1,
+            autoclose: true,
+            language: "qtrs",
+            forceParse: false
+        }).on('show', function (e) {
+            var datepickerDropDown = $('.datepicker');
+            datepickerDropDown.addClass('quarterpicker');
+        });
+
+        function validateQuarter(qtr, id) {
+            if (qtr == null || qtr == "")
+                return;
+
+            if (!/[0-9]{4} Q{1}([1-4]){1}/.test(qtr)) {
+                $("#" + id).val(null);
+                alert("Accounting Period format is incorrect");
+            }
+        }
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function updateRetroValue(val) {
+            var result = DropDownRetroParties.filter(function (element) { return element.Value == val; })
+            if (result != null && result[0] != null) {
+                if (result[0].Value == 0 || result[0].Value == "" || result[0].Value == null)
+                    $('#FromMlreTo').val(null)
+                else
+                    $('#FromMlreTo').val(result[0].Text)
+            }
+        }
+    </script>
+}

@@ -1,0 +1,170 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.PerLifeRetroGenderViewModel>
+
+@{
+    ViewBag.Title = "Per Life Retro Gender";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right  btn-row-inline">
+                <a href="@Url.Action("Create")" class="btn btn-add">
+                    ADD NEW
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-35">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInsuredGenderCodePickListDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Gender", "InsuredGenderCodePickListDetailId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-30">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortEffectiveStartDate;
+                                @Shared.Html.Sorter(ViewBag, "Effective Start Date", "EffectiveStartDate", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-30">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortEffectiveEndDate;
+                                @Shared.Html.Sorter(ViewBag, "Effective End Date", "EffectiveEndDate", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "PerLifeRetroGender", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.DropDownList("InsuredGenderCodePickListDetailId", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("EffectiveStartDate", null, new { id = "EffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveStartDate')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("EffectiveEndDate", null, new { id = "EffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveEndDate')" />
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (item.InsuredGenderCodePickListDetail != null)
+                                {
+                                    @item.InsuredGenderCodePickListDetail.ToString();
+                                }
+                            </td>
+                            <td>
+                                @if (item.EffectiveStartDate.HasValue)
+                                {
+                                    @item.EffectiveStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.EffectiveEndDate.HasValue)
+                                {
+                                    @item.EffectiveEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fas fa-ellipsis-v dropbtn" />
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        Gender = routeValue["Gender"],
+                        EffectiveStartDate = routeValue["EffectiveStartDate"],
+                        EffectiveEndDate = routeValue["EffectiveEndDate"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#EffectiveStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+            $('#EffectiveEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+    </script>
+}

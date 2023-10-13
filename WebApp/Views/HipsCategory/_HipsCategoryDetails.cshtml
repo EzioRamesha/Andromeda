@@ -1,0 +1,92 @@
+﻿@model WebApp.Models.HipsCategoryViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="HipsCategoryDetailMaxIndex" name="hipsCategoryDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-20">Subcategory</th>
+                        <th class="w-50">Description</th>
+                        <th class="w-20">Item Type</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!HipsCategoryDetails.length">
+                        <td colspan="5" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in HipsCategoryDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'hipsCategoryDetailId[' + index + ']'" class="form-control" v-model="detail.Id" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input v-model="detail.Subcategory" :name="'subcategory[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.Subcategory" maxlength="@ViewBag.SubcategoryMaxLength">
+                        </td>
+                        <td>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('description' + index)" v-on:blur="autoCollapseTextarea('description' + index)" v-model="detail.Description" class="form-control textarea-auto-expand" :id="'description' + index" :name="'description[' + index + ']'" placeholder="Type here" disabled="@disabled"></textarea>
+                        </td>
+                        <td>
+                            <select v-model="detail.ItemType" class="form-control" ref="select" :id="'itemType[' + index + ']'" :name="'itemType[' + index + ']'" data-container="body" disabled="@disabled">
+                                <option v-for="itemType in ItemTypes" :value="itemType.Value">{{ itemType.Text }}</option>
+                            </select>
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="openDeleteSubcategoryModal(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="deleteSubcategoryModal" tabindex="-1" role="dialog" aria-labelledby="deleteSubcategoryModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Subcategory Confirmation</h5>
+                        <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <span>Are you sure you want to delete Subcategory {{SubcategoryModal.code}} at row #{{SubcategoryModal.row}}?</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                        <button type="button" v-on:click="removeHipsCategoryDetail()" class="btn btn-submit">CONFIRM</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var HipsCategoryModel = @Html.Raw(Json.Encode(Model));
+    var HipsCategoryDetails = @Html.Raw(Json.Encode(ViewBag.HipsCategoryDetailBos));
+    var ItemTypes = @Html.Raw(Json.Encode(ViewBag.DropDownItemTypes));
+    var ValidateHipsSubCategoryDeleteUrl = "@(Url.Action("ValidateHipsSubCategoryDelete"))";
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

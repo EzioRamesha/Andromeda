@@ -1,0 +1,117 @@
+﻿@model WebApp.Models.TreatyPricingPerLifeRetroViewModel
+
+@{
+    ViewBag.Title = "Per Life Retro Arrangement";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+
+        @Html.Partial("_ObjectLockEditButton")
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.Code)
+            @Html.HiddenFor(model => model.EditableVersion)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RetroPartyId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RetroPartyId, (List<SelectListItem>)ViewBag.DropDownRetroParties, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.RetroPartyId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetrocessionaireShare, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">%</div>
+                            </div>
+                            @Html.TextBoxFor(model => model.RetrocessionaireShare, new { @class = "form-control text-right", placeholder = "0.00" })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.RetrocessionaireShare, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Type, (List<SelectListItem>)ViewBag.DropDownTypes, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @if (ViewBag.IsEditMode ?? false)
+                        {
+                            <button type="submit" class="btn btn-submit float-right" v-on:click="savePerLife()">SAVE</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-submit prevent-disable float-right edit-mode-btn" onclick="enterEditMode()">EDIT</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+        var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+        var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.TreatyPricingPerLifeRetro.ToString()';
+        $(document).ready(function () {
+            $('#Description').autoResize();
+            $('#Description').trigger('keyup');
+
+            $('#Remarks').autoResize();
+            $('#Remarks').trigger('keyup');
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingPerLifeRetro.js")
+    @Scripts.Render("~/Scripts/models/LinkTreatyPricingProduct.js")
+    @Scripts.Render("~/Scripts/models/Versioning.js")
+    @Scripts.Render("~/Scripts/models/ObjectLock.js")
+}

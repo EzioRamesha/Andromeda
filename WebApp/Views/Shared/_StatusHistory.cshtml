@@ -1,0 +1,175 @@
+﻿@{
+    bool loadModal = ViewData["loadModal"] != null ? bool.Parse(ViewData["loadModal"].ToString()) : true;
+    bool showRemark = ViewData["showRemark"] != null ? bool.Parse(ViewData["showRemark"].ToString()) : false;
+    bool showDocuments = ViewData["showDocuments"] != null ? bool.Parse(ViewData["showDocuments"].ToString()) : false;
+    bool showVersion = ViewData["showVersion"] != null ? bool.Parse(ViewData["showVersion"].ToString()) : false;
+    bool showStatusSelect = ViewData["showStatusSelect"] != null ? bool.Parse(ViewData["showStatusSelect"].ToString()) : false;
+    bool showAddButton = ViewData["showAddButton"] != null ? bool.Parse(ViewData["showAddButton"].ToString()) : true;
+    bool showRecipient = ViewData["showRecipient"] != null ? bool.Parse(ViewData["showRecipient"].ToString()) : false;
+    bool showQuotationWorkflowChecklistColumns = ViewData["showQuotationWorkflowChecklistColumns"] != null ? bool.Parse(ViewData["showQuotationWorkflowChecklistColumns"].ToString()) : false;
+
+    string param = ViewData["param"] != null ? ViewData["param"].ToString() : null;
+    string statusHeaderName = ViewData["statusHeaderName"] != null ? ViewData["statusHeaderName"].ToString() : "Status";
+    string listName = ViewData["listName"] != null ? ViewData["listName"].ToString() : "StatusHistories";
+}
+
+@if (showAddButton)
+{
+    <div class="text-right">
+        <button type="button" class="btn btn-add-sub mt-4" style="width: auto;" v-on:click="resetStatusHistoryModal('@param')" data-toggle="modal" data-target="#statusHistoryModal">UPDATE STATUS</button>
+    </div>
+}
+
+<div class="table-responsive">
+    <table class="table table-hover my-3">
+        <thead>
+            <tr>
+                <th>Date & time</th>
+                @if (showQuotationWorkflowChecklistColumns)
+                {
+                    <th>Department</th>
+                    <th>Person In Charge</th>
+                }
+                else
+                {
+                    <th>Updated By</th>
+                }
+                @if (showVersion)
+                {
+                    <th>Version</th>
+                }
+                <th>@statusHeaderName</th>
+                @if (showRecipient)
+                {
+                    <th>Recipient's Name</th>
+                }
+                @if (showRemark)
+                {
+                    <th>Remarks</th>
+                }
+                @if (showDocuments)
+                {
+                    <th>Attachment(s)</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!@listName || !(@listName).length">
+                <td colspan="6" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(statusHistory, index) in @listName">
+                <td>
+                    <input type="hidden" v-model="statusHistory.CreatedAtStr" :name="'statusHistory.CreatedAtStr[' + index + ']'" />
+                    {{ statusHistory.CreatedAtStr }}
+                </td>
+
+                @if (showQuotationWorkflowChecklistColumns)
+                {
+                    <td>
+                        <input type="hidden" v-model="statusHistory.Department" class="form-control form-control-sm" :name="'statusHistory.Department[' + index + ']'" />
+                        {{ statusHistory.Department }}
+                    </td>
+                    <td>
+                        <input type="hidden" v-model="statusHistory.PersonInCharge" class="form-control form-control-sm" :name="'statusHistory.PersonInCharge[' + index + ']'" />
+                        {{ statusHistory.PersonInCharge }}
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <input type="hidden" v-model="statusHistory.CreatedByName" class="form-control form-control-sm" :name="'statusHistory.CreatedByName[' + index + ']'" />
+                        {{ statusHistory.CreatedByName }}
+                    </td>
+                }
+
+                @if (showVersion)
+                {
+                    <td>
+                        <input type="hidden" v-model="statusHistory.Version" :name="'statusHistory.Version[' + index + ']'" />
+                        <span v-if="statusHistory.Version">{{ statusHistory.Version }}.0</span>
+                    </td>
+                }
+                <td>
+                    <input type="hidden" v-model="statusHistory.Status" :name="'statusHistory.Status[' + index + ']'" />
+                    {{ statusHistory.StatusName }}
+                </td>
+                @if (showRecipient)
+                {
+                    <td>
+                        <span>{{ statusHistory.RecipientNames }}</span>
+                    </td>
+                }
+                @if (showRemark)
+                {
+                    <td>
+                        <span v-if="statusHistory.RemarkBo">{{ statusHistory.RemarkBo.Content }}</span>
+                    </td>
+                }
+                @if (showDocuments)
+                {
+                    <td>
+                        <ul style="list-style: none; padding: 0;" v-if="statusHistory.RemarkBo">
+                            <li v-for="(document, docIndex) in statusHistory.RemarkBo.DocumentBos" class="row">
+                                <div class="col-md-1"> <i class="fas fa-paperclip" style="display:inline-block"></i> </div>
+                                <div class="col-md-10 pl-0">
+                                    <a v-if="document.Id != null && document.FileExists === true" v-bind:href="document.DownloadLink"> {{ document.FileName }} </a>
+                                    <span v-else> {{ document.FileName }} </span>
+                                </div>
+                            </li>
+                        </ul>
+                    </td>
+                }
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@if (loadModal)
+{
+    @Html.Partial("_AddStatusHistoryModal", new ViewDataDictionary { { "showVersion", showVersion }, { "showStatusSelect", showStatusSelect }, { "showRemark", showRemark }, { "showDocuments", showDocuments }, { "showRecipient", showRecipient } })
+}
+
+<script>
+    var CreateRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var CompleteFollowUpUrl = "@(Url.Action("CompleteFollowUp", "Remark"))";
+    var SaveDocumentUrl = "@(Url.Action("Save", "Document"))";
+    var SaveTempDocumentUrl = "@(Url.Action("SaveTemp", "Document"))";
+    var DeleteDocumentUrl = "@(Url.Action("Delete", "Document"))";
+    var hideDetail = false;
+
+    // Follow Up
+    var FollowUpStatusPending = @BusinessObject.RemarkFollowUpBo.StatusPending;
+    var FollowUpStatusCompleted = @BusinessObject.RemarkFollowUpBo.StatusCompleted;
+    var FollowUpStatusPendingName = "@BusinessObject.RemarkFollowUpBo.GetStatusName(BusinessObject.RemarkFollowUpBo.StatusPending)";
+    var FollowUpStatusCompletedName = "@BusinessObject.RemarkFollowUpBo.GetStatusName(BusinessObject.RemarkFollowUpBo.StatusCompleted)";
+
+    @*function createRemark(remarkBo) {
+        if (!validateAddRemark(remarkBo))
+            return;
+
+        var remark = null;
+        $.ajax({
+            url: CreateRemarkUrl,
+            type: "POST",
+            data: { remarkBo: remarkBo },
+            cache: false,
+            async: false,
+            success: function (data) {
+                remark = data.remarkBo;
+            }
+        });
+
+        return remark;
+    }*@
+
+    @*function completeFollowUp(remarkFollowUpId) {
+        $.ajax({
+            url: CompleteFollowUpUrl,
+            type: "POST",
+            data: { remarkFollowUpId: remarkFollowUpId },
+            cache: false,
+            async: false
+        });
+    }*@
+</script>
+@Scripts.Render("~/Scripts/models/Document.js")

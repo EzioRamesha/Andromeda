@@ -1,0 +1,507 @@
+﻿@model WebApp.Models.RiDataFileViewModel
+
+@{
+    ViewBag.Title = "RI Data File";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "RI Data Batch";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", new { id = Model.RiDataBatchId });
+
+    var disabled = ViewBag.Disabled || ViewBag.ReadOnly;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.RiDatas.RiDataFileBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.RiDatas.RiDataFileBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("EditRiDataFile", "RiData", new { id = Model.Id }, FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.RiDataBatchId)
+            @Html.HiddenFor(model => model.CedantId)
+            @Html.Hidden("TreatyId", Model.RiDataConfigBo.TreatyId)
+            @Html.HiddenFor(model => model.Quarter)
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.FileType)
+            @Html.HiddenFor(model => model.RecordType)
+
+            if (ViewBag.Disabled)
+            {
+                @Html.HiddenFor(model => model.Worksheet)
+                @Html.HiddenFor(model => model.Delimiter)
+                @Html.HiddenFor(model => model.HasHeader)
+                @Html.HiddenFor(model => model.HeaderRow)
+                @Html.HiddenFor(model => model.StartRow)
+                @Html.HiddenFor(model => model.EndRow)
+                @Html.HiddenFor(model => model.StartColumn)
+                @Html.HiddenFor(model => model.EndColumn)
+                @Html.HiddenFor(model => model.IsColumnToRowMapping)
+                @Html.HiddenFor(model => model.NumberOfRowMapping)
+                @Html.HiddenFor(model => model.IsDataCorrection)
+            }
+
+            <div class="form-horizontal">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@string.Format("{0} - {1}", Model.CedantBo.Code, Model.CedantBo.Name)">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyId, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" id="TreatyName" value="@(Model.RiDataConfigBo.TreatyBo != null ? string.Format("{0} - {1}", Model.RiDataConfigBo.TreatyBo.TreatyIdCode, Model.RiDataConfigBo.TreatyBo.Description) : "")">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Quarter, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@Model.Quarter">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReceivedAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@Model.ReceivedAtStr">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ConfigId, htmlAttributes: new { @class = "col-form-label" })
+                        @if (!disabled)
+                        {
+                            @Html.DropDownListFor(model => model.ConfigId, (List<SelectListItem>)ViewBag.ConfigItems, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getConfigData(this.value)" })
+                            @Html.ValidationMessageFor(model => model.ConfigId, "", new { @class = "text-danger" })
+                        }
+                        else
+                        {
+                            @Html.HiddenFor(model => model.ConfigId)
+                            <input type="text" readonly class="form-control" value="@string.Format("{0} - {1}", Model.RiDataConfigBo.Code, Model.RiDataConfigBo.Name)">
+                        }
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.HiddenFor(model => model.PersonInChargeId)
+                        <input type="text" readonly class="form-control" value="@Model.PersonInChargeBo.FullName">
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-12">
+                        <span class="font-weight-bold">@Html.Label("Configuration", htmlAttributes: new { @class = "col-form-label" })</span>
+                        <div id="ConfigDetail">
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.Label("File Type", htmlAttributes: new { @class = "col-form-label" })
+                                    <input type="text" readonly class="form-control" id="FileTypeName" value="@BusinessObject.RiDatas.RiDataConfigBo.GetFileTypeName(Model.FileType)">
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2" id="FileType1">
+                                    @Html.LabelFor(model => model.Worksheet, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.Worksheet, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.Worksheet, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2" id="FileType2">
+                                    @Html.LabelFor(model => model.Delimiter, htmlAttributes: new { @class = "col-form-label" })
+                                    @if (!disabled)
+                                    {
+                                        @Html.DropDownListFor(model => model.Delimiter, (List<SelectListItem>)ViewBag.DelimiterItems, htmlAttributes: new { @class = "form-control selectpicker" })
+                                        @Html.ValidationMessageFor(model => model.Delimiter, "", new { @class = "text-danger" })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" readonly class="form-control" id="DelimiterName" value="@Model.DelimiterName">
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.HasHeader, htmlAttributes: new { @class = "col-form-label" })
+                                    @if (!disabled)
+                                    {
+                                        @Html.DropDownListFor(model => model.HasHeader, (List<SelectListItem>)ViewBag.HasHeaderItems, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "showHeader(this.value)" })
+                                        @Html.ValidationMessageFor(model => model.HasHeader, "", new { @class = "text-danger" })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" readonly class="form-control" id="HasHeaderName" value="@Model.HasHeaderName">
+                                    }
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2" id="HeaderYes">
+                                    @Html.LabelFor(model => model.HeaderRow, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.HeaderRow, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.HeaderRow, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.StartRow, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.StartRow, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.StartRow, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.EndRow, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.EndRow, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.EndRow, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.StartColumn, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.StartColumn, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.EndColumn, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.EndColumn, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsColumnToRowMapping, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Disable</p> </div>
+                                        <div class="custom-control custom-switch" style="padding-left:1rem;">
+                                            @Html.CheckBoxFor(model => model.IsColumnToRowMapping, new { @class = "custom-control-input", id = "IsColumnToRowMappingSwitch", @disabled = "disabled" })
+                                            <label class="custom-control-label" for="IsColumnToRowMappingSwitch" style="color: #004BA2;">Enable</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.IsDataCorrection, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Disable</p> </div>
+                                        <div class="custom-control custom-switch" style="padding-left:1rem;">
+                                            @Html.CheckBoxFor(model => model.IsDataCorrection, new { @class = "custom-control-input", id = "IsDataCorrectionSwitch", @disabled = "disabled" })
+                                            <label class="custom-control-label" for="IsDataCorrectionSwitch" style="color: #004BA2;">Enable</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row" id="RowMapping">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.NumberOfRowMapping, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.NumberOfRowMapping, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.NumberOfRowMapping, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row mt-5">
+                    <div class="form-group col-md-12">
+                        <span class="font-weight-bold">@Html.LabelFor(model => model.OverrideProperties, htmlAttributes: new { @class = "col-form-label" })</span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-50">
+                                            Label
+                                        </th>
+                                        <th class="w-50">
+                                            Value
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        foreach (var item in ViewBag.OverridePropertiesList)
+                                        {
+                                            string FieldName = BusinessObject.StandardOutputBo.GetCodeByType(int.Parse(item.Key));
+                                            int DataType = BusinessObject.StandardOutputBo.GetDataTypeByType(int.Parse(item.Key));
+                                            <tr>
+                                                <td>
+                                                    @BusinessObject.StandardOutputBo.GetTypeName(int.Parse(item.Key))
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        switch (DataType)
+                                                        {
+                                                            case BusinessObject.StandardOutputBo.DataTypeDate:
+                                                                @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control", placeholder = "DD MM YYYY", @Value = item.Value } })
+                                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('@FieldName')" />
+                                                                break;
+                                                            case BusinessObject.StandardOutputBo.DataTypeString:
+                                                                @Html.Editor(FieldName, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control", @Value = item.Value } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @Value = item.Value } })
+                                                                break;
+                                                            case BusinessObject.StandardOutputBo.DataTypeAmount:
+                                                                <div class="input-group mb-2">
+                                                                    <div class="input-group-prepend">
+                                                                        <div class="input-group-text">MYR</div>
+                                                                    </div>
+                                                                    @Html.Editor(FieldName, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control", @Value = item.Value } } : new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @Value = item.Value } })
+                                                                </div>
+                                                                break;
+                                                            case BusinessObject.StandardOutputBo.DataTypePercentage:
+                                                                <div class="input-group mb-2">
+                                                                    <div class="input-group-prepend">
+                                                                        <div class="input-group-text">%</div>
+                                                                    </div>
+                                                                    @Html.Editor(FieldName, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control", @Value = item.Value } } : new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @Value = item.Value } })
+                                                                </div>
+                                                                break;
+                                                            case BusinessObject.StandardOutputBo.DataTypeInteger:
+                                                                if (item.Key == BusinessObject.StandardOutputBo.TypeRecordType.ToString())
+                                                                {
+                                                                    var recordTypes = new List<SelectListItem> { };
+                                                                    recordTypes.Add(new SelectListItem { Text = "Please select", Value = "" });
+                                                                    for (int i = 1; i <= BusinessObject.RiDatas.RiDataBatchBo.RecordTypeMax; i++)
+                                                                    {
+                                                                        recordTypes.Add(new SelectListItem { Text = BusinessObject.RiDatas.RiDataBatchBo.GetRecordTypeName(i), Value = i.ToString(), Selected = i.ToString() == item.Value });
+                                                                    }
+
+                                                                    if (!disabled)
+                                                                    {
+                                                                        @Html.DropDownList(FieldName, recordTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @Html.DropDownList(FieldName, recordTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @disabled = "disabled" })
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    @Html.Editor(FieldName, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control", @Value = item.Value } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", type = "number", @Value = item.Value } })
+                                                                }
+                                                                break;
+                                                            case BusinessObject.StandardOutputBo.DataTypeDropDown:
+                                                                IList<BusinessObject.PickListDetailBo> pickListDetails = Services.PickListDetailService.GetByStandardOutputId(int.Parse(item.Key));
+                                                                var listItems = pickListDetails.Select(i => new SelectListItem
+                                                                {
+                                                                    Value = i.Code,
+                                                                    Text = string.Format("{0} - {1}", i.Code, i.Description),
+                                                                    Selected = i.Code == item.Value
+                                                                });
+
+                                                                if (!disabled)
+                                                                {
+                                                                    @Html.DropDownList(FieldName, listItems, "Please select", htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                }
+                                                                else
+                                                                {
+                                                                    @Html.DropDownList(FieldName, listItems, "Please select", htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @disabled = "disabled" })
+                                                                }
+                                                                break;
+                                                            case BusinessObject.StandardOutputBo.DataTypeBoolean:
+                                                                var items = new List<SelectListItem> { };
+                                                                items.Add(new SelectListItem { Text = "Please select", Value = "" });
+                                                                items.Add(new SelectListItem { Text = "False", Value = "false", Selected = "false" == item.Value });
+                                                                items.Add(new SelectListItem { Text = "True", Value = "true", Selected = "true" == item.Value });
+
+                                                                if (!disabled)
+                                                                {
+                                                                    @Html.DropDownList(FieldName, items, "Please select", htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                }
+                                                                else
+                                                                {
+                                                                    @Html.DropDownList(FieldName, items, "Please select", htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @disabled = "disabled" })
+                                                                }
+                                                                break;
+                                                            default:
+                                                                break;
+                                                        }
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Edit", new { id = Model.RiDataBatchId, tabIndex = 2 }, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                        @*@(!disabled && !ViewBag.DisabledSubmitByConfigStatus ? "" : "disabled")*@
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        var GetConfigUrl = "@(Url.Action("GetConfigDetails"))";
+        var DateTimeFormat = "@(Shared.Util.GetDateTimeFormatMomentJs())";
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            var readOnly = @(disabled.ToString().ToLower());
+            if (readOnly) {
+                disableFields();
+            }
+
+            showType(@Model.RiDataConfigBo.FileType);
+            showHeader('@Model.HasHeader');
+            showRowMapping('@Model.IsColumnToRowMapping');
+
+            $('#IsColumnToRowMappingSwitch').on('change.bootstrapSwitch', function (e) {
+                showRowMapping(e.target.checked);
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function getConfigData(Id) {
+            if (Id === '' || Id === '0' || Id === 'Please select') {
+                $('#TreatyId').val('');
+                $('#TreatyName').val('');
+
+                $('#ConfigDetail').hide();
+                $('#FileType').val('');
+                $('#FileTypeName').val('');
+                $('#Worksheet').val('');
+                $('#DelimiterName').val('');
+                $('#HasHeader').val('');
+                $('#HeaderRow').val('');
+                $('#StartRow').val('');
+                $('#EndRow').val('');
+                $('#StartColumn').val('');
+                $('#EndColumn').val('');
+                checkColumnToRowMapping(false);
+                $('#NumberOfRowMapping').val('');
+                checkDataCorrection(false);
+            }
+            else {
+                var ConfigData;
+                $.ajax({
+                    url: GetConfigUrl,
+                    type: "POST",
+                    data: { id: Id },
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        ConfigData = data.riDataConfigBo;
+                    }
+                });
+                $('#TreatyId').val(ConfigData.TreatyId);
+                if (ConfigData.TreatyBo)
+                    $('#TreatyName').val(ConfigData.TreatyBo.TreatyIdCode + ' - ' + ConfigData.TreatyBo.Description);
+                else
+                    $('#TreatyName').val('');
+
+                $('#ConfigDetail').show();
+                $('#FileType').val(ConfigData.FileType);
+                $('#FileTypeName').val(ConfigData.FileTypeName);
+                showType(ConfigData.FileType);
+
+                if (Id == '@Model.ConfigId') {
+
+                    $('#Worksheet').val('@Model.Worksheet');
+                    $('#Delimiter').val('@Model.Delimiter');
+                    var hasHeader = '@Model.HasHeader';
+                    $('#HasHeader').val(hasHeader.toLowerCase());
+                    $('#HeaderRow').val('@Model.HeaderRow');
+                    $('#StartRow').val('@Model.StartRow');
+                    $('#EndRow').val('@Model.EndRow');
+                    $('#StartColumn').val('@Model.StartColumn');
+                    $('#EndColumn').val('@Model.EndColumn');
+
+                    showHeader('@Model.HasHeader');
+                }
+                else {
+
+                    $('#Worksheet').val(ConfigData.RiDataFileConfig.Worksheet);
+                    $('#Delimiter').val(ConfigData.RiDataFileConfig.Delimiter);
+                    $('#HasHeader').val(ConfigData.RiDataFileConfig.HasHeader == true ? 'true' : 'false');
+                    $('#HeaderRow').val(ConfigData.RiDataFileConfig.HeaderRow);
+                    $('#StartRow').val(ConfigData.RiDataFileConfig.StartRow);
+                    $('#EndRow').val(ConfigData.RiDataFileConfig.EndRow);
+                    $('#StartColumn').val(ConfigData.RiDataFileConfig.StartColumn);
+                    $('#EndColumn').val(ConfigData.RiDataFileConfig.EndColumn);
+
+                    showHeader(ConfigData.RiDataFileConfig.HasHeader);
+
+                }
+
+                checkColumnToRowMapping(ConfigData.RiDataFileConfig.IsColumnToRowMapping);
+                $('#NumberOfRowMapping').val(ConfigData.RiDataFileConfig.NumberOfRowMapping);
+                checkDataCorrection(ConfigData.RiDataFileConfig.IsDataCorrection);
+
+                showRowMapping(ConfigData.RiDataFileConfig.IsColumnToRowMapping);
+            }
+
+            $('#Delimiter').selectpicker('refresh');
+            $('#HasHeader').selectpicker('refresh');
+        }
+
+        function showType(val) {
+            switch (val) {
+                case @BusinessObject.RiDatas.RiDataConfigBo.FileTypeExcel:
+                    $('#FileType1').show();
+                    $('#FileType2').hide();
+                    break;
+                case @BusinessObject.RiDatas.RiDataConfigBo.FileTypePlainText:
+                    $('#FileType2').show();
+                    $('#FileType1').hide();
+                    break;
+                default:
+                    $('#FileType1').hide();
+                    $('#FileType2').hide();
+                    break;
+            }
+        }
+
+        function showHeader(val) {
+            if (val === "true" || val === true || val == "True") {
+                $('#HeaderRow').prop("readonly", false);
+            }
+            else { $('#HeaderRow').prop("readonly", true); }
+        }
+
+        function showRowMapping(val) {
+            if (val === "true" || val === true || val === "True") {
+                $('#RowMapping').show();
+            }
+            else {
+                $('#NumberOfRowMapping').val('');
+                $('#RowMapping').hide();
+            }
+        }
+
+        function checkColumnToRowMapping(val) {
+            $('#IsColumnToRowMappingSwitch').prop('checked', false);
+            if (val === "true" || val === true || val === "True") {
+                $('#IsColumnToRowMappingSwitch').prop('checked', true);
+            }
+        }
+
+        function checkDataCorrection(val) {
+            $('#IsDataCorrectionSwitch').prop('checked', false);
+            if (val === "true" || val === true || val === "True") {
+                $('#IsDataCorrectionSwitch').prop('checked', true);
+            }
+        }
+    </script>
+}

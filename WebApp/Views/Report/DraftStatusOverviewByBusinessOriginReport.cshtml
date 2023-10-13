@@ -1,0 +1,475 @@
+﻿@{
+    ViewBag.Title = "Draft Status Overview (by Business Origin)";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Draft Status Overview (by Business Origin)</h4>
+            </div>
+
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <div class="col-form-label">
+                            Effective Start Date
+                        </div>
+                        <div class="input-w-icon">
+                            <input id="EffectiveStartDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" />
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveStartDate')" />
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="col-form-label">
+                            Effective End Date
+                        </div>
+                        <div class="input-w-icon">
+                            <input id="EffectiveEndDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" />
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveEndDate')" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">WM</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">TREATY</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">ADDENDUM</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retro Company</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                </tr>
+                                <tr v-for="treatyWorkflowDraftStatuses in TreatyWorkflowDraftStatusesWM">
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.InwardRetroPartyName }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.SignedCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan6MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan12MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.MoreThan12MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.TotalCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.SignedCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan6MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan12MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.MoreThan12MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.TotalCountInAddendum }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">OM</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">TREATY</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">ADDENDUM</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retro Company</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                </tr>
+                                <tr v-for="treatyWorkflowDraftStatuses in TreatyWorkflowDraftStatusesOM">
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.InwardRetroPartyName }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.SignedCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan6MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan12MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.MoreThan12MonthCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.TotalCountInTreaty }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.SignedCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan6MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.LessThan12MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.MoreThan12MonthCountInAddendum }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ treatyWorkflowDraftStatuses.TotalCountInAddendum }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div><div class="table-responsive my-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <td style="background-color: white"></td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">TREATY</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="5">ADDENDUM</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 6 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;"><= 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">> 12 months</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Total</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold w-5" style="background-color: #f3f8fe;">
+                                        WM
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalSignedInTreatyWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan6MonthCountInTreatyWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan12MonthCountInTreatyWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalMoreThan12MonthCountInTreatyWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalInTreatyWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalSignedInAddendumWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan6MonthCountInAddendumWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan12MonthCountInAddendumWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalMoreThan12MonthCountInAddendumWM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalInAddendumWM }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold w-5" style="background-color: #f3f8fe;">
+                                        OM
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalSignedInTreatyOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan6MonthCountInTreatyOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan12MonthCountInTreatyOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalMoreThan12MonthCountInTreatyOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalInTreatyOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalSignedInAddendumOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan6MonthCountInAddendumOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan12MonthCountInAddendumOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalMoreThan12MonthCountInAddendumOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalInAddendumOM }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold w-5" style="background-color: #f3f8fe;">
+                                        WM + OM
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalSignedInTreatyWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan6MonthCountInTreatyWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan12MonthCountInTreatyWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalMoreThan12MonthCountInTreatyWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalInTreatyWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalSignedInAddendumWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan6MonthCountInAddendumWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalLessThan12MonthCountInAddendumWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalMoreThan12MonthCountInAddendumWMandOM }}
+                                    </td>
+                                    <td class="w-5">
+                                        {{ TreatyWorkflowDraftStatusesTotal.TotalInAddendumWMandOM }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#EffectiveStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#EffectiveEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                TreatyWorkflowDraftStatusesWM: "",
+                TreatyWorkflowDraftStatusesOM: "",
+                TreatyWorkflowDraftStatusesTotal: "",
+                EffectiveStartDate: "",
+                EffectiveEndDate: "",
+                IsGenerated: false,
+            },
+            methods: {
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+
+                    var errorList = [];
+                    var treatyWorkflowDraftStatusesWM = this.TreatyWorkflowDraftStatusesWM;
+                    var treatyWorkflowDraftStatusesOM = this.TreatyWorkflowDraftStatusesOM;
+                    var treatyWorkflowDraftStatusesTotal = this.TreatyWorkflowDraftStatusesTotal;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateDraftStatusOverviewByBusinessOrigin", "Report"))",
+                        type: "POST",
+                        data: {
+                            effStartDate: $("#EffectiveStartDate").val(),
+                            effEndDate: $("#EffectiveEndDate").val(),
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            treatyWorkflowDraftStatusesWM = data.treatyWorkflowDraftStatusesWM;
+                            treatyWorkflowDraftStatusesOM = data.treatyWorkflowDraftStatusesOM;
+                            treatyWorkflowDraftStatusesTotal = data.treatyWorkflowDraftStatusesTotal;
+                            error = data.error;
+                        }
+                    });
+
+                    if (error != null) {
+                        errorList.push(error);
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    this.TreatyWorkflowDraftStatusesWM = treatyWorkflowDraftStatusesWM;
+                    this.TreatyWorkflowDraftStatusesOM = treatyWorkflowDraftStatusesOM;
+                    this.TreatyWorkflowDraftStatusesTotal = treatyWorkflowDraftStatusesTotal;
+                    this.IsGenerated = true;
+
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Campaign ID";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "DraftStatusOverviewByBusinessOrigin",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                }
+            }
+        })
+
+</script>
+
+}

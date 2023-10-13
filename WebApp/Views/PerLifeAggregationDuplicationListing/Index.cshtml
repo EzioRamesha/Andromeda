@@ -1,0 +1,377 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel>
+
+@{
+    ViewBag.Title = "Duplication Listing";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <div class="btn-group" style="display: unset;">
+                    <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DOWNLOAD AS
+                    </button>
+                    <div class="dropdown-menu">
+                        @Html.ActionLink("All", "Download", null, new { @class = "dropdown-item", target = "_blank" })
+                        @Html.ActionLink("Filtered", "Download", new
+                        {
+                            TreatyCode = routeValue["TreatyCode"],
+                            InsuredName = routeValue["InsuredName"],
+                            InsuredGender = routeValue["InsuredGender"],
+                            InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                            PolicyNumber = routeValue["PolicyNumber"],
+                            ReinsuranceEffectiveDate = routeValue["ReinsuranceEffectiveDate"],
+                            FundsAccountingType = routeValue["FundsAccountingType"],
+                            ReinsuranceRiskBasis = routeValue["ReinsuranceRiskBasis"],
+                            CedingPlanCode = routeValue["CedingPlanCode"],
+                            MLReBenefitCode = routeValue["MLReBenefitCode"],
+                            CedingBenefitRiskCode = routeValue["CedingBenefitRiskCode"],
+                            CedingBenefitTypeCode = routeValue["CedingBenefitTypeCode"],
+                            TransactionType = routeValue["TransactionType"],
+                            ProceedToAggregate = routeValue["ProceedToAggregate"],
+                            DateUpdated = routeValue["DateUpdated"],
+                            ExceptionStatus = routeValue["ExceptionStatus"],
+                            Remarks = routeValue["Remarks"],
+                        }, new { @class = "dropdown-item", target = "_blank" })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTreatyCodeId;
+                                @Shared.Html.Sorter(ViewBag, "Treaty Code", "TreatyCodeId", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInsuredName;
+                                @Shared.Html.Sorter(ViewBag, "Insured Name", "InsuredName", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInsuredGender;
+                                @Shared.Html.Sorter(ViewBag, "Insured Gender", "InsuredGender", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInsuredDateOfBirth;
+                                @Shared.Html.Sorter(ViewBag, "Insured Date of Birth", "InsuredDateOfBirth", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPolicyNumber;
+                                @Shared.Html.Sorter(ViewBag, "Policy Number", "PolicyNumber", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortReinsuranceEffectiveDate;
+                                @Shared.Html.Sorter(ViewBag, "Reinsurance Effective Date", "ReinsuranceEffectiveDate", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortFundsAccountingType;
+                                @Shared.Html.Sorter(ViewBag, "Funds Accounting Type", "FundsAccountingType", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortReinsuranceRiskBasis;
+                                @Shared.Html.Sorter(ViewBag, "Reinsurance Risk Basis ID", "ReinsuranceRiskBasis", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedingPlanCode;
+                                @Shared.Html.Sorter(ViewBag, "Ceding Plan Code", "CedingPlanCode", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortMLReBenefitCode;
+                                @Shared.Html.Sorter(ViewBag, "MLRe Benefit Code", "MLReBenefitCode", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedingBenefitRiskCode;
+                                @Shared.Html.Sorter(ViewBag, "Ceding Benefit Risk Code", "CedingBenefitRiskCode", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedingBenefitTypeCode;
+                                @Shared.Html.Sorter(ViewBag, "Ceding Benefit Type Code", "CedingBenefitTypeCode", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTransactionType;
+                                @Shared.Html.Sorter(ViewBag, "Transaction Type", "TransactionType", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortProceedToAggregate;
+                                @Shared.Html.Sorter(ViewBag, "Proceed To Aggregate", "ProceedToAggregate", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDateUpdated;
+                                @Shared.Html.Sorter(ViewBag, "Date Updated", "DateUpdated", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortExceptionStatus;
+                                @Shared.Html.Sorter(ViewBag, "Exception Status", "ExceptionStatus", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-25">
+                            Remarks
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+                    <tr>
+                        @using (Html.BeginForm("Index", "PerLifeAggregationDuplicationListing", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.TextBox("TreatyCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("InsuredName", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("InsuredGender", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("InsuredDateOfBirth", null, new { id = "InsuredDateOfBirth", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InsuredDateOfBirth')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("PolicyNumber", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("ReinsuranceEffectiveDate", null, new { id = "ReinsuranceEffectiveDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsuranceEffectiveDate')" />
+                            </th>
+                            <th>
+                                @Html.DropDownList("FundsAccountingType", (List<SelectListItem>)ViewBag.DropDownFundsAccountingTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ReinsuranceRiskBasis", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CedingPlanCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("MLReBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CedingBenefitRiskCode", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("CedingBenefitTypeCode", (List<SelectListItem>)ViewBag.DropDownCedingBenefitTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("TransactionType", (List<SelectListItem>)ViewBag.DropDownTransactionTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ProceedToAggregate", (List<SelectListItem>)ViewBag.DropDownProceedStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("DateUpdated", null, new { id = "DateUpdated", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateUpdated')" />
+                            </th>
+                            <th>
+                                @*@Html.DropDownList("ExceptionStatus", (List<SelectListItem>)ViewBag.DropDownExceptionStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })*@
+                            </th>
+                            <th>
+                                @Html.TextBox("Remarks", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.TreatyCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.InsuredName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.InsuredGenderCode)
+                            </td>
+                            <td>
+                                @if (item.InsuredDateOfBirth.HasValue)
+                                {
+                                    @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.PolicyNumber)
+                            </td>
+                            <td>
+                                @if (item.ReinsEffDatePol.HasValue)
+                                {
+                                    @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.FundsAccountingTypeCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ReinsBasisCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CedingPlanCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CedingBenefitRiskCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CedingBenefitTypeCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.TransactionTypeCode)
+                            </td>
+                            <td>
+                                @BusinessObject.Retrocession.PerLifeAggregationDetailDataBo.GetProceedStatusName(item.ProceedStatus)
+                            </td>
+                            <td>
+                                @if (item.UpdatedAt.HasValue)
+                                {
+                                    @item.UpdatedAt.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @*@if (item.ExceptionStatusPickListDetailId.HasValue)
+                                    {
+                                        @Services.PickListDetailService.Find(item.ExceptionStatusPickListDetailId.Value).ToString()
+                                    }*@
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Remarks)
+                            </td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Edit", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-pencil-alt"></span></a>
+                                @*<div class="btn-group">
+                                        <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="fas fa-ellipsis-v dropbtn" />
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        </div>
+                                    </div>*@
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="pagination-footer">
+        <div class="row">
+            <div class="col-md-4">
+                @Html.Partial("_PageInfo")
+            </div>
+            <div class="col-md-8">
+                @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                {
+                    TreatyCode = routeValue["TreatyCode"],
+                    InsuredName = routeValue["InsuredName"],
+                    InsuredGender = routeValue["InsuredGender"],
+                    InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                    PolicyNumber = routeValue["PolicyNumber"],
+                    ReinsuranceEffectiveDate = routeValue["ReinsuranceEffectiveDate"],
+                    FundsAccountingType = routeValue["FundsAccountingType"],
+                    ReinsuranceRiskBasis = routeValue["ReinsuranceRiskBasis"],
+                    CedingPlanCode = routeValue["CedingPlanCode"],
+                    MLReBenefitCode = routeValue["MLReBenefitCode"],
+                    CedingBenefitRiskCode = routeValue["CedingBenefitRiskCode"],
+                    CedingBenefitTypeCode = routeValue["CedingBenefitTypeCode"],
+                    TransactionType = routeValue["TransactionType"],
+                    ProceedToAggregate = routeValue["ProceedToAggregate"],
+                    DateUpdated = routeValue["DateUpdated"],
+                    ExceptionStatus = routeValue["ExceptionStatus"],
+                    Remarks = routeValue["Remarks"],
+                    SortOrder = ViewBag.SortOrder,
+                    Page,
+                }), Shared.Html.GetPagedListRenderOptions())
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#InsuredDateOfBirth').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReinsuranceEffectiveDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#DateUpdated').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+    </script>
+}

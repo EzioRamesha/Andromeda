@@ -1,0 +1,540 @@
+﻿@model WebApp.Models.PerLifeClaimRetroDataViewModel
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+       <div class="col-form-label">ENTRY_NO</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.EntryNo, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = "readonly" } })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CLAIM_ID</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimId, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = "readonly" } })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">INSURED_NAME</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.InsuredName, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type Here", @readonly = "readonly" } })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">POLICY_NUMBER</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyNumber, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type Here", @readonly = "readonly" } })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">INSURED_GENDER_CODE</div>
+        @Html.DropDownListFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.InsuredGenderCode, (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker is-claim", @disabled = "@disabled" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">INSURED_TOBACCO_USE</div>
+        @Html.DropDownListFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.InsuredTobaccoUse, (List<SelectListItem>)ViewBag.DropDownInsuredTobaccoUses, htmlAttributes: new { @class = "form-control selectpicker is-claim", @disabled = "@disabled" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">DATE_OF_REGISTER</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfRegisterStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateOfRegisterStr')" }, { "readonly" , "readonly"} })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateOfRegisterStr')" />
+        </div>
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CEDANT_DATE_OF_NOTIFICATION</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedantDateOfNotificationStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('CedantDateOfNotificationStr')" }, { "readonly", "readonly" } })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('CedantDateOfNotificationStr')" />
+        </div>
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">INSURED_DATE_OF_BIRTH</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.InsuredDateOfBirthStr, new Dictionary<string, object>() { { "class", "form-control is-claim" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('InsuredDateOfBirthStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.InsuredDateOfBirthStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InsuredDateOfBirthStr')" />
+        </div>
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">REINS_EFF_DATE_POL</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ReinsEffDatePolStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('ReinsEffDatePolStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.ReinsEffDatePolStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolStr')" />
+        </div>
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">REINS_BASIS_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ReinsBasisCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ReinsBasisCode, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">MLRE_BENEFIT_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreBenefitCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreBenefitCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CLAIM_CODE</div>
+        @Html.DropDownListFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimCode, (List<SelectListItem>)ViewBag.DropDownClaimCodes, htmlAttributes: new { @class = "form-control selectpicker is-claim", @readonly = "readonly"@*, @v_model = "ClaimRegister.ClaimCode"*@ })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimCode, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">FUNDS_ACCOUNTING_TYPE_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.FundsAccountingTypeCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.FundsAccountingTypeCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CLAIM_RECOVERY_AMOUNT</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">MYR</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimRecoveryAmtStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.ClaimRecoveryAmtStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimRecoveryAmtStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">ANNUAL_RI_PREM</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">MYR</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.AnnualRiPremStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.AnnualRiPremStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.AnnualRiPremStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">RISK_QUARTER</div>
+        @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RiskQuarter, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "YYYY MM" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('RiskQuarter')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.RiskQuarter" }*@ })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RiskQuarter, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">LAST_TRANSACTION_DATE</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.LastTransactionDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('LastTransactionDateStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.LastTransactionDateStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('LastTransactionDateStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.LastTransactionDateStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">RISK_PERIOD_YEAR</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RiskPeriodYear, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = "readonly" @*, @v_model = "ClaimRegister.RiskPeriodYear"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RiskPeriodYear, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">RISK_PERIOD_MONTH</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RiskPeriodMonth, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = "readonly" @*, @v_model = "ClaimRegister.RiskPeriodMonth"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RiskPeriodMonth, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">DATE_OF_REPORTED</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfReportedStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateOfReportedStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.DateOfReportedStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateOfReportedStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfReportedStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">DATE_OF_EVENT</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfEventStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateOfEventStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.DateOfEventStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateOfEventStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfEventStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CAUSE_OF_EVENT</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CauseOfEvent, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CauseOfEvent"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CauseOfEvent, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">TREATY_TYPE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TreatyType, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TreatyType, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">AAR_PAYABLE</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">MYR</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.AarPayableStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.AarPayableStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.AarPayableStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CEDING_TREATY_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingTreatyCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CedingTreatyCode"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingTreatyCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CAMPAIGN_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CampaignCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CampaignCode"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CampaignCode, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CEDANT_CLAIM_EVENT_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedantClaimEventCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CedantClaimEventCode"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedantClaimEventCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">MLRE_REFERENCE_NO</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreReferenceNo, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.MlreReferenceNo"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreReferenceNo, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">MLRE_SHARE</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">%</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreShareStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.MlreShareStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreShareStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CURRENCY_RATE</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">%</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CurrencyRateStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CurrencyRateStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CurrencyRateStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CEDING_BENEFIT_TYPE_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingBenefitTypeCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @readonly = true } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingBenefitTypeCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CEDING_PLAN_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingPlanCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CedingPlanCode"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingPlanCode, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CEDING_BENEFIT_RISK_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingBenefitRiskCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.CedingBenefitRiskCode"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CedingBenefitRiskCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">RETRO_PARTY_1</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroParty1, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.RetroParty1"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroParty1, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">RETRO_RECOVERY_1</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroRecovery1Str, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.RetroRecovery1Str"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroRecovery1Str, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">RETRO_PARTY_2</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroParty2, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.RetroParty2"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroParty2, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">RETRO_RECOVERY_2</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroRecovery2Str, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.RetroRecovery2Str"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroRecovery2Str, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">RETRO_PARTY_3</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroParty3, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.RetroParty3"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroParty3, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">RETRO_PARTY3</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroRecovery3Str, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.RetroRecovery3Str"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.RetroRecovery3Str, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">MLRE_RETAIN_AMOUNT</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">MYR</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreRetainAmountStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.MlreRetainAmountStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.MlreRetainAmountStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">LATE_INTEREST</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">MYR</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.LateInterestStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.LateInterestStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.LateInterestStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">EX_GRATIA</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ExGratiaStr, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.ExGratiaStr"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ExGratiaStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">LAYER_1_SUM_REIN</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Layer1SumReinStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.Layer1SumReinStr"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Layer1SumReinStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">TEMP_D_1</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempD1Str, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TempD1Str')" }, { "readonly" , "readonly"}@*, { @*"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.TempD1Str" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TempD1Str')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempD1Str, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">TEMP_D_2</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempD2Str, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TempD2Str')" }, { "readonly" , "readonly"} @*,{ @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.TempD2Str" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TempD2Str')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempD2Str, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">TEMP_S_1</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempS1, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.TempS1"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempS1, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">TEMP_S_2</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempS2, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.TempS2"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempS2, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">TEMP_A_1</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempA1Str, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.TempA1Str"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempA1Str, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">TEMP_A_2</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempA2Str, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.TempA2Str"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TempA2Str, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">FOREIGN_CLAIM_RECOVERY_AMOUNT</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">MYR</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ForeignClaimRecoveryAmtStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.ForeignClaimRecoveryAmtStr"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ForeignClaimRecoveryAmtStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CURRENCY_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CurrencyCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = true } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.CurrencyCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">SA_FACTOR</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.SaFactorStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.SaFactorStr"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.SaFactorStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">TRANSACTION_DATE_WOP</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TransactionDateWopStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TransactionDateWopStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.TransactionDateWopStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TransactionDateWopStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TransactionDateWopStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">MFRS17_ANNUAL_COHORT</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Mfrs17AnnualCohort, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.Mfrs17AnnualCohort"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Mfrs17AnnualCohort, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">MFRS17_CONTRACT_CODE</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Mfrs17ContractCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.Mfrs17ContractCode"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Mfrs17ContractCode, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">ISSUE_DATE_POL</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.IssueDatePolStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('IssueDatePolStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.IssueDatePolStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('IssueDatePolStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.IssueDatePolStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">POLICY_EXPIRY_DATE</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyExpiryDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('PolicyExpiryDateStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.PolicyExpiryDateStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('PolicyExpiryDateStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyExpiryDateStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">POLICY_TERM</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Month</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyTerm, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.PolicyTerm"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyTerm, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">CLAIM_REASON_ID</div>
+        @Html.DropDownListFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimReasonId, (List<SelectListItem>)ViewBag.DropDownClaimReasons, htmlAttributes: new { @class = "form-control selectpicker is-claim-only", disabled = "disabled"@*, @v_model = "ClaimRegister.ClaimReasonId"*@ })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimReasonId, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">POLICY_DURATION</div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Day</div>
+            </div>
+            @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyDuration, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.PolicyDuration"*@ } })
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.PolicyDuration, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">ADD_INFO</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.AddInfo, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.AddInfo"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.AddInfo, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">REMARK_1</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Remark1, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.Remark1"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Remark1, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">REMARK_2</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Remark2, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.Remark2"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Remark2, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CLAIM_ASSESSOR_ID</div>
+        @Html.DropDownListFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimAssessorId, (List<SelectListItem>)ViewBag.DropDownClaimAssessors, htmlAttributes: new { @class = "form-control selectpicker is-claim-only", disabled = "disabled"@*, @v_model = "ClaimRegister.ClaimAssessorId"*@ })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimAssessorId, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        @Html.LabelFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Comment, htmlAttributes: new { @class = "col-form-label" })
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Comment, new { htmlAttributes = new { @class = "form-control is-claim", placeholder = "Type here", @readonly = "readonly"@*, @v_model = "ClaimRegister.Comment"*@ } })
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.Comment, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">CLAIM_DECISION_STATUS</div>
+        @Html.EditorFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.ClaimDecisionStatusName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here"@*, @v_model = "ClaimRegister.ClaimDecisionStatusName"*@, @readonly = "readonly" } })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">DATE_APPROVED</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateApprovedStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateApprovedStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.DateApprovedStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateApprovedStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateApprovedStr, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6 mid-line-1">
+        <div class="col-form-label">TARGET_DATE_TO_ISSUE_INVOICE</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TargetDateToIssueInvoiceStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('TargetDateToIssueInvoiceStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.TargetDateToIssueInvoiceStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('TargetDateToIssueInvoiceStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.TargetDateToIssueInvoiceStr, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group col-md-6 mid-line-2">
+        <div class="col-form-label">DATE_OF_INTIMATION</div>
+        <div class="input-w-icon">
+            @Html.TextBoxFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfIntimationStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('DateOfIntimationStr')" }, { "readonly" , "readonly"}@*, { @"v-model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.lazy", @"ClaimRegister.DateOfIntimationStr" }*@ })
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('DateOfIntimationStr')" />
+        </div>
+        @Html.ValidationMessageFor(model => model.PerLifeClaimDataBo.ClaimRegisterHistoryBo.DateOfIntimationStr, "", new { @class = "text-danger" })
+    </div>
+</div>

@@ -1,0 +1,1005 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.ClaimRegisterViewModel>
+
+@{
+    ViewBag.Title = "Claim Register";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    bool readOnly = ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right btn-row-inline" id="actionButtons">
+                @if (readOnly)
+                {
+                    <span class="btn btn-add disabled">ADD NEW</span>
+                }
+                else
+                {
+                    <a href="@Url.Action("Create")" class="btn btn-add">ADD NEW</a>
+                }
+                <div class="btn-group">
+                    <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DOWNLOAD AS
+                    </button>
+                    <div class="dropdown-menu">
+                        @Html.ActionLink("All", "Download", new { type = 1 }, new { @class = "dropdown-item" })
+                        @Html.ActionLink("Filtered", "Download", new
+                       {
+                           Type = 2,
+                           EntryNo = routeValue["EntryNo"],
+                           SoaQuarter = routeValue["SoaQuarter"],
+                           ClaimId = routeValue["ClaimId"],
+                           ClaimTransactionType = routeValue["ClaimTransactionType"],
+                           IsReferralCase = routeValue["IsReferralCase"],
+                           RiDataWarehouseId = routeValue["RiDataWarehouseId"],
+                           RecordType = routeValue["RecordType"],
+                           TreatyCodeId = routeValue["TreatyCodeId"],
+                           PolicyNumber = routeValue["PolicyNumber"],
+                           CedantId = routeValue["CedantId"],
+                           InsuredName = routeValue["InsuredName"],
+                           InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                           LastTransactionDate = routeValue["LastTransactionDate"],
+                           DateOfReported = routeValue["DateOfReported"],
+                           CedantDateOfNotification = routeValue["CedantDateOfNotification"],
+                           DateOfRegister = routeValue["DateOfRegister"],
+                           DateOfCommencement = routeValue["DateOfCommencement"],
+                           DateOfEvent = routeValue["DateOfEvent"],
+                           PolicyDuration = routeValue["PolicyDuration"],
+                           TargetDateToIssueInvoice = routeValue["TargetDateToIssueInvoice"],
+                           ClaimRecoveryAmt = routeValue["ClaimRecoveryAmt"],
+                           CauseOfEvent = routeValue["CauseOfEvent"],
+                           PicClaimId = routeValue["PicClaimId"],
+                           PicDaaId = routeValue["PicDaaId"],
+                           ClaimStatus = routeValue["ClaimStatus"],
+                           DuplicationCheckStatus = routeValue["DuplicationCheckStatus"],
+                           ProvisionStatus = routeValue["ProvisionStatus"],
+                           OffsetStatus = routeValue["OffsetStatus"],
+                       }, new { @class = "dropdown-item" })
+                    </div>
+                </div>
+                @if (readOnly)
+                {
+                    <span class="btn btn-add disabled">BATCH SELECTION</span>
+                }
+                else
+                {
+                    @Html.ActionLink("BATCH SELECTION", "Index", new
+                   {
+                       EntryNo = routeValue["EntryNo"],
+                       SoaQuarter = routeValue["SoaQuarter"],
+                       ClaimId = routeValue["ClaimId"],
+                       ClaimTransactionType = routeValue["ClaimTransactionType"],
+                       IsReferralCase = routeValue["IsReferralCase"],
+                       RiDataWarehouseId = routeValue["RiDataWarehouseId"],
+                       RecordType = routeValue["RecordType"],
+                       TreatyCodeId = routeValue["TreatyCodeId"],
+                       PolicyNumber = routeValue["PolicyNumber"],
+                       CedantId = routeValue["CedantId"],
+                       InsuredName = routeValue["InsuredName"],
+                       InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                       LastTransactionDate = routeValue["LastTransactionDate"],
+                       DateOfReported = routeValue["DateOfReported"],
+                       CedantDateOfNotification = routeValue["CedantDateOfNotification"],
+                       DateOfRegister = routeValue["DateOfRegister"],
+                       DateOfCommencement = routeValue["DateOfCommencement"],
+                       DateOfEvent = routeValue["DateOfEvent"],
+                       PolicyDuration = routeValue["PolicyDuration"],
+                       TargetDateToIssueInvoice = routeValue["TargetDateToIssueInvoice"],
+                       ClaimRecoveryAmt = routeValue["ClaimRecoveryAmt"],
+                       CauseOfEvent = routeValue["CauseOfEvent"],
+                       PicClaimId = routeValue["PicClaimId"],
+                       PicDaaId = routeValue["PicDaaId"],
+                       ClaimStatus = routeValue["ClaimStatus"],
+                       DuplicationCheckStatus = routeValue["DuplicationCheckStatus"],
+                       ProvisionStatus = routeValue["ProvisionStatus"],
+                       OffsetStatus = routeValue["OffsetStatus"],
+                       SortOrder = ViewBag.SortOrder,
+                       Page,
+                       BatchSelection = true,
+                   }, new { @class = "btn btn-download" })
+                }
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">Red Flag</th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortEntryNo;
+                                @Shared.Html.Sorter(ViewBag, "Entry No", "EntryNo", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortSoaQuarter;
+                                @Shared.Html.Sorter(ViewBag, "SOA Quarter", "SoaQuarter", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortClaimId;
+                                @Shared.Html.Sorter(ViewBag, "Claim ID", "ClaimId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortClaimTransactionType;
+                                @Shared.Html.Sorter(ViewBag, "Claim Transaction Type", "ClaimTransactionType", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortIsReferralCase;
+                                @Shared.Html.Sorter(ViewBag, "Referral Case Indicator", "IsReferralCase", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortRecordType;
+                                @Shared.Html.Sorter(ViewBag, "Record Type", "RecordType", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTreatyCodeId;
+                                @Shared.Html.Sorter(ViewBag, "Treaty Code", "TreatyCodeId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPolicyNumber;
+                                @Shared.Html.Sorter(ViewBag, "Policy Number", "PolicyNumber", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedantId;
+                                @Shared.Html.Sorter(ViewBag, "Ceding Company", "CedantId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInsuredName;
+                                @Shared.Html.Sorter(ViewBag, "Insured Name", "InsuredName", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInsuredDateOfBirth;
+                                @Shared.Html.Sorter(ViewBag, "Insured Date of Birth", "InsuredDateOfBirth", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortLastTransactionDate;
+                                @Shared.Html.Sorter(ViewBag, "Last Transaction Date", "LastTransactionDate", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDateOfReported;
+                                @Shared.Html.Sorter(ViewBag, "Date of Reported", "DateOfReported", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedantDateOfNotification;
+                                @Shared.Html.Sorter(ViewBag, "Cedant Date of Notification", "CedantDateOfNotification", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDateOfRegister;
+                                @Shared.Html.Sorter(ViewBag, "Date of Register", "DateOfRegister", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDateOfCommencement;
+                                @Shared.Html.Sorter(ViewBag, "Date of Commencement", "DateOfCommencement", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDateOfEvent;
+                                @Shared.Html.Sorter(ViewBag, "Date of Event", "DateOfEvent", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPolicyDuration;
+                                @Shared.Html.Sorter(ViewBag, "Policy Duration", "PolicyDuration", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTargetDateToIssueInvoice;
+                                @Shared.Html.Sorter(ViewBag, "Target Date to Issue Invoice", "TargetDateToIssueInvoice", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortClaimRecoveryAmt;
+                                @Shared.Html.Sorter(ViewBag, "Claim Recovery Amount (MYR)", "ClaimRecoveryAmt", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCauseOfEvent;
+                                @Shared.Html.Sorter(ViewBag, "Cause of Event", "CauseOfEvent", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPicClaimId;
+                                @Shared.Html.Sorter(ViewBag, "Person In-Charge (Claims)", "PicClaimId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPicDaaId;
+                                @Shared.Html.Sorter(ViewBag, "Person In-Charge (DA&A)", "PicDaaId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortClaimStatus;
+                                @Shared.Html.Sorter(ViewBag, "Claim Status", "ClaimStatus", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDuplicationCheckStatus;
+                                @Shared.Html.Sorter(ViewBag, "Duplication Check Status", "DuplicationCheckStatus", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortProvisionStatus;
+                                @Shared.Html.Sorter(ViewBag, "Provision Status", "ProvisionStatus", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortOffsetStatus;
+                                @Shared.Html.Sorter(ViewBag, "Offset Status", "OffsetStatus", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "ClaimRegisterClaim", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                            </th>
+                            <th>
+                                @Html.TextBox("EntryNo", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("SoaQuarter", null, new { @class = "form-control", placeholder = "YYYY MM", autocomplete = "off", @onclick = "openQuarterPicker(this.id)" })
+                            </th>
+                            <th>
+                                @Html.TextBox("ClaimId", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ClaimTransactionType", (List<SelectListItem>)ViewBag.DropDownClaimTransactionTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("IsReferralCase", (List<SelectListItem>)ViewBag.DropDownYesNo, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("RecordType", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("TreatyCodeId", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("PolicyNumber", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("CedantId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @onchange = "getTreatyCodeByCedant(this.value)" })
+                            </th>
+                            <th>
+                                @Html.TextBox("InsuredName", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("InsuredDateOfBirth", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('InsuredDateOfBirth')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("LastTransactionDate", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('LastTransactionDate')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("DateOfReported", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfReported')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("CedantDateOfNotification", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('CedantDateOfNotification')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("DateOfRegister", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfRegister')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("DateOfCommencement", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfCommencement')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("DateOfEvent", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfEvent')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("PolicyDuration", null, new { @class = "form-control", placeholder = "Type here", @type = "number", min = "0" })
+                            </th>
+                            <th>
+                                @Html.TextBox("TargetDateToIssueInvoice", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('TargetDateToIssueInvoice')" />
+                            </th>
+                            <th>
+                                @Html.TextBox("ClaimRecoveryAmt", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CauseOfEvent", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("PicClaimId", (List<SelectListItem>)ViewBag.DropDownPicClaims, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("PicDaaId", (List<SelectListItem>)ViewBag.DropDownPicDaas, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ClaimStatus", (List<SelectListItem>)ViewBag.DropDownClaimStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("DuplicationCheckStatus", (List<SelectListItem>)ViewBag.DropDownDuplicationCheckStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ProvisionStatus", (List<SelectListItem>)ViewBag.DropDownProvisionStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("OffsetStatus", (List<SelectListItem>)ViewBag.DropDownOffsetStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle" style="margin-right:3px;"><span class="fas fa-search" /></button>
+                                    @Html.CheckBox("SelectAllClaimRegister", new { @onclick = "selectAllClaimRegister()", @style = "margin-top:5px; display:none;" })
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (item.HasRedFlag)
+                                {
+                                    <i class="fas fa-flag"></i>
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.EntryNo)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.SoaQuarter)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ClaimId)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ClaimTransactionType)
+                            </td>
+                            <td>
+                                @if (item.IsReferralCase)
+                                {
+                                    @Html.Raw("Yes");
+                                }
+                                else
+                                {
+                                    @Html.Raw("No");
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.RecordType)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.TreatyCode)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.PolicyNumber)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CedingCompany)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.InsuredName)
+                            </td>
+                            <td>
+                                @if (item.InsuredDateOfBirth.HasValue)
+                                {
+                                    @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.LastTransactionDate.HasValue)
+                                {
+                                    @item.LastTransactionDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.DateOfReported.HasValue)
+                                {
+                                    @item.DateOfReported.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.CedantDateOfNotification.HasValue)
+                                {
+                                    @item.CedantDateOfNotification.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.DateOfRegister.HasValue)
+                                {
+                                    @item.DateOfRegister.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.ReinsEffDatePol.HasValue)
+                                {
+                                    @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @if (item.DateOfEvent.HasValue)
+                                {
+                                    @item.DateOfEvent.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.PolicyDuration)
+                            </td>
+                            <td>
+                                @if (item.TargetDateToIssueInvoice.HasValue)
+                                {
+                                    @item.TargetDateToIssueInvoice.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @Shared.Util.DoubleToString(item.ClaimRecoveryAmt, 2)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CauseOfEvent)
+                            </td>
+                            <td>
+                                @if (item.PicClaim != null)
+                                {
+                                    @Html.DisplayFor(modelItem => item.PicClaim.FullName)
+                                }
+                            </td>
+                            <td>
+                                @if (item.PicDaa != null)
+                                {
+                                    @Html.DisplayFor(modelItem => item.PicDaa.FullName)
+                                }
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.ClaimRegisterBo.GetStatusClass(item.ClaimStatus)">
+                                    @BusinessObject.ClaimRegisterBo.GetStatusName(item.ClaimStatus)
+                                </span>
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.ClaimRegisterBo.GetDuplicationCheckStatusClass(item.DuplicationCheckStatus)">
+                                    @BusinessObject.ClaimRegisterBo.GetDuplicationCheckStatusName(item.DuplicationCheckStatus)
+                                </span>
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.ClaimRegisterBo.GetProvisionStatusClass(item.ProvisionStatus)">
+                                    @BusinessObject.ClaimRegisterBo.GetProvisionStatusName(item.ProvisionStatus)
+                                </span>
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.ClaimRegisterBo.GetOffsetStatusClass(item.OffsetStatus)">
+                                    @BusinessObject.ClaimRegisterBo.GetOffsetStatusName(item.OffsetStatus)
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Edit", new { id = item.Id })" class="actionEdit">
+                                    <span class="fas fa-pencil-alt"></span>
+                                </a>
+                                <div class="actionCheckbox" name="selectClaimRegister" style="display:none">
+                                    @Html.CheckBox("SelectClaimRegister", new { id = item.Id })
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="29" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            </table>
+        </div>
+
+        <div class="pagination-footer position-relative">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                   {
+                       EntryNo = routeValue["EntryNo"],
+                       SoaQuarter = routeValue["SoaQuarter"],
+                       ClaimId = routeValue["ClaimId"],
+                       ClaimTransactionType = routeValue["ClaimTransactionType"],
+                       IsReferralCase = routeValue["IsReferralCase"],
+                       RiDataWarehouseId = routeValue["RiDataWarehouseId"],
+                       RecordType = routeValue["RecordType"],
+                       TreatyCodeId = routeValue["TreatyCodeId"],
+                       PolicyNumber = routeValue["PolicyNumber"],
+                       CedantId = routeValue["CedantId"],
+                       InsuredName = routeValue["InsuredName"],
+                       InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                       LastTransactionDate = routeValue["LastTransactionDate"],
+                       DateOfReported = routeValue["DateOfReported"],
+                       CedantDateOfNotification = routeValue["CedantDateOfNotification"],
+                       DateOfRegister = routeValue["DateOfRegister"],
+                       DateOfCommencement = routeValue["DateOfCommencement"],
+                       DateOfEvent = routeValue["DateOfEvent"],
+                       PolicyDuration = routeValue["PolicyDuration"],
+                       TargetDateToIssueInvoice = routeValue["TargetDateToIssueInvoice"],
+                       ClaimRecoveryAmt = routeValue["ClaimRecoveryAmt"],
+                       CauseOfEvent = routeValue["CauseOfEvent"],
+                       PicClaimId = routeValue["PicClaimId"],
+                       PicDaaId = routeValue["PicDaaId"],
+                       ClaimStatus = routeValue["ClaimStatus"],
+                       DuplicationCheckStatus = routeValue["DuplicationCheckStatus"],
+                       ProvisionStatus = routeValue["ProvisionStatus"],
+                       OffsetStatus = routeValue["OffsetStatus"],
+                       SortOrder = ViewBag.SortOrder,
+                       Page,
+                       BatchSelection = ViewBag.BatchSelection,
+                   }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row form-row-btn" id="batchSelBtn" style="display:none;">
+            <div class="form-group col-md-12 btn-row">
+                @Html.ActionLink("CANCEL", "Index", new
+               {
+                   EntryNo = routeValue["EntryNo"],
+                   SoaQuarter = routeValue["SoaQuarter"],
+                   ClaimId = routeValue["ClaimId"],
+                   ClaimTransactionType = routeValue["ClaimTransactionType"],
+                   IsReferralCase = routeValue["IsReferralCase"],
+                   RiDataWarehouseId = routeValue["RiDataWarehouseId"],
+                   RecordType = routeValue["RecordType"],
+                   TreatyCodeId = routeValue["TreatyCodeId"],
+                   PolicyNumber = routeValue["PolicyNumber"],
+                   CedantId = routeValue["CedantId"],
+                   InsuredName = routeValue["InsuredName"],
+                   InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                   LastTransactionDate = routeValue["LastTransactionDate"],
+                   DateOfReported = routeValue["DateOfReported"],
+                   CedantDateOfNotification = routeValue["CedantDateOfNotification"],
+                   DateOfRegister = routeValue["DateOfRegister"],
+                   DateOfCommencement = routeValue["DateOfCommencement"],
+                   DateOfEvent = routeValue["DateOfEvent"],
+                   PolicyDuration = routeValue["PolicyDuration"],
+                   TargetDateToIssueInvoice = routeValue["TargetDateToIssueInvoice"],
+                   ClaimRecoveryAmt = routeValue["ClaimRecoveryAmt"],
+                   CauseOfEvent = routeValue["CauseOfEvent"],
+                   PicClaimId = routeValue["PicClaimId"],
+                   PicDaaId = routeValue["PicDaaId"],
+                   ClaimStatus = routeValue["ClaimStatus"],
+                   DuplicationCheckStatus = routeValue["DuplicationCheckStatus"],
+                   ProvisionStatus = routeValue["ProvisionStatus"],
+                   OffsetStatus = routeValue["OffsetStatus"],
+                   SortOrder = ViewBag.SortOrder,
+                   Page,
+                   BatchSelection = false,
+               }, new { @class = "btn btn-cancel" })
+                <div class="m-0 p-0 float-right">
+                    @if (readOnly)
+                    {
+                        <button class="btn btn-del" id="rejectBatchBtn" disabled>REJECT</button>
+                        <button class="btn btn-add" id="approveBatchBtn" disabled>APPROVE</button>
+                        <button type="button" class="btn btn-add" id="assignBatchBtn" disabled>ASSIGN TO</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-del" id="rejectBatchBtn">REJECT</button>
+                        <button class="btn btn-add" id="approveBatchBtn">APPROVE</button>
+                        <button type="button" class="btn btn-add" id="assignBatchBtn">ASSIGN TO</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("UpdateBatch", "ClaimRegisterClaim", FormMethod.Post, new { id = "batchForm" }))
+{
+    <input name="SelectedIds" id="SelectedIds" type="hidden" />
+    <input name="Status" id="Status" type="hidden" />
+    <input name="IsAllowOverwriteApproval" id="IsAllowOverwriteApproval" type="hidden" value="false" />
+    <div class="modal fade" id="validateBatchModal" tabindex="-1" role="dialog" aria-labelledby="validateBatchModal" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Validation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="batchSelectionError" style="display:none;"></div>
+                    <div class="table-responsive mb-0" style="max-height: 60vh !important;">
+                        <table class="table table-hover my-3" id="batchTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Claim ID</th>
+                                    <th class="w-10">Entry No</th>
+                                    <th class="w-10">Claim Transaction Type</th>
+                                    <th class="w-10">Claim Code</th>
+                                    <th class="w-10">Claim Amount</th>
+                                    <th class="w-10">Person In-Charge</th>
+                                    <th class="w-10">Status</th>
+                                    <th class="w-15">Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form">
+                        <div class="form-group mt-3" id="nextPicAssign" style="display:none;">
+                            <label class="col-form-label" for="NextPicClaimId">Person In-Charge</label>
+                            @Html.DropDownList("NextPicClaimId", (List<SelectListItem>)ViewBag.DropDownAssignPic, htmlAttributes: new { @class = "form-control selectpicker" })
+                        </div>
+                        <div class="form-group mt-3" id="nextActionSelection" style="display:none;">
+                            <label class="col-form-label" for="userName">Action</label>
+                            @Html.DropDownList("NextAction", (List<SelectListItem>)ViewBag.DropDownNextAction, htmlAttributes: new { @class = "form-control selectpicker" })
+                        </div>
+                        <div class="form-group mt-3" id="overwriteApprovalWarning" style="display:none;">
+                            <span class="font-weight-bold">
+                                Some claims in the selected list has exceeded your limit. Do you confirm that you want to overwrite this and approve these claims?
+                            </span>
+                        </div>
+                        <div class="form-group mt-3" id="nextPicStatus" style="display:none;">
+                            <label class="col-form-label" for="AuthorisedPicClaimId">Person In-Charge</label>
+                            @Html.DropDownList("AuthorisedPicClaimId", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker" })
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-submit" id="confirmBtn" disabled>CONFIRM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        var StatusDeclined = @BusinessObject.ClaimRegisterBo.StatusDeclinedByClaim;
+        var StatusApproved = @BusinessObject.ClaimRegisterBo.StatusApproved;
+        var ValidateUpdateBatchStatusUrl = '@Url.Action("ValidateUpdateBatchStatus")';
+        var ValidateBatchAssignUrl = '@Url.Action("ValidateBatchAssign")';
+        var UpdateBatchUrl = '@Url.Action("UpdateBatch")';
+        var AssignBatchUrl = '@Url.Action("AssignBatch")';
+        var SavedSelectedIds = '@ViewBag.SelectedIds';
+        var GetTreatyCodeByCedantUrl = '@Url.Action("Index", "TreatyCode")';
+        var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.TreatyCodes));
+
+
+        function batchSelection() {
+            $('#batchSelBtn').show();
+            $('#SelectAllClaimRegister').show();
+            $('.actionCheckbox').show();
+            $('.actionEdit').hide();
+            $('#actionButtons').css("visibility", "hidden");
+        }
+
+        function cancelBatchSelection() {
+            $('#batchSelBtn').hide();
+            $('#SelectAllClaimRegister').hide();
+            $('.actionCheckbox').hide();
+            $('.actionEdit').show();
+            $('#actionButtons').css("visibility", "");
+        }
+
+        function selectAllClaimRegister() {
+            $('input[name=SelectClaimRegister]').prop('checked', $('input[name=SelectAllClaimRegister]').prop('checked'));
+        }
+
+        function formatIds() {
+            var selected = [];
+            if (SavedSelectedIds != '') {
+                selected = SavedSelectedIds.split(",");
+            }
+
+            $('input[name=SelectClaimRegister]').each(function () {
+                var id = $(this).attr('id');
+                if (typeof id != 'undefined') {
+                    var checked = $(this).prop('checked');
+
+                    if (selected.includes(id)) {
+                        if (!checked)
+                            selected.splice(selected.indexOf(id), 1);
+                    } else {
+                        if (checked)
+                            selected.push(id);
+                    }
+                }
+            });
+            var selectedIds = selected.join(',');
+
+            $('#SelectedIds').val(selectedIds);
+        }
+
+        function resetValidateModal() {
+            $('#batchSelectionError').empty();
+            $('#batchSelectionError').hide();
+            $('#nextPicAssign').hide();
+            $('#nextPicStatus').hide();
+            $('#batchTable').find('tbody').empty();
+            $('#confirmBtn').prop('disabled', true);
+            $('#AuthorisedPicClaimId').off('change');
+            $('#NextAction').off('change');
+        }
+
+        function populateValidateTable(bos) {
+            bos.forEach(function (bo) {
+                var details = [
+                    bo.ClaimId,
+                    bo.EntryNo,
+                    bo.ClaimTransactionType,
+                    bo.ClaimCode,
+                    bo.ClaimRecoveryAmtStr,
+                    bo.PicClaimId,
+                    bo.StatusName,
+                    bo.BatchSelectionError,
+                ];
+
+                var row = '<tr>';
+                details.forEach(function (detail) {
+                    if (detail == null || detail == 'null')
+                        detail = '';
+                    row += '<td>' + detail ?? '' + '</td>';
+                });
+                row += '</tr>';
+                $('#batchTable').find('tbody').append(row);
+            });
+        }
+
+        function validateUpdateBatchStatus() {
+            var obj = {
+                'SelectedIds': $('#SelectedIds').val(),
+                'Status': $('#Status').val()
+            };
+
+            resetValidateModal();
+
+            $.ajax({
+                url: ValidateUpdateBatchStatusUrl,
+                type: "POST",
+                data: obj,
+                cache: false,
+                async: false,
+                success: function (data) {
+                    if (!data.success && data.error != null) {
+                        $('#batchSelectionError').append(data.error);
+                        $('#batchSelectionError').show();
+                    }
+
+                    if (data.success) {
+                        if (data.requireNextPic) {
+                            $('#nextPicStatus').show();
+
+                            if (data.nextPicUsers && data.nextPicUsers.length > 0) {
+                                refreshDropDownItems('AuthorisedPicClaimId', data.nextPicUsers, null, 'UserName');
+                            }
+
+                            $('#AuthorisedPicClaimId').on('change', function () {
+                                if (this.value == null || this.value == '')
+                                    $('#confirmBtn').prop('disabled', true);
+                                else
+                                    $('#confirmBtn').prop('disabled', false);
+
+                                $('#AuthorisedPicClaimId').selectpicker('refresh');
+                            });
+
+                            if (data.isAllowOverwriteApproval) {
+                                $('#nextActionSelection').show();
+                                $('#NextAction').val('approval');
+                                $('#NextAction').selectpicker('refresh');
+
+                                $('#NextAction').on('change', function () {
+                                    $('#nextPicStatus').hide();
+                                    $('#overwriteApprovalWarning').hide();
+                                    if (this.value == 'overwrite') {
+                                        $('#confirmBtn').prop('disabled', false);
+                                        $('#IsAllowOverwriteApproval').val(true);
+                                        $('#overwriteApprovalWarning').show();
+                                    }
+                                    else {
+                                        $('#confirmBtn').prop('disabled', true);
+                                        $('#IsAllowOverwriteApproval').val(false);
+                                        $('#nextPicStatus').show();
+                                    }
+
+                                    $('#AuthorisedPicClaimId').val(null);
+
+                                    $('#AuthorisedPicClaimId').selectpicker('refresh');
+                                    $('#NextAction').selectpicker('refresh');
+                                });
+                            }
+
+                        } else {
+                            $('#confirmBtn').prop('disabled', false);
+                        }
+                    }
+
+                    if (data.bos) {
+                        populateValidateTable(data.bos);
+                    }
+                    $('#validateBatchModal').modal('toggle');
+                }
+            });
+        }
+
+        function validateBatchAssign() {
+            var obj = {
+                'SelectedIds': $('#SelectedIds').val()
+            };
+
+            resetValidateModal();
+
+            $.ajax({
+                url: ValidateBatchAssignUrl,
+                type: "POST",
+                data: obj,
+                cache: false,
+                async: false,
+                success: function (data) {
+                    if (!data.success && data.error != null) {
+                        $('#batchSelectionError').append(data.error);
+                        $('#batchSelectionError').show();
+                    }
+
+                    if (data.success) {
+                        $('#nextPicAssign').show();
+                        $('#confirmBtn').prop('disabled', false);
+                    }
+
+                    if (data.bos) {
+                        populateValidateTable(data.bos);
+                    }
+
+                    $('#validateBatchModal').modal('toggle');
+                }
+            });
+        }
+
+        function getTreatyCodeByCedant(cedantId, treatyCodeId = null) {
+            if (cedantId == null || cedantId == 'Please select') {
+                refreshDropDownItems('TreatyCodeId', TreatyCodes, treatyCodeId, 'Code', 'Description', true, 'Id', true, true);
+                return;
+            }
+
+            $.ajax({
+                url: GetTreatyCodeByCedantUrl,
+                type: "POST",
+                data: {
+                    CedantId: cedantId,
+                    SelectedId: treatyCodeId
+                },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    var treatyCodes = data.TreatyCodes;
+                    refreshDropDownItems('TreatyCodeId', treatyCodes, treatyCodeId, 'Code', 'Description', true, 'Id', true, true)
+                }
+            });
+        }
+
+    $(document).ready(function () {
+        //$("#TreatyCodeId").chosen();
+
+            dateOffAutoComplete();
+
+            var isBatchSelection = @(ViewBag.BatchSelection != null ? ViewBag.BatchSelection.ToString().ToLower() : "false");
+
+            if (isBatchSelection) {
+                batchSelection();
+            } else {
+                cancelBatchSelection();
+            }
+
+            if (SavedSelectedIds != '') {
+                var selectedAll = true;
+                var selected = SavedSelectedIds.split(",");
+
+                $('input[name=SelectClaimRegister]').each(function () {
+                    var id = $(this).attr('id');
+                    if (typeof id != 'undefined') {
+                        if (selected.includes(id)) {
+                            $(this).prop('checked', true);
+                        } else {
+                            selectedAll = false;
+                        }
+                    }
+                });
+
+                if (selectedAll) {
+                    $('input[name=SelectAllClaimRegister]').prop('checked', true);
+                }
+            }
+
+            $('#approveBatchBtn').on("click", function () {
+                $('#batchForm').attr("action", UpdateBatchUrl);
+                $('#Status').val(StatusApproved);
+                formatIds();
+                validateUpdateBatchStatus();
+            });
+
+            $('#rejectBatchBtn').on("click", function () {
+                $('#batchForm').attr("action", UpdateBatchUrl);
+                $('#Status').val(StatusDeclined);
+                formatIds();
+                validateUpdateBatchStatus();
+            });
+
+            $('#assignBatchBtn').on("click", function () {
+                $('#batchForm').attr("action", AssignBatchUrl);
+                formatIds();
+                validateBatchAssign();
+            });
+
+            $('a[href^="/ClaimRegisterClaim?"]').on("click", function () {
+                formatIds();
+                this.href += "&SelectedIds=" + $('#SelectedIds').val();
+            });
+
+            var treatyCodeId = '@routeValue["TreatyCodeId"]';
+            getTreatyCodeByCedant($('#CedantId').val(), treatyCodeId);
+        });
+    </script>
+}

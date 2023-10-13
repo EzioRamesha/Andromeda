@@ -1,0 +1,169 @@
+﻿@model WebApp.Models.TreatyPricingProductViewModel
+
+<div class="table-responsive" style="overflow-x: auto; white-space: nowrap;">
+    <table class="table table-hover my-3 vertical-table" style="width:auto;" v-cloak>
+        <thead>
+            <tr>
+                <th v-for="(benefit, index) in Benefits" style="width: 25vw; position:relative;">
+                    {{ benefit.BenefitCode }}
+                    <a href="javascript:void(0);" v-on:click="removeBenefit(index)"><span class="fas fa-trash-alt" style="position:absolute; right: 20px; top: 9px;" /></a>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td v-for="(benefit, index) in Benefits" style="width: 25vw;">
+                    <div>
+                        <button type="button" v-on:click="resetDirectRetroModal(index)" data-toggle="modal" data-target="#addDirectRetroModal" class="btn btn-add-sub" style="width:100%">ADD NEW</button>
+                    </div>
+                    <div v-for="(directRetro, drIndex) in benefit.TreatyPricingProductBenefitDirectRetroBos">
+                        <button class="btn btn-collapse mt-3" type="button" data-toggle="collapse" :data-target="'#DirectRetro_' + index + '_' + drIndex" aria-expanded="false" :aria-controls="'DirectRetro_' + index + '_' + drIndex">
+                            <span>{{ directRetro.RetroPartyCode }}</span>
+                        </button>
+                        <div class="collapse" :id="'DirectRetro_' + index + '_' + drIndex">
+                            <input v-model="directRetro.Id" type="hidden" class="form-control">
+                            <input v-model="directRetro.RetroPartyId" type="hidden" class="form-control">
+
+                            <div class="form-group">
+                                <label class="col-form-label">Benefit Marketing Name</label>
+                                <input v-model="benefit.Name" class="form-control force-disable" placeholder="Type Here" disabled>
+                            </div>
+
+                            <div class="form-group group-block-select">
+                                <label class="col-form-label">Basic / Rider</label>
+                                <select v-model="benefit.BasicRiderPickListDetailId" class="form-control force-disable" style="display:block;" disabled>
+                                    <option v-for="basicRider in Mfrs17BasicRiders" :value="basicRider.Value">{{ basicRider.Text }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group group-block-select">
+                                <label class="col-form-label">Reinsurance Type of Arrangement</label>
+                                <select v-model="directRetro.ArrangementRetrocessionTypePickListDetailId" class="form-control selectpicker">
+                                    <option v-for="reinsuranceType in ArrangementReinsuranceTypes" :value="reinsuranceType.Value">{{ reinsuranceType.Text }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">MLRe's Retention</label>
+                                <input v-model="directRetro.MlreRetention" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Retrocessionaire's Share</label>
+                                <input v-model="directRetro.RetrocessionShare" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Retrocession's Profit Commission</label>
+                                <div class="row m-0 p-0">
+                                    <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                    <div class="custom-control custom-switch pl-2">
+                                        <input class="custom-control-input" :id="'isRetrocessionProfitCommission_' + index + '_' + drIndex" type="checkbox" v-model="directRetro.IsRetrocessionProfitCommission" />
+                                        <label class="custom-control-label" :for="'isRetrocessionProfitCommission_' + index + '_' + drIndex">Yes</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Retrocession's Advantage Program</label>
+                                <div class="row m-0 p-0">
+                                    <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                    <div class="custom-control custom-switch pl-2">
+                                        <input class="custom-control-input" :id="'isRetrocessionAdvantageProgram_' + index + '_' + drIndex" type="checkbox" v-model="directRetro.IsRetrocessionAdvantageProgram" />
+                                        <label class="custom-control-label" :for="'isRetrocessionAdvantageProgram_' + index + '_' + drIndex">Yes</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Retrocession Rate Table</label>
+                                <input v-model="directRetro.RetrocessionRateTable" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Rate Guarantee for New Business</label>
+                                <input v-model="directRetro.NewBusinessRateGuarantee" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Rate Guarantee for Renewal Business</label>
+                                <input v-model="directRetro.RenewalBusinessRateGuarantee" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Retrocession Discount</label>
+                                <input v-model="directRetro.RetrocessionDiscount" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Additional Discount</label>
+                                <input v-model="directRetro.AdditionalDiscount" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-form-label">Additional Loading</label>
+                                <input v-model="directRetro.AdditionalLoading" class="form-control" placeholder="Type Here">
+                            </div>
+
+                            <div class="form-group">
+                                <button type="button" class="btn btn-del" style="width:100%" v-on:click="removeDirectRetro(index, drIndex)">DELETE</button>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="addDirectRetroModal" tabindex="-1" role="dialog" aria-labelledby="addDirectRetroModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Direct Retro</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addDirectRetroError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label">Benefit Code</label>
+                        <input v-model="DirectRetroModal.BenefitCode" class="form-control" placeholder="Type Here" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Direct Retro Party</label>
+                        <select v-model="DirectRetroModal.RetroPartyId" id="RetroPartyId" class="form-control selectpicker">
+                            <option v-for="retroPartyCode in RetroPartyCodes" :value="retroPartyCode.Id">{{ retroPartyCode.Party }} - {{ retroPartyCode.Name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicate">Duplicate</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="duplicateDirectRetro" type="checkbox" v-model="DirectRetroModal.IsDuplicate" />
+                                <label class="custom-control-label" for="duplicateDirectRetro">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Duplicate Direct Retro</label>
+                        <select v-model="DirectRetroModal.DuplicateRetroPartyId" id="DuplicateRetroPartyId" class="form-control selectpicker">
+                            <option v-for="retroPartyCode in ExistingRetroPartyCodes" :value="retroPartyCode.Id">{{ retroPartyCode.Code }} - {{ retroPartyCode.Name }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" v-on:click="saveDirectRetro()" class="btn btn-submit">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>

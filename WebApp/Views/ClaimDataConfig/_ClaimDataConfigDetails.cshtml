@@ -1,0 +1,737 @@
+﻿@model WebApp.Models.ClaimDataConfigViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+@Html.Partial("_StandardOutputInfo")
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a data-toggle="tab" href="#rawDataMapping" class="active underline-tab">Raw Data Mapping</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#computation">Pre-Computation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#preValidation">Pre-Validation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#postComputation">Post Computation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#postValidation">Post-Validation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remark">Remark</a></li>
+</ul>
+
+<div class="tab-content underline-tab-content">
+    <div class="tab-pane fade show active" id="rawDataMapping" role="tabpanel" aria-labelledby="rawDataMapping-tab">
+        <div class="form-row" style="margin:0;">
+            <div>
+                @Html.LabelFor(model => model.IsColumnToRowMapping, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                <div class="row m-0 p-0">
+                    <div class="mr-2"> <p style="color: #004BA2;">Disable</p> </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" v-model="ClaimDataConfig.IsColumnToRowMapping" id="IsColumnToRowMappingSwitch" name="IsColumnToRowMapping" value="true" disabled=@disabled>
+                        <label class="custom-control-label" for="IsColumnToRowMappingSwitch">Enable</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group col-xs-2 ml-5" v-if="ClaimDataConfig.IsColumnToRowMapping">
+                @Html.LabelFor(model => model.NumberOfRowMapping, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                <input type="number" class="form-control" id="rowMappingNo" v-model="ClaimDataConfig.NumberOfRowMapping" name="NumberOfRowMapping" disabled=@disabled placeholder="Type here" />
+                @Html.ValidationMessageFor(model => model.NumberOfRowMapping, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="text-right my-4">
+            <button type="button" v-on:click="addMapping" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+        </div>
+
+        <input type="hidden" v-model="MappingMaxIndex" name="ClaimDataMapping.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">Raw Column Sequence</th>
+                        <th class="w-15">Raw Column Name</th>
+                        <th class="w-15" v-if="ClaimDataConfig.IsColumnToRowMapping">Row</th>
+                        <th class="w-15" v-if="ClaimDataConfig.Delimiter == @BusinessObject.Claims.ClaimDataConfigBo.DelimiterFixedLength">Length</th>
+                        <th class="w-15">Standard Claims Output</th>
+                        <th class="w-10">Field Type</th>
+                        <th class="w-10">Transform Formula</th>
+                        <th class="w-10">Input Value/Formula</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!Mappings.length">
+                        <td colspan="9" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(mapping, index) in Mappings">
+                        <td style="padding-top: 18px;">
+                            {{ index + 1 }}
+                            <input type="hidden" :name="'ClaimDataMapping.Id[' + index + ']'" class="form-control" :value="mapping.Id" disabled=@disabled />
+                        </td>
+                        <td>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('RawColumnName' + index)" v-on:blur="autoCollapseTextarea('RawColumnName' + index)" :id="'RawColumnName' + index"
+                                      v-model.lazy="mapping.RawColumnName" class="form-control textarea-auto-expand" :name="'ClaimDataMapping.RawColumnName[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea>
+                        </td>
+                        <td v-if="ClaimDataConfig.IsColumnToRowMapping">
+                            <select v-model="mapping.Row" class="form-control " :name="'ClaimDataMapping.Row[' + index + ']'" disabled=@disabled data-container="body">
+                                <option :value="0">All</option>
+                                <option v-for="rowCount in parseInt(ClaimDataConfig.NumberOfRowMapping ? ClaimDataConfig.NumberOfRowMapping : 0)" :value="rowCount">{{ rowCount }}</option>
+                            </select>
+                        </td>
+                        <td v-if="ClaimDataConfig.Delimiter == @BusinessObject.Claims.ClaimDataConfigBo.DelimiterFixedLength">
+                            <input type="number" v-model.lazy="mapping.Length" class="form-control" :name="'ClaimDataMapping.Length[' + index + ']'" placeholder="Type here" disabled=@disabled />
+                        </td>
+                        <td>
+                            <select v-model="mapping.StandardClaimDataOutputId" class="form-control chosen" :id="'mappingStdOutput_' + index" :name="'ClaimDataMapping.StandardClaimDataOutputId[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="standardOutput in StandardClaimDataOutputList" v-if="standardOutput.Type != @BusinessObject.StandardClaimDataOutputBo.TypeRiskQuarter" :value="standardOutput.Id">{{ standardOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div v-if="mapping.StandardClaimDataOutputId"> {{ StandardClaimDataOutputList[indexOfStandardOutput(mapping.StandardClaimDataOutputId)].DataTypeName }} </div>
+                        </td>
+                        <td>
+                            <select v-model.lazy="mapping.TransformFormula" class="form-control" :name="'ClaimDataMapping.TransformFormula[' + index + ']'" v-if="mapping.ShowTransformFormula" v-on:change="toggleInputValue(index)" disabled=@disabled data-container="body">
+                                <option :value="0" selected="selected">Please select</option>
+                                <option v-for="(transformFormula, transformFormulaId) in TransformFormulaList[StandardClaimDataOutputList[indexOfStandardOutput(mapping.StandardClaimDataOutputId)].DataType - 1]" v-if="transformFormula != null" :value="transformFormulaId">
+                                    {{ transformFormula }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <div style="display: flex;" v-if="mapping.DefaultValueType == @BusinessObject.Claims.ClaimDataMappingBo.DefaultValueString">
+                                <input v-model.lazy="mapping.DefaultValue"
+                                       class="form-control d-inline"
+                                       :name="'ClaimDataMapping.DefaultValue[' + index + ']'"
+                                       :disabled="mapping.DisableInputValueFormula" disabled=@disabled placeholder="Type here" />
+
+                                <a href="javascript:void(0);"
+                                   data-toggle="tooltip"
+                                   data-placement="top"
+                                   title="{start position},{length}"
+                                   class="tooltip-link"
+                                   v-if="mapping.TransformFormula == @BusinessObject.Claims.ClaimDataMappingBo.TransformFormulaSubstring"><span class="fa fa-question-circle" /></a>
+
+                                <a href="javascript:void(0);"
+                                   data-toggle="modal"
+                                   data-target="#dateFormatModal"
+                                   class="tooltip-link"
+                                   v-if="mapping.TransformFormula == @BusinessObject.Claims.ClaimDataMappingBo.TransformFormulaInputFormat"><span class="fa fa-question-circle" /></a>
+                            </div>
+
+                            <select v-model.lazy="mapping.DefaultObjectId" class="form-control" :name="'ClaimDataMapping.DefaultObjectId[' + index + ']'"
+                                    v-else-if="mapping.DefaultValueType == @BusinessObject.Claims.ClaimDataMappingBo.DefaultValueDropDown" disabled=@disabled data-container="body">
+                                <option :value=null selected="selected">Please Select</option>
+                                <option v-if="mapping.StandardClaimDataOutputId == TreatyCodeKey" v-for="defaultObject in TreatyCodeBos" :value="defaultObject.Id">{{ defaultObject.Code }}</option>
+                                <option v-if="mapping.StandardClaimDataOutputId == MlreBenefitCodeKey" v-for="defaultObject in BenefitBos" :value="defaultObject.Id">{{ defaultObject.Code }}</option>
+                                <option v-if="mapping.StandardClaimDataOutputId != MlreBenefitCodeKey && mapping.StandardClaimDataOutputId != TreatyCodeKey" v-for="defaultObject in mapping.DefaultObjectList" :value="defaultObject.Id">{{ defaultObject.Code }}</option>
+                            </select>
+
+                            <button type="button" class="form-control" v-else-if="mapping.DefaultValueType == @BusinessObject.Claims.ClaimDataMappingBo.DefaultValueMappingDetail"
+                                    data-toggle="modal" data-target="#dropDownMappingModal" v-on:click="openDropDownMapping(index)">
+                                <span v-if="Disabled == 'True'">View Data</span>
+                                <span v-if="Disabled == 'False'">Enter Data</span>
+                            </button>
+
+                            <input type="hidden" v-model="mapping.DetailMaxIndex" :name="'ClaimDataMappingDetail.MaxIndex[' + index + ']'" />
+                            <div v-for="(mappingDetail, mappingDetailIndex) in mapping.ClaimDataMappingDetailBos">
+                                <input type="hidden" :name="'ClaimDataMappingDetail.Id[' + index + '][' + mappingDetailIndex + ']'" class="form-control" :value="mappingDetail.Id" />
+                                <input type="hidden" v-model="mappingDetail.RawValue" :name="'ClaimDataMappingDetail.RawValue[' + index + '][' + mappingDetailIndex + ']'" />
+                                <input type="hidden" v-model="mappingDetail.IsRawValueEmpty" :name="'ClaimDataMappingDetail.IsRawValueEmpty[' + index + '][' + mappingDetailIndex + ']'" />
+                                <input type="hidden" v-model="mappingDetail.PickListDetailId" :name="'ClaimDataMappingDetail.PickListDetailId[' + index + '][' + mappingDetailIndex + ']'" />
+                                <input type="hidden" v-model="mappingDetail.IsPickDetailIdEmpty" :name="'ClaimDataMappingDetail.IsPickDetailIdEmpty[' + index + '][' + mappingDetailIndex + ']'" />
+                            </div>
+                        </td>
+                        <td class="text-center align-middle">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeMapping(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="computation" role="tabpanel" aria-labelledby="computation-tab">
+        <div>
+            @Html.LabelFor(model => model.IsDataCorrection, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+            <div class="row m-0 p-0">
+                <div class="mr-2">
+                    <p style="color: #004BA2;">Disable</p>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" v-model="ClaimDataConfig.IsDataCorrection" id="IsDataCorrectionSwitch" name="IsDataCorrection" value="true" disabled=@disabled />
+                    <label class="custom-control-label" for="IsDataCorrectionSwitch">Enable</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('C')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addComputation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="ComputationMaxIndex" name="ClaimDataComputation1.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-10">Sort</th>
+                        <th class="w-15">Description</th>
+                        <th class="w-15">Condition</th>
+                        <th class="w-20">Standard Output Column</th>
+                        <th class="w-15">Mode</th>
+                        <th class="w-15">Calculation Formula</th>
+                        <th class="w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!Computations.length">
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(computation, index) in Computations">
+                        <td style="padding-top: 18px;">
+                            {{index+1}}
+                            <input type="hidden" :name="'ClaimDataComputation1.Id[' + index + ']'" class="form-control" :value="computation.Id" />
+                            <input type="hidden" :name="'ClaimDataComputation1.Step[' + index + ']'" class="form-control" :value="computation.Step" />
+                        </td>
+                        <td>
+                            <input type="number" :name="'ClaimDataComputation1.SortIndex[' + index + ']'" class="form-control" v-model.lazy="computation.SortIndex" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreCom' + index + '_Description')" :id="'PreCom' + index + '_Description'" v-model.lazy="computation.Description" class="form-control textarea-auto-expand" :name="'ClaimDataComputation1.Description[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreCom' + index + '_Condition')" :id="'PreCom' + index + '_Condition'" v-model.lazy="computation.Condition" class="form-control textarea-auto-expand" :name="'ClaimDataComputation1.Condition[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td>
+                            <select v-model="computation.StandardClaimDataOutputId" class="form-control chosen" :name="'ClaimDataComputation1.StandardClaimDataOutputId[' + index + ']'" :id="'preComStdOutput_' + index" disabled=@disabled data-container="body">
+                                <option v-for="stdOutput in StandardClaimDataOutputList" :value="stdOutput.Id" v-if="stdOutput.Type != @BusinessObject.StandardClaimDataOutputBo.TypeCustomField">{{ stdOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="computation.Mode" v-on:change="changeComputationMode(index)" class="form-control" :name="'ClaimDataComputation1.Mode[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(computationMode, computationModeId) in ComputationModeList" :value="computationModeId">
+                                    {{ computationMode }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-if="computation.Mode == @BusinessObject.Claims.ClaimDataComputationBo.ModeTable" v-model="computation.CalculationFormula" class="form-control" :name="'ClaimDataComputation1.CalculationFormula[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(computationTable, computationTableId) in ComputationTableList" :value="computationTableId">
+                                    {{ computationTable }}
+                                </option>
+                            </select>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('PreCom' + index + '_Formula')" :id="'PreCom' + index + '_Formula'" v-model.lazy="computation.CalculationFormula" class="form-control textarea-auto-expand" v-if="computation.Mode == @BusinessObject.Claims.ClaimDataComputationBo.ModeFormula" :name="'ClaimDataComputation1.CalculationFormula[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea>
+                        </td>
+                        <td class="text-center align-middle">
+                            <a href="javascript:void(0);" class="mr-2" v-on:click="openSingleEval(computation, false, false)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0;" v-on:click="removeComputation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="preValidation" role="tabpanel" aria-labelledby="preValidation-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PV')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addPreValidation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PreValidationMaxIndex" name="ClaimDataValidation1.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-40">Description</th>
+                        <th class="w-50">Condition</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PreValidations.length">
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(preValidation, index) in PreValidations">
+                        <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'ClaimDataValidation1.Id[' + index + ']'" class="form-control" :value="preValidation.Id" />
+                            <input type="hidden" :name="'ClaimDataValidation1.Step[' + index + ']'" class="form-control" :value="preValidation.Step" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreVal' + index + '_Description')" :id="'PreVal' + index + '_Description'" v-model.lazy="preValidation.Description" class="form-control textarea-auto-expand" :name="'ClaimDataValidation1.Description[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreVal' + index + '_Condition')" :id="'PreVal' + index + '_Condition'" v-model.lazy="preValidation.Condition" class="form-control textarea-auto-expand" :name="'ClaimDataValidation1.Condition[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td class="text-center align-middle">
+                            <a class="mr-2" href="javascript:void(0);" v-on:click="openSingleEval(preValidation, false, false)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePreValidation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="postComputation" role="tabpanel" aria-labelledby="postComputation-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PoC')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addPostComputation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PostComputationMaxIndex" name="ClaimDataComputation2.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-10">Sort</th>
+                        <th class="w-15">Description</th>
+                        <th class="w-15">Condition</th>
+                        <th class="w-20">Standard Output Column</th>
+                        <th class="w-15">Mode</th>
+                        <th class="w-15">Calculation Formula</th>
+                        <th class="w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PostComputations.length">
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(postComputation, index) in PostComputations">
+                        <td style="padding-top: 18px;">
+                            {{index+1}}
+                            <input type="hidden" :name="'ClaimDataComputation2.Id[' + index + ']'" class="form-control" :value="postComputation.Id" />
+                            <input type="hidden" :name="'ClaimDataComputation2.Step[' + index + ']'" class="form-control" :value="postComputation.Step" />
+                        </td>
+                        <td>
+                            <input type="number" :name="'ClaimDataComputation2.SortIndex[' + index + ']'" class="form-control" v-model.lazy="postComputation.SortIndex" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostCom' + index + '_Description')" :id="'PostCom' + index + '_Description'" v-model.lazy="postComputation.Description" class="form-control textarea-auto-expand" :name="'ClaimDataComputation2.Description[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostCom' + index + '_Condition')" :id="'PostCom' + index + '_Condition'" v-model.lazy="postComputation.Condition" class="form-control textarea-auto-expand" :name="'ClaimDataComputation2.Condition[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td>
+                            <select v-model="postComputation.StandardClaimDataOutputId" class="form-control chosen" :name="'ClaimDataComputation2.StandardClaimDataOutputId[' + index + ']'" :id="'postComStdOutput_' + index" disabled=@disabled data-container="body">
+                                <option v-for="stdOutput in StandardClaimDataOutputList" :value="stdOutput.Id" v-if="stdOutput.Type != @BusinessObject.StandardClaimDataOutputBo.TypeCustomField">{{ stdOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="postComputation.Mode" v-on:change="changePostComputationMode(index)" class="form-control" :name="'ClaimDataComputation2.Mode[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(computationMode, computationModeId) in ComputationModeList" :value="computationModeId">
+                                    {{ computationMode }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-if="postComputation.Mode == @BusinessObject.Claims.ClaimDataComputationBo.ModeTable" v-model="postComputation.CalculationFormula" class="form-control" :name="'ClaimDataComputation2.CalculationFormula[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(computationTable, computationTableId) in ComputationTableList" :value="computationTableId">
+                                    {{ computationTable }}
+                                </option>
+                            </select>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('PostCom' + index + '_Formula')" v-if="postComputation.Mode == @BusinessObject.Claims.ClaimDataComputationBo.ModeFormula" :id="'PostCom' + index + '_Formula'" v-model.lazy="postComputation.CalculationFormula" class="form-control textarea-auto-expand" :name="'ClaimDataComputation2.CalculationFormula[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea>
+                        </td>
+                        <td class="text-center align-middle">
+                            <a href="javascript:void(0);" class="mr-2" v-on:click="openSingleEval(postComputation, true, true)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePostComputation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="postValidation" role="tabpanel" aria-labelledby="postValidation-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PoV')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addPostValidation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PostValidationMaxIndex" name="ClaimDataValidation2.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-40">Description</th>
+                        <th class="w-50">Condition</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PostValidations.length">
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(postValidation, index) in PostValidations">
+                        <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'ClaimDataValidation2.Id[' + index + ']'" class="form-control" :value="postValidation.Id" />
+                            <input type="hidden" :name="'ClaimDataValidation2.Step[' + index + ']'" class="form-control" :value="postValidation.Step" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostVal' + index + '_Description')" :id="'PostVal' + index + '_Description'" v-model.lazy="postValidation.Description" class="form-control textarea-auto-expand" :name="'ClaimDataValidation2.Description[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostVal' + index + '_Condition')" :id="'PostVal' + index + '_Condition'" v-model.lazy="postValidation.Condition" class="form-control textarea-auto-expand" :name="'ClaimDataValidation2.Condition[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td class="text-center align-middle">
+                            <a class="mr-2" href="javascript:void(0);" v-on:click="openSingleEval(postValidation, true, true)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePostValidation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="w-35">Status</th>
+                        <th class="w-35">Update Date & time</th>
+                        <th class="w-30">Updated By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!StatusHistories || !StatusHistories.length">
+                        <td colspan="3" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(statusHistory, index) in StatusHistories">
+                        <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                        <td>{{ statusHistory.CreatedAtStr }}</td>
+                        <td>{{ statusHistory.CreatedByName }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="remark" role="tabpanel" aria-labelledby="remark-tab">
+        @Html.Partial("_Remark", new ViewDataDictionary { { "dropdownRemarkStatus", ViewBag.DropDownStatus } })
+    </div>
+</div>
+
+<div class="modal fade" id="dropDownMappingModal" tabindex="-1" role="dialog" aria-labelledby="dropDownMappingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Drop Down Mapping</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-right">
+                    <button type="button" v-on:click="addMappingDetail" class="btn btn-add-sub mt-4" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-5">#</th>
+                                <th colspan="2" class="w-45">Raw Value</th>
+                                <th colspan="2" class="w-45">Value</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!MappingDetails.length">
+                                <td colspan="6" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(dropDownMapping, index) in MappingDetails">
+                                <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                                <td><input v-model.lazy="dropDownMapping.RawValue" class="form-control" :disabled="Disabled == 'True' ? Disabled : dropDownMapping.IsRawValueEmpty" placeholder="Type here" /></td>
+                                <td class="align-middle">
+                                    <div class="form-check">
+                                        <input class="form-check-input" v-on:click="resetRawValue(index)" :disabled="Disabled == 'True' ? Disabled : (NullRawValue != index && NullRawValue != null)" v-model="dropDownMapping.IsRawValueEmpty" type="checkbox" />Empty
+                                    </div>
+                                </td>
+                                <td>
+                                    <select v-model="dropDownMapping.PickListDetailId" class="form-control" :disabled="Disabled == 'True' ? Disabled : dropDownMapping.IsPickDetailIdEmpty" data-container="body">
+                                        <option value=null>Please Select</option>
+                                        <option v-for="pickListDetail in PickListDetailList" :value="pickListDetail.Id">{{ pickListDetail.Code }}</option>
+                                    </select>
+                                </td>
+                                <td class="align-middle">
+                                    <div class="form-check">
+                                        <input class="form-check-input" v-on:click="resetPickListDetailId(index)" disabled=@disabled v-model="dropDownMapping.IsPickDetailIdEmpty" type="checkbox" />Empty
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if (disabled)
+                                    {
+                                        <span class="fas fa-trash-alt text-secondary" />
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:void(0);" v-on:click="removeMappingDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-right form-row-btn">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal" v-if="Disabled == 'True'">CLOSE</button>
+                    <button type="button" v-on:click="saveMappingDetail" class="btn btn-submit" data-dismiss="modal" v-if="Disabled == 'False'">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="dateFormatModal" tabindex="-1" role="dialog" aria-labelledby="dateFormatModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Date Format</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Format</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>d</td>
+                            <td>Day of the month ( 1 - 31 )</td>
+                        </tr>
+                        <tr>
+                            <td>dd</td>
+                            <td>Day of the month with leading zero ( 01 - 31 )</td>
+                        </tr>
+                        <tr>
+                            <td>ddd</td>
+                            <td>Abbreviated name of the day ( Mon, Tue, Wed, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>dddd</td>
+                            <td>Name of the day ( Monday, Tuesday, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>Month number ( 1 - 12 )</td>
+                        </tr>
+                        <tr>
+                            <td>MM</td>
+                            <td>Month number with leading zero ( 01 - 12 )</td>
+                        </tr>
+                        <tr>
+                            <td>MMM</td>
+                            <td>Abbreviated month name ( Nov, Dec, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>MMMM</td>
+                            <td>Month name ( November, December, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>y</td>
+                            <td>Year without leading zero ( 2015 would be 15 )</td>
+                        </tr>
+                        <tr>
+                            <td>yy</td>
+                            <td>Year with leading zero ( 2015 would be 015 )</td>
+                        </tr>
+                        <tr>
+                            <td>yyyy</td>
+                            <td>Year ( 2015 )</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="evaluationResultModal" tabindex="-1" role="dialog" aria-labelledby="evaluationResultModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Formula Evaluation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-success" v-if="CurrentEvalSuccess">{{ CurrentEvalMsg[0] }}</p>
+                <ul v-if="!CurrentEvalSuccess">
+                    <li v-for="(evaluation, index) in CurrentEvalMsg" class="text-danger">{{ evaluation }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="evaluationModal" tabindex="-1" role="dialog" aria-labelledby="evaluationModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Formula Evaluation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="max-height: 500px; overflow: auto;">
+                    <span class="font-weight-bold"><label class="col-form-label" for="Values">Values</label></span>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-30">Label</th>
+                                <th class="w-30">Type</th>
+                                <th class="w-40">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="(!CurrentEvalSingle.StandardOutputBos || !CurrentEvalSingle.StandardOutputBos.length)">
+                                <td colspan="3" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(standardOutputBo, index) in CurrentEvalSingle.StandardOutputBos">
+                                <td>{{ standardOutputBo.Code }}</td>
+                                <td>{{ standardOutputBo.DataTypeName }}</td>
+                                <td>
+                                    <div class="input-w-icon" v-on:click="openDatePicker(index)">
+                                        <input v-model.lazy="standardOutputBo.DummyValue" :id="standardOutputBo.Code + '_' + index" class="form-control" :placeholder="getPlaceHolder(standardOutputBo.DataType)" autocomplete="off" />
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" v-if="standardOutputBo.DataType == DataTypeDate" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div v-if="CurrentEvalSingle.ShowResult" class="mt-4">
+                        <span class="font-weight-bold"><label class="col-form-label" for="Result">Result</label></span>
+                        <table class="table table-hover">
+                            <tbody>
+                                <tr v-for="(result, index) in CurrentEvalSingle.Result" v-if="CurrentEvalSingle.Success">
+                                    <td class="w-20">{{ result.title }}</td>
+                                    <td class="w-80">{{ result.value }}</td>
+                                </tr>
+                                <tr v-for="error in CurrentEvalSingle.Errors" v-if="!CurrentEvalSingle.Success">
+                                    <td class="w-100 text-danger">{{ error }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-right mt-2">
+                    <button type="button" class="btn btn-submit" v-on:click="evalSingle()">Evaluate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="importConfigModal" tabindex="-1" role="dialog" aria-labelledby="importConfigModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Configuration</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>Filename: &nbsp;<span id="fileName"></span></span>
+                <br />
+                <span>Existing data will be overriden</span>
+                <div class="text-right">
+                    <input class="btn btn-primary" type="submit" href="#" formaction="@(Url.Action("Import"))" value="Confirm" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var ClaimDataConfigModel = @Html.Raw(Json.Encode(Model));
+    var ClaimDataMappings = @Html.Raw(Json.Encode(ViewBag.ClaimDataMappingBos));
+    var ClaimDataComputations = @Html.Raw(Json.Encode(ViewBag.ClaimDataComputationBos));
+    var ClaimDataPreValidations = @Html.Raw(Json.Encode(ViewBag.ClaimDataPreValidationBos));
+    var ClaimDataPostComputations = @Html.Raw(Json.Encode(ViewBag.ClaimDataPostComputationBos));
+    var ClaimDataPostValidations = @Html.Raw(Json.Encode(ViewBag.ClaimDataPostValidationBos));
+    var StatusHistories = @Html.Raw(Json.Encode(ViewBag.StatusHistoryBos));
+    var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+
+    // Lists
+    var StandardOutputList = @Html.Raw(Json.Encode(ViewBag.StdOutputList));
+    var StandardClaimDataOutputList = @Html.Raw(Json.Encode(ViewBag.StdClaimDataOutputList));
+    var TransformFormulaList = @Html.Raw(Json.Encode(ViewBag.TransformFormulaList));
+    var InputRequiredTransformFormulas = @Html.Raw(Json.Encode(@BusinessObject.Claims.ClaimDataMappingBo.GetInputRequired()));
+    var BenefitBos = @Html.Raw(Json.Encode(ViewBag.BenefitBos));
+    var ComputationModeList = @Html.Raw(Json.Encode(ViewBag.DropDownComputationMode));
+    var ComputationTableList = @Html.Raw(Json.Encode(ViewBag.DropDownComputationTable));
+
+    // URL
+    var GetPickListDetailUrl = "@(Url.Action("GetPickListDetailByStandardClaimDataOutput", "PickList"))";
+    var GetTreatyUrl = "@(Url.Action("GetTreatyByCedant"))";
+    var EvaluateObjectsUrl = "@(Url.Action("EvaluateObjects"))";
+    var GetEvaluateVariableUrl = "@(Url.Action("GetEvaluateVariables"))";
+    var EvaluateSingleUrl = "@(Url.Action("GetEvaluateResult"))";
+    var GetTreatyCodeUrl = "@(Url.Action("GetByTreatyId", "TreatyCode"))";
+
+    // Constant Keys
+    var StatusPending = @BusinessObject.Claims.ClaimDataConfigBo.StatusPending;
+    var StatusDraft = @BusinessObject.Claims.ClaimDataConfigBo.StatusDraft;
+    var FileTypePlainText = "@BusinessObject.Claims.ClaimDataConfigBo.FileTypePlainText";
+    var FileTypeExcel = "@BusinessObject.Claims.ClaimDataConfigBo.FileTypeExcel";
+    var DataTypeDate = "@BusinessObject.StandardOutputBo.DataTypeDate";
+    var DataTypeDropDown = "@BusinessObject.StandardOutputBo.DataTypeDropDown";
+    var DefaultValueString = "@BusinessObject.Claims.ClaimDataMappingBo.DefaultValueString";
+    var DefaultValueDropDown = "@BusinessObject.Claims.ClaimDataMappingBo.DefaultValueDropDown";
+    var DefaultValueMappingDetail = "@BusinessObject.Claims.ClaimDataMappingBo.DefaultValueMappingDetail";
+    var InputFormatKey = @BusinessObject.Claims.ClaimDataMappingBo.TransformFormulaInputFormat;
+    var InputTableKey = @BusinessObject.Claims.ClaimDataMappingBo.TransformFormulaInputTable;
+    var FixedValueKey = @BusinessObject.Claims.ClaimDataMappingBo.TransformFormulaFixedValue;
+    var CustomFieldKey = "@BusinessObject.StandardClaimDataOutputBo.TypeCustomField";
+    var MlreBenefitCodeKey = "@BusinessObject.StandardClaimDataOutputBo.TypeMlreBenefitCode";
+    var TreatyCodeKey = "@BusinessObject.StandardClaimDataOutputBo.TypeTreatyCode";
+
+    // Others
+    var AuthUserName = "@ViewBag.AuthUserName";
+    var ModelId = "@Model.Id";
+    var ModuleId = "@Model.ModuleId";
+    var StatusDraftName = "@BusinessObject.Claims.ClaimDataConfigBo.GetStatusName(BusinessObject.Claims.ClaimDataConfigBo.StatusDraft)";
+    var Disabled = "@disabled";
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+</script>

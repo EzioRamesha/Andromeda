@@ -1,0 +1,193 @@
+﻿@{
+    bool showVersion = ViewData["showVersion"] != null ? bool.Parse(ViewData["showVersion"].ToString()) : false;
+    bool showStatusSelect = ViewData["showStatusSelect"] != null ? bool.Parse(ViewData["showStatusSelect"].ToString()) : false;
+    bool showRemark = ViewData["showRemark"] != null ? bool.Parse(ViewData["showRemark"].ToString()) : false;
+    bool showDocuments = ViewData["showDocuments"] != null ? bool.Parse(ViewData["showDocuments"].ToString()) : false;
+    bool showRecipient = ViewData["showRecipient"] != null ? bool.Parse(ViewData["showRecipient"].ToString()) : false;
+}
+
+
+<div class="modal fade" id="statusHistoryModal" tabindex="-1" role="dialog" aria-labelledby="statusHistoryModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addStatusHistoryError" style="display:none;"></div>
+
+                <div class="form">
+                    @if (showVersion)
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label" for="version">Version</label>
+                            <input type="text" readonly class="form-control" id="version" :value="StatusHistoryModal.VersionStr">
+                        </div>
+                    }
+
+                    @if (showStatusSelect)
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label">Status</label>
+                            <select class="form-control selectpicker" id="statusSelect" v-model="StatusHistoryModal.Status">
+                                <option v-for="status in StatusSelection" :value="status.Value">{{ status.Text }}</option>
+                            </select>
+                        </div>
+                    }
+
+                    @if (showRemark)
+                    {
+                        <div class="form-group">
+                            <label class="col-form-label" for="statusRemark">Remarks</label>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('statusRemark')" v-on:blur="autoCollapseTextarea('statusRemark')" v-model="StatusHistoryModal.Remark" class="form-control textarea-auto-expand" id="statusRemark" placeholder="Type here"></textarea>
+                        </div>
+                    }
+
+                    @if (showDocuments)
+                    {
+                        <hr />
+                        <span class="font-weight-bold">@Html.Label("Document", htmlAttributes: new { @class = "col-form-label" })</span>
+                        <div class="form-group">
+                            <label class="col-form-label">File Upload</label>
+                            <div class="file is-boxed">
+                                <label class="file-label">
+                                    <input class="form-control-file" type="file" id="statusfiles" name="upload" multiple accept=".pdf,.docx,.xlsx,.xls,.jpg,.jpeg" onchange="uploadFile('status')">
+                                    Drag and Drop File Here or <u>Browse your file</u>
+                                    <br />
+                                    <span class="file-desc">
+                                        Allowed file format: .pdf, .docx, .xlsx, .xls, .jpg, .jpeg
+                                    </span>
+                                    <br />
+                                    <span class="file-desc">
+                                        File size is up to 10MB
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="statusselectedFiles" class="file-list-display"></div>
+                        </div>
+                    }
+
+                    @if (showRecipient)
+                    {
+                        <hr />
+                        <div class="form-group">
+                            <label class="col-form-label">@Html.Label("Recipient Email(s) (Separated by comma)", htmlAttributes: new { @class = "col-form-label" })</label>
+                            <input type="text" class="form-control" id="recipientEmail" autocomplete="off">
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" v-on:click="updateStatus()" class="btn btn-submit">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function createStatusHistory(statusHistoryModal, module) {
+        if (statusHistoryModal.Remark) {
+            statusHistoryModal.RemarkBo = {
+                ModuleId: statusHistoryModal.ModuleId,
+                ObjectId: statusHistoryModal.ObjectId,
+                SubModuleController: statusHistoryModal.SubModuleController,
+                Status: statusHistoryModal.Status,
+                Content: statusHistoryModal.Remark,
+                Version: statusHistoryModal.Version,
+            };
+        }
+
+        var statusHistory = null;
+        $.ajax({
+            url: CreateStatusHistoryUrl,
+            type: "POST",
+            data: { statusHistoryBo: statusHistoryModal },
+            cache: false,
+            async: true,
+            success: function (data) {
+                $("#loadingSpinner").addClass('hide-loading-spinner');
+
+                if (data.error != null && data.error.length > 0) {
+                    $('#addStatusHistoryError').append(arrayToUnorderedList(data.error));
+                    $('#addStatusHistoryError').show();
+                    return;
+                }
+
+                statusHistory = data.statusHistoryBo;
+
+                if (statusHistory && module == "QuotationWorkflow") {
+                    var remark = statusHistory.RemarkBo;
+                    if (remark) {
+                        remark.DocumentBos = app.saveDocuments(app.StatusHistories.length, app.StatusHistoryModal, remark.Id);
+                        statusHistory.RemarkBo = remark;
+                    }
+
+                    if (statusHistory.SubModuleController == 'TreatyPricingQuotationWorkflowPricing') {
+                        app.getStatusName("Pricing", app.StatusHistoryModal.Status, app.QuotationWorkflow.Id, "");
+                        @*statusHistory.StatusName = $('#PricingStatusName').val();*@
+
+                        app.PricingStatusHistories.unshift(Object.assign({}, statusHistory));
+
+                        app.QuotationWorkflow.PricingStatus = statusHistory.Status;
+                    } else {
+                        app.StatusHistories.unshift(Object.assign({}, statusHistory));
+
+                        var remarkText = app.StatusHistoryModal.Remark;
+                        app.getStatusName("Quotation", app.StatusHistoryModal.Status, app.QuotationWorkflow.Id, remarkText);
+                        $('#StatusRemarks').val(remarkText);
+
+                        app.QuotationWorkflow.Status = statusHistory.Status;
+                    }
+                }
+
+                if (statusHistory && module == "TreatyWorkflow") {
+                    var statusName = statusHistory.StatusName;
+                    $("#draftingStatus").val(statusName);
+
+                    var remark = statusHistory.RemarkBo;
+                    if (remark) {
+                        remark.DocumentBos = app.saveDocuments(app.StatusHistories.length, app.StatusHistoryModal, remark.Id);
+                        statusHistory.RemarkBo = remark;
+                    }
+
+                    app.StatusHistories.unshift(Object.assign({}, statusHistory));
+
+                    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                    ];
+
+                    var now = new Date();
+                    now.setDate(now.getDate());
+
+                    if (now.getDate().length = 1) {
+                        now = String(now.getDate()).padStart(2, '0') + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
+                    } else {
+                        now = now.getDate() + " " + monthNames[now.getMonth()] + " " + now.getFullYear();
+                    }
+
+                    app.TreatyWorkflow.LatestRevisionDateStr = now;
+                    app.TreatyWorkflow.DraftingStatus = statusHistory.Status;
+                    app.updateLatestRevisionDate();
+                }
+
+                if (statusHistory && module == "GroupReferral") {
+                    var remark = statusHistory.RemarkBo;
+                    if (remark) {
+                        remark.DocumentBos = app.saveDocuments(app.StatusHistories.length, app.StatusHistoryModal, remark.Id);
+                        statusHistory.RemarkBo = remark;
+                    }
+
+                    app.StatusHistories.unshift(Object.assign({}, statusHistory));
+                    app.Model.Status = statusHistory.Status;
+                }
+
+                $('#statusHistoryModal').modal('hide');
+            }
+        });
+
+        //return statusHistory;
+    }
+</script>

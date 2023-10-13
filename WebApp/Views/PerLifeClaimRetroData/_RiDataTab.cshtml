@@ -1,0 +1,60 @@
+﻿@model WebApp.Models.PerLifeClaimRetroDataViewModel
+
+<div class="table-responsive mt-2">
+    <table class="table table-hover tableBodyScroll" id="riDataTable">
+        <thead>
+            <tr>
+                <th class="w-40">
+                    Label
+                </th>
+                <th class="w-60">
+                    Value
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    @Html.TextBox("RiDataLabel", null, new { @class = "form-control form-control-sm prevent-disable", @placeholder = "Type here", onkeyup = "toggleRowView()" })
+                </th>
+                <th>
+                    @Html.CheckBox("HasValue", htmlAttributes: new { onclick = "toggleRowView()", @class = "prevent-disable" }) @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var item in ViewBag.StandardOutputList)
+                {
+                    string FieldName = null;
+                    if (item.Type == BusinessObject.StandardOutputBo.TypeCustomField)
+                    {
+                        continue;
+                    }
+                    if (item.Type == BusinessObject.StandardOutputBo.TypeRecordType)
+                    {
+                        FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type) + "Str";
+                        continue;
+                    }
+                    switch (item.DataType)
+                    {
+                        case BusinessObject.StandardOutputBo.DataTypeDate:
+                        case BusinessObject.StandardOutputBo.DataTypeAmount:
+                        case BusinessObject.StandardOutputBo.DataTypePercentage:
+                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type) + "Str";
+                            break;
+                        default:
+                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type);
+                            break;
+                    }
+                    <tr>
+                        <td class="w-40">@item.Code</td>
+                        <td class="w-60">
+                            <span v-if="PerLifeAggregationDetailData != null">
+                                {{PerLifeAggregationDetailData.@(FieldName)}}
+                            </span>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

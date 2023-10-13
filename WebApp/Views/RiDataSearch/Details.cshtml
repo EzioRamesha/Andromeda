@@ -1,0 +1,604 @@
+﻿@using PagedList.Mvc
+
+@model WebApp.Models.RiDataSearchViewModel
+
+@{
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    ViewBag.Title = "RI Data Details";
+    ViewBag.ListPageUrl = Url.Action("Index", new
+    {
+        TreatyCode = routeValue["TreatyCode"],
+        SoaQuarter = routeValue["SoaQuarter"],
+        RiskPeriodStartDate = routeValue["RiskPeriodStartDate"],
+        RiskPeriodEndDate = routeValue["RiskPeriodEndDate"],
+        InsuredName = routeValue["InsuredName"],
+        PolicyNumber = routeValue["PolicyNumber"],
+        InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+        CedingPlanCode = routeValue["CedingPlanCode"],
+        BenefitCode = routeValue["BenefitCode"],
+        TreatyCodeFilter = routeValue["TreatyCodeFilter"],
+        ReinsBasisCode = routeValue["ReinsBasisCode"],
+        FundsAccountingTypeCode = routeValue["FundsAccountingTypeCode"],
+        PremiumFrequencyCode = routeValue["PremiumFrequencyCode"],
+        ReportPeriodMonth = routeValue["ReportPeriodMonth"],
+        ReportPeriodYear = routeValue["ReportPeriodYear"],
+        RiskPeriodMonth = routeValue["RiskPeriodMonth"],
+        RiskPeriodYear = routeValue["RiskPeriodYear"],
+        TransactionTypeCode = routeValue["TransactionTypeCode"],
+        PolicyNumberFilter = routeValue["PolicyNumberFilter"],
+        IssueDatePol = routeValue["IssueDatePol"],
+        IssueDateBen = routeValue["IssueDateBen"],
+        ReinsEffDatePol = routeValue["ReinsEffDatePol"],
+        ReinsEffDateBen = routeValue["ReinsEffDateBen"],
+        CedingPlanCodeFilter = routeValue["CedingPlanCodeFilter"],
+        CedingBenefitTypeCode = routeValue["CedingBenefitTypeCode"],
+        CedingBenefitRiskCode = routeValue["CedingBenefitRiskCode"],
+        BenefitCodeFilter = routeValue["BenefitCodeFilter"],
+        OriSumAssured = routeValue["OriSumAssured"],
+        CurrSumAssured = routeValue["CurrSumAssured"],
+        AmountCededB4MlreShare = routeValue["AmountCededB4MlreShare"],
+        RetentionAmount = routeValue["RetentionAmount"],
+        AarOri = routeValue["AarOri"],
+        Aar = routeValue["Aar"],
+        InsuredNameFilter = routeValue["InsuredNameFilter"],
+        InsuredGenderCode = routeValue["InsuredGenderCode"],
+        InsuredTobaccoUse = routeValue["InsuredTobaccoUse"],
+        InsuredDateOfBirthFilter = routeValue["InsuredDateOfBirthFilter"],
+        InsuredOccupationCode = routeValue["InsuredOccupationCode"],
+        InsuredAttainedAge = routeValue["InsuredAttainedAge"],
+    });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.Hidden("TreatyCodeFilter");
+            @Html.Hidden("ReinsBasisCode");
+            @Html.Hidden("FundsAccountingTypeCode");
+            @Html.Hidden("PremiumFrequencyCode");
+            @Html.Hidden("ReportPeriodMonth");
+            @Html.Hidden("ReportPeriodYear");
+            @Html.Hidden("RiskPeriodMonth");
+            @Html.Hidden("RiskPeriodYear");
+            @Html.Hidden("TransactionTypeCode");
+            @Html.Hidden("PolicyNumberFilter");
+            @Html.Hidden("IssueDatePol");
+            @Html.Hidden("IssueDateBen");
+            @Html.Hidden("ReinsEffDatePol");
+            @Html.Hidden("ReinsEffDateBen");
+            @Html.Hidden("CedingPlanCodeFilter");
+            @Html.Hidden("CedingBenefitTypeCode");
+            @Html.Hidden("CedingBenefitRiskCode");
+            @Html.Hidden("BenefitCodeFilter");
+            @Html.Hidden("OriSumAssured");
+            @Html.Hidden("CurrSumAssured");
+            @Html.Hidden("AmountCededB4MlreShare");
+            @Html.Hidden("RetentionAmount");
+            @Html.Hidden("AarOri");
+            @Html.Hidden("Aar");
+            @Html.Hidden("InsuredNameFilter");
+            @Html.Hidden("InsuredGenderCode");
+            @Html.Hidden("InsuredTobaccoUse");
+            @Html.Hidden("InsuredDateOfBirthFilter");
+            @Html.Hidden("InsuredOccupationCode");
+            @Html.Hidden("InsuredAttainedAge");
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.Label("Search Parameters", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Treaty Code", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.Editor("TreatyCode", new { htmlAttributes = new { id = "TreatyCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("SOA Quarter", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBox("SoaQuarter", null, new { @class = "form-control", @onchange = "validateQuarter(this.value)", placeholder = "YYYY MM", autocomplete = "off", value = routeValue["SoaQuarter"], @disabled = "disabled" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Risk Period Start Date", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBox("RiskPeriodStartDate", null, new { id = "RiskPeriodStartDate", @class = "form-control", placeholder = "DD MM YYYY", value = routeValue["RiskPeriodStartDate"], @disabled = "disabled" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiskPeriodStartDate')" />
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Risk Period End Date", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBox("RiskPeriodEndDate", null, new { id = "RiskPeriodEndDate", @class = "form-control", placeholder = "DD MM YYYY", value = routeValue["RiskPeriodEndDate"], @disabled = "disabled" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiskPeriodEndDate')" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row my-4"></div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Insured Name", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBox("InsuredName", null, new { @class = "form-control", placeholder = "Type Here", value = routeValue["InsuredName"], @disabled = "disabled" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Policy Number", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBox("PolicyNumber", null, new { @class = "form-control", placeholder = "Type Here", value = routeValue["PolicyNumber"], @disabled = "disabled" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Insured Date of Birth", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBox("InsuredDateOfBirth", null, new { id = "InsuredDateOfBirth", @class = "form-control", placeholder = "DD MM YYYY", value = routeValue["InsuredDateOfBirth"], @disabled = "disabled" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InsuredDateOfBirth')" />
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Ceding Plan Code", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBox("CedingPlanCode", null, new { @class = "form-control", placeholder = "Type Here", maxlength = ViewBag.CedingPlanCodeMaxLength, value = routeValue["CedingPlanCode"], @disabled = "disabled" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("MLRe Benefit Code", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.Editor("BenefitCode", new { htmlAttributes = new { id = "BenefitCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                    </div>
+                </div>
+
+                <div class="form-row my-4"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.Label("Summary Values", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label" })
+                        <input class="form-control" :value="RiData.RiDataBatchBo?.CedantBo?.Name" readonly />
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Policy Number", htmlAttributes: new { @class = "col-form-label" })
+                        <input class="form-control" :value="RiData.PolicyNumber" readonly />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Treaty Code", htmlAttributes: new { @class = "col-form-label" })
+                        <input class="form-control" :value="RiData.TreatyCode" readonly />
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Policy Issue Date", htmlAttributes: new { @class = "col-form-label" })
+                        <input class="form-control" :value="RiData.IssueDatePolStr" readonly />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Reinsurance Effective Date", htmlAttributes: new { @class = "col-form-label" })
+                        <input class="form-control" :value="RiData.ReinsEffDatePolStr" readonly />
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Policy Term", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">Month</div>
+                            </div>
+                            <input class="form-control" :value="RiData.PolicyTerm" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Policy Expiry Date", htmlAttributes: new { @class = "col-form-label" })
+                        <input class="form-control" :value="RiData.PolicyExpiryDateStr" readonly />
+                    </div>
+                </div>
+
+                <div class="form-row my-4"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.Label("Standard Output", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </div>
+                </div>
+
+                <div class="table-responsive mt-2">
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-30">
+                                    Label
+                                </th>
+                                <th class="w-30">
+                                    Value
+                                </th>
+                                <th class="w-35">
+                                    Error
+                                </th>
+                                <th class="w-5">
+
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.TextBox("Label", null, new { @class = "form-control form-control-sm", @placeholder = "Type here" })
+                                </th>
+                                <th>
+                                    @Html.CheckBox("DataValue") @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                                </th>
+                                <th>
+                                    @Html.CheckBox("Error") @Html.Label("Has Error Only", htmlAttributes: new { @class = "col-form-label" })
+                                </th>
+                                <th class="text-center">
+                                    <div class="btn-row-action">
+                                        <button title="Clear" class="btn-circle" onclick="SearchClear(); return false;"><span class="fas fa-backspace" /></button>
+                                        <button title="Search" class="btn-circle" onclick="SearchFilter(); return false;"><span class="fas fa-search" /></button>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (var item in ViewBag.StandardOutputList)
+                                {
+                                    string FieldName = null;
+                                    if (item.Type == BusinessObject.StandardOutputBo.TypeCustomField)
+                                    {
+                                        continue;
+                                    }
+                                    switch (item.DataType)
+                                    {
+                                        case BusinessObject.StandardOutputBo.DataTypeDate:
+                                        case BusinessObject.StandardOutputBo.DataTypeAmount:
+                                        case BusinessObject.StandardOutputBo.DataTypePercentage:
+                                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type) + "Str";
+                                            break;
+                                        default:
+                                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type);
+                                            break;
+                                    }
+                                    <tr>
+                                        <td>@item.Code</td>
+                                        <td>
+                                            <div v-if="RiData != null">
+                                                {{RiData.@(FieldName)}}
+                                            </div>
+                                        </td>
+                                        <td class="w-35">
+                                            @{
+                                                if (ViewBag.Errors != null)
+                                                {
+                                                    foreach (var error in ViewBag.Errors)
+                                                    {
+                                                        if (error.Key == FieldName)
+                                                        {
+                                                            <ul>
+                                                                @{
+                                                                    if (error.Value is string)
+                                                                    {
+                                                                        <li>@(error.Value)</li>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        foreach (var errorVal in error.Value)
+                                                                        {
+                                                                            <li>@(errorVal)</li>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </ul>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </td>
+                                        <td class="w-5"></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", new
+                        {
+                            TreatyCode = routeValue["TreatyCode"],
+                            SoaQuarter = routeValue["SoaQuarter"],
+                            RiskPeriodStartDate = routeValue["RiskPeriodStartDate"],
+                            RiskPeriodEndDate = routeValue["RiskPeriodEndDate"],
+                            InsuredName = routeValue["InsuredName"],
+                            PolicyNumber = routeValue["PolicyNumber"],
+                            InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+                            CedingPlanCode = routeValue["CedingPlanCode"],
+                            BenefitCode = routeValue["BenefitCode"],
+                            TreatyCodeFilter = routeValue["TreatyCodeFilter"],
+                            ReinsBasisCode = routeValue["ReinsBasisCode"],
+                            FundsAccountingTypeCode = routeValue["FundsAccountingTypeCode"],
+                            PremiumFrequencyCode = routeValue["PremiumFrequencyCode"],
+                            ReportPeriodMonth = routeValue["ReportPeriodMonth"],
+                            ReportPeriodYear = routeValue["ReportPeriodYear"],
+                            RiskPeriodMonth = routeValue["RiskPeriodMonth"],
+                            RiskPeriodYear = routeValue["RiskPeriodYear"],
+                            TransactionTypeCode = routeValue["TransactionTypeCode"],
+                            PolicyNumberFilter = routeValue["PolicyNumberFilter"],
+                            IssueDatePol = routeValue["IssueDatePol"],
+                            IssueDateBen = routeValue["IssueDateBen"],
+                            ReinsEffDatePol = routeValue["ReinsEffDatePol"],
+                            ReinsEffDateBen = routeValue["ReinsEffDateBen"],
+                            CedingPlanCodeFilter = routeValue["CedingPlanCodeFilter"],
+                            CedingBenefitTypeCode = routeValue["CedingBenefitTypeCode"],
+                            CedingBenefitRiskCode = routeValue["CedingBenefitRiskCode"],
+                            BenefitCodeFilter = routeValue["BenefitCodeFilter"],
+                            OriSumAssured = routeValue["OriSumAssured"],
+                            CurrSumAssured = routeValue["CurrSumAssured"],
+                            AmountCededB4MlreShare = routeValue["AmountCededB4MlreShare"],
+                            RetentionAmount = routeValue["RetentionAmount"],
+                            AarOri = routeValue["AarOri"],
+                            Aar = routeValue["Aar"],
+                            InsuredNameFilter = routeValue["InsuredNameFilter"],
+                            InsuredGenderCode = routeValue["InsuredGenderCode"],
+                            InsuredTobaccoUse = routeValue["InsuredTobaccoUse"],
+                            InsuredDateOfBirthFilter = routeValue["InsuredDateOfBirthFilter"],
+                            InsuredOccupationCode = routeValue["InsuredOccupationCode"],
+                            InsuredAttainedAge = routeValue["InsuredAttainedAge"],
+                        },
+                       new { @class = "btn btn-cancel" })
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.TreatyCodes));
+        var BenefitCodes = @Html.Raw(Json.Encode(ViewBag.BenefitCodes));
+        var benefitCodeCount = 0;
+        var treatyCodeCount = 0;
+
+        var RiDataBo = @Html.Raw(Json.Encode(ViewBag.RiDataBo));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#SoaQuarter').datepicker({
+                format: '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs',
+                minViewMode: 1,
+                autoclose: true,
+                language: "qtrs",
+                forceParse: false
+            }).on('show', function (e) {
+                var datepickerDropDown = $('.datepicker');
+                datepickerDropDown.addClass('quarterpicker');
+            });
+
+            $('#RiskPeriodStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#RiskPeriodEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#InsuredDateOfBirth').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#IssueDatePol').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#IssueDateBen').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReinsEffDatePol').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReinsEffDateBen').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+
+            $('#TreatyCodeTokenField')
+
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (treatyCodeCount != 0) {
+                        $.each(existingTokens, function (index, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+
+                .on('tokenfield:createdtoken', function (e) {
+                    var valid = TreatyCodes.includes(e.attrs.value)
+                    if (!valid) {
+                        $(e.relatedTarget).addClass('invalid');
+                    }
+                    treatyCodeCount += 1;
+                    $('#TreatyCodeTokenField-tokenfield').removeAttr('placeholder');
+                })
+
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = TreatyCodes.includes(e.attrs.value)
+                    if (valid) {
+                        e.preventDefault();
+                    }
+                })
+
+                .on('tokenfield:removedtoken', function (e) {
+                    treatyCodeCount -= 1;
+                    if (treatyCodeCount == 0) {
+                        $("#TreatyCodeTokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                })
+
+                .tokenfield({
+                    autocomplete: {
+                        source: TreatyCodes,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+
+            $('#BenefitCodeTokenField')
+
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (benefitCodeCount != 0) {
+                        $.each(existingTokens, function (index, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+
+                .on('tokenfield:createdtoken', function (e) {
+                    var valid = BenefitCodes.includes(e.attrs.value)
+                    if (!valid) {
+                        $(e.relatedTarget).addClass('invalid');
+                    }
+                    benefitCodeCount += 1;
+                    $('#BenefitCodeTokenField-tokenfield').removeAttr('placeholder');
+                })
+
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = BenefitCodes.includes(e.attrs.value)
+                    if (valid) {
+                        e.preventDefault();
+                    }
+                })
+
+                .on('tokenfield:removedtoken', function (e) {
+                    benefitCodeCount -= 1;
+                    if (benefitCodeCount == 0) {
+                        $("#BenefitCodeTokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                })
+
+                .tokenfield({
+                    autocomplete: {
+                        source: BenefitCodes,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+
+            $('#BenefitCodeTokenField').tokenfield('disable');
+            $('#TreatyCodeTokenField').tokenfield('disable');
+        });
+
+        function validateQuarter(qtr) {
+            if (qtr == null || qtr == "")
+                return;
+            if (!/[0-9]{4} Q{1}([1-4]){1}/.test(qtr)) {
+                $("#SoaQuarter").val(null);
+                alert("SOA Quarter format is incorrect");
+            }
+        }
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                RiData: RiDataBo,
+            }
+        });
+
+        function SearchFilter() {
+            var searchVal = $("#Label").val().toUpperCase();
+
+            $("table tbody tr").each(function (index) {
+                $row = $(this);
+                //if (index !== 0) { }
+
+                var codeVal = $row.find("td:first").text();
+                var dataVal = $row.find("td:nth-last-child(3)").find("div:first").text();
+                var errorVal = $row.find("td:nth-last-child(2)").text();
+
+                if ($('#Error').prop("checked") == true) {
+                    if (errorVal.trim() === '') {
+                        $row.hide();
+                    }
+                    else {
+                        $row.show();
+                    }
+                }
+                else if ($('#DataValue').prop("checked") == true) {
+                    if (dataVal.trim() === '') {
+                        $row.hide();
+                    }
+                    else {
+                        $row.show();
+                    }
+                }
+                else if (searchVal !== '') {
+                    if (codeVal.indexOf(searchVal) === -1) {
+                        $row.hide();
+                    }
+                    else {
+                        $row.show();
+                    }
+                }
+                else {
+                    if (codeVal.indexOf(searchVal) === -1 && dataVal.trim() === '' && errorVal === '') {
+                        $row.hide();
+                    }
+                    else {
+                        $row.show();
+                    }
+                }
+            });
+        }
+
+        function SearchClear() {
+            $("#Label").val('');
+            $('#DataValue').prop('checked', false)
+            $('#Error').prop('checked', false)
+
+            var rows = $('table tbody tr');
+            rows.show();
+        }
+    </script>
+}

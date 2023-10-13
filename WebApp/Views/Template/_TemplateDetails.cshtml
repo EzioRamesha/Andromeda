@@ -1,0 +1,72 @@
+﻿@model WebApp.Models.TemplateViewModel
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <div class="file btn btn-upload mt-2" style="display: inline-flex;">
+                <label><i class="fas fa-plus"></i>&nbsp;UPLOAD NEW</label>
+                <input type="file" id="dataFile" name="upload" accept=".doc,.docx" @@change="uploadNew()" />
+            </div>
+        </div>
+        <input type="hidden" v-model="SortIndex" name="SortIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th style="display: none;"></th>
+                        <th class="text-center w-10">Version</th>
+                        <th class="w-45">File Name</th>
+                        <th class="w-20">Uploaded by</th>
+                        <th class="w-20">Date Uploaded</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!TemplateDetails || !TemplateDetails.length">
+                        <td colspan="5" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in TemplateDetails">
+                        <td style="display:none">
+                            <input type="hidden" :name="'templateDetailId[' + index + ']'" v-model="detail.Id">
+                        </td>
+                        <td class="text-center">
+                            <input type="hidden" v-model="detail.TemplateVersion" :name="'version[' + index + ']'">
+                            {{ detail.TemplateVersion }}
+                        </td>
+                        <td>
+                            <input type="hidden" v-model="detail.FileName" :name="'fileName[' + index + ']'" />
+                            <input type="hidden" v-model="detail.TempFilePath" :name="'tempFilePath[' + index + ']'" />
+                            <input type="hidden" v-model="detail.HashFileName" :name="'hashFileName[' + index + ']'" />
+                            {{ detail.FileName }}
+                        </td>
+                        <td>
+                            <input type="hidden" v-model="detail.CreatedById" :name="'uploadBy[' + index + ']'" />
+                            <input type="hidden" v-model="detail.CreatedByName" :name="'uploadByName[' + index + ']'" />
+                            {{ detail.CreatedByName }}
+                        </td>
+                        <td>
+                            <input type="hidden" v-model="detail.CreatedAtStr" :name="'uploadAt[' + index + ']'" />
+                            {{ detail.CreatedAtStr }}
+                        </td>
+                        <td>
+                            @*<a href="@Url.Action("Download", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-download fa-lg"></span></a>*@
+                            <a v-if="detail.Id != 0" v-bind:href="downloadTemplateLink(index)"><span class="fas fa-download fa-lg"></span></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    // List
+    var TemplateDetailList = @Html.Raw(Json.Encode(ViewBag.TemplateDetailBos));
+
+    // URL
+    var SaveTempUploadFileUrl = "@(Url.Action("Upload", "Template"))";
+    var DownloadTemplateUrl = "@(Url.Action("Download", "Template"))";
+</script>

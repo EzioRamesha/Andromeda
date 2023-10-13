@@ -1,0 +1,106 @@
+﻿<div class="text-right">
+    <button type="button" v-on:click="eval()" class="btn btn-upload" style="width: auto;">Evaluate Formulas</button>
+    <button type="button" class="btn btn-upload" data-toggle="modal" data-target="#stdRetroOutputInfoModal" onclick="openStdRetroOutputInfoModal()"><span class="fa fa-question-circle"></span> Info</button>
+</div>
+
+<div class="modal fade" id="stdRetroOutputInfoModal" tabindex="-1" role="dialog" aria-labelledby="infoModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Information</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#retro" class="active underline-tab">Retro</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#others">Others</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="retro" role="tabpanel" aria-labelledby="retro-tab">
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="retroInput" onkeyup="searchStandardOutput('retro')" placeholder="Search for Standard Output">
+                        </div>
+                        <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                            <table class="table sticky-top-table" id="retroTable">
+                                <thead>
+                                    <tr>
+                                        <th>Standard Output</th>
+                                        <th>Data Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!StandardRetroOutputList.length">
+                                        <td colspan="2" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(standardOutput, index) in StandardRetroOutputList">
+                                        <td>{{standardOutput.Code}}</td>
+                                        <td>{{standardOutput.DataTypeName}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="othersInput" onkeyup="searchStandardOutput('others')" placeholder="Search for Standard Output">
+                        </div>
+                        <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                            <table class="table sticky-top-table" id="othersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Standard Output</th>
+                                        <th>Data Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!OtherOutputList.length">
+                                        <td colspan="2" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(standardOutput, index) in OtherOutputList">
+                                        <td>{{standardOutput.Code}}</td>
+                                        <td>{{standardOutput.DataTypeName}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openStdRetroOutputInfoModal() {
+        $('#retroInput').val('');
+        $('#othersInput').val('');
+        searchStandardOutput('retro');
+        searchStandardOutput('others');
+    }
+
+    function searchStandardOutput(type) {
+        // Declare variables
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById(type + "Input");
+        filter = input.value.toUpperCase();
+        table = document.getElementById(type + "Table");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>

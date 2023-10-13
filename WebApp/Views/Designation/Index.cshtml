@@ -1,0 +1,121 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.DesignationViewModel>
+
+@{
+    ViewBag.Title = "Designation";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Title Maintenance</h4></div>
+            <div class="col-md-6 text-right">
+                <a href="@Url.Action("Create")" class="btn btn-add">
+                    ADD Designation
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-45">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCode;
+                                @Shared.Html.Sorter(ViewBag, "Designation Code", "Code", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-50">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortName;
+                                @Shared.Html.Sorter(ViewBag, "Description", "Description", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+                    <tr>
+                        @using (Html.BeginForm("Index", "Designation", FormMethod.Get))
+                        {
+                            @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+                            <th>
+                                @Html.TextBox("Code", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("Description", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Code)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="fas fa-ellipsis-v dropbtn" />
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="no-data">No available data found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        Code = routeValue["Code"],
+                        Description = routeValue["Description"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

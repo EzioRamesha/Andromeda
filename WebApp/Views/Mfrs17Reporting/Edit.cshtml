@@ -1,0 +1,209 @@
+﻿@model WebApp.Models.Mfrs17ReportingViewModel
+
+@{
+    ViewBag.Title = "MFRS17 Reporting";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.Mfrs17ReportingBo.GetStatusClass(Model.Status)">
+                    @if (Model.Status == BusinessObject.Mfrs17ReportingBo.StatusGenerating)
+                    {
+                        @BusinessObject.Mfrs17ReportingBo.GetStatusName(Model.Status) @Html.Raw("&nbsp") @Shared.Util.DoubleToString(Model.GeneratePercentage, 2) @Html.Raw("%")
+                    }
+                    else
+                    {
+                        @BusinessObject.Mfrs17ReportingBo.GetStatusName(Model.Status)
+                    }
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.Status, new { @Id = "reportingStatus" })
+            @Html.HiddenFor(model => model.IsResume)
+            @Html.HiddenFor(model => model.GenerateType)
+            @Html.HiddenFor(model => model.GenerateModifiedOnly)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Quarter, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" id="Quarter" name="Quarter" value="@Html.DisplayFor(model => model.Quarter)" placeholder="yyyy MM">
+                        @Html.ValidationMessageFor(model => model.Quarter, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CutOffId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CutOffId, (List<SelectListItem>)ViewBag.DropDownCutOffQuarters, htmlAttributes: new { @class = "form-control selectpicker", disabled = "disabled" })
+                        @Html.HiddenFor(model => model.CutOffId)
+                        @Html.ValidationMessageFor(model => model.CutOffId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_Mfrs17ReportingDetails")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <div class="row m-0 p-0 float-right">
+                            <div class="mr-1" v-if="@Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusSuccess || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusFinalised || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusFailedOnGenerate">
+                                <button class="btn btn-submit" :disabled="@Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusPendingGenerate || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusGenerating" type="button" data-toggle="modal" data-target="#generateModal" onclick="resetGenerateModal()">GENERATE</button>
+                            </div>
+                            <div class="mr-1" v-if="@Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusSuccess">
+                                <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#finaliseModal">FINALISE</button>
+                            </div>
+                            <div class="mr-1" v-if="@Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusPending || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusFailed || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusSuccess || @Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusFailedOnGenerate ">
+                                <button class="btn btn-download" type="button" data-toggle="modal" data-target="#submitForProcessingModal">SUBMIT FOR PROCESSING</button>
+                            </div>
+                            <div class="mr-1" v-if="@Model.Status == @BusinessObject.Mfrs17ReportingBo.StatusSuccess">
+                                <button class="btn btn-download" type="button" data-toggle="modal" data-target="#updateRiDataModal">UPDATE RI DATA</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="generateModal" tabindex="-1" role="dialog" aria-labelledby="generateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="generateModalLabel">Generate Type</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-horizontal">
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        @Html.LabelFor(model => model.GenerateType, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                        @Html.DropDownList("GenerateTypeId", (List<SelectListItem>)ViewBag.DropDownGenerateTypes, htmlAttributes: new { @class = "form-control selectpicker", onchange = "changeGenerateType(this.value)" })
+                                        @Html.ValidationMessageFor(model => model.GenerateType, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        @Html.LabelFor(model => model.GenerateModifiedOnly, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                        <div class="row m-0 p-0">
+                                            <div> <p style="color: #004BA2;">Disable</p> </div>
+                                            <div class="custom-control custom-switch" style="padding-left: 1rem;">
+                                                @Html.CheckBox("GenerateModified", new { @class = "custom-control-input", @id = "GenerateModifiedOnlySwitch", disabled = true })
+                                                <label class="custom-control-label" for="GenerateModifiedOnlySwitch">Enable</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*style="@(Model.Status != BusinessObject.Mfrs17ReportingBo.StatusFailedOnGenerate && Model.GenerateType != BusinessObject.Mfrs17ReportingBo.GenerateTypeMultiple ? "display:none;" : "")"*@
+                                <div class="form-row isResumeRow">
+                                    <div class="form-group col-12">
+                                        @Html.LabelFor(model => model.IsResume, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                        <div class="row m-0 p-0">
+                                            <div> <p style="color: #004BA2;">Disable</p> </div>
+                                            <div class="custom-control custom-switch" style="padding-left: 1rem;">
+                                                @Html.CheckBox("GenerateResume", new { @class = "custom-control-input", @id = "IsResumeSwitch", disabled = true })
+                                                <label class="custom-control-label" for="IsResumeSwitch">Enable</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <button type="submit" onclick="submitForGenerate()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="submitForProcessingModal" tabindex="-1" role="dialog" aria-labelledby="submitForProcessingModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="submitForProcessingModalLabel">Submit For Processing Confirmation</h5>
+                        </div>
+                        <div class="modal-body">
+                            Do you want to submit {{ Mfrs17Reporting.Quarter }} reporting for Processing? <br />
+                            <span class="font-weight-bold">Please note that current data will be overriden.</span>
+                            <div class="text-right form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <button type="submit" onclick="submitForProcessing()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="updateRiDataModal" tabindex="-1" role="dialog" aria-labelledby="updateRiDataModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateRiDataModalLabel">Update RI Data Confirmation</h5>
+                        </div>
+                        <div class="modal-body">
+                            Do you want to update the RI Data for {{ Mfrs17Reporting.Quarter }} reporting? <br />
+                            <span class="font-weight-bold">Please note that current data will be overriden for those that has been set to reprocess.</span>
+                            <div class="text-right form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <button type="submit" onclick="submitForUpdating()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="finaliseModal" tabindex="-1" role="dialog" aria-labelledby="finaliseModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="finaliseModalLabel">Finalise Confirmation</h5>
+                        </div>
+                        <div class="modal-body">
+                            Do you want to finalise the reporting for {{ Mfrs17Reporting.Quarter }}? <br />
+                            <span class="font-weight-bold">Please note that this action is not reversible.</span>
+                            <div class="text-right form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <button type="submit" onclick="finalised()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+            }
+        });
+    </script>
+    @Scripts.Render("~/Scripts/models/Mfrs17Reporting.js")
+}

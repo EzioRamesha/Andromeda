@@ -1,0 +1,323 @@
+﻿@model WebApp.Models.ClaimRegisterViewModel
+
+@{
+    ViewBag.Title = "Claim Register";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.Id)
+        @Html.HiddenFor(model => model.ClaimStatus)
+        @Html.HiddenFor(model => model.ProvisionStatus)
+        @Html.HiddenFor(model => model.OffsetStatus)
+        @Html.HiddenFor(model => model.IsClaim)
+        @Html.HiddenFor(model => model.DuplicationCheckStatus)
+
+        <div class="card-header">
+            <div class="row">
+                <div class="col-6">
+                    <h4>@ViewBag.Action @ViewBag.Title</h4>
+                </div>
+                <div class="col-6 text-right">
+                    @if (Model.ClaimStatus == BusinessObject.ClaimRegisterBo.StatusRegistered)
+                    {
+                        <button type="button" class="btn btn-submit" data-toggle="modal" data-target="#confirmDuplicateClaimModal">DUPLICATE CLAIM</button>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="card mt-2">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-6"><h4>Claims</h4></div>
+                        <div class="col-6 text-right">
+                            <span class="@BusinessObject.ClaimRegisterBo.GetOffsetStatusClass(Model.OffsetStatus) mr-2">
+                                @BusinessObject.ClaimRegisterBo.GetOffsetStatusName(Model.OffsetStatus)
+                            </span>
+                            <span class="@BusinessObject.ClaimRegisterBo.GetProvisionStatusClass(Model.ProvisionStatus) mr-2">
+                                @BusinessObject.ClaimRegisterBo.GetProvisionStatusName(Model.ProvisionStatus)
+                            </span>
+                            <span class="@BusinessObject.ClaimRegisterBo.GetStatusClass(Model.ClaimStatus)">
+                                @BusinessObject.ClaimRegisterBo.GetStatusName(Model.ClaimStatus)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-horizontal">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.TextBoxFor(model => model.SoaQuarter, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "YYYY MM" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('SoaQuarter')" }, { @"v-model.lazy", @"ClaimRegister.SoaQuarter" }, { "readonly", true } })
+                                @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.LabelFor(model => model.CedingCompany, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.CedingCompany, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                                @Html.ValidationMessageFor(model => model.CedingCompany, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownListFor(model => model.TreatyCode, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.TreatyCode", @readonly = true })
+                                @Html.ValidationMessageFor(model => model.TreatyCode, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.LabelFor(model => model.BusinessOrigin, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.BusinessOrigin, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                                @Html.ValidationMessageFor(model => model.BusinessOrigin, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.RecordType, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownListFor(model => model.RecordType, (List<SelectListItem>)ViewBag.DropDownRecordTypes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.RecordType" })
+                                @Html.ValidationMessageFor(model => model.RecordType, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.LabelFor(model => model.ClaimTransactionType, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.ClaimTransactionType, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                                @Html.ValidationMessageFor(model => model.ClaimTransactionType, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.IsReferralCase, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                <div class="row m-0 p-0">
+                                    <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                    <div class="custom-control custom-switch  pl-2">
+                                        @Html.EditorFor(model => model.IsReferralCase, new { htmlAttributes = new { @class = "custom-control-input", @disabled = "disabled" } })
+                                        <label class="custom-control-label" for="IsReferralCase">Yes</label>
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.IsReferralCase, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row my-4"></div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.PicClaimId, htmlAttributes: new { @class = "col-form-label" })
+                                @if (ViewBag.CanAssign)
+                                {
+                                    <div class="input-group mb-2">
+                                        @Html.DropDownListFor(model => model.PicClaimId, (List<SelectListItem>)ViewBag.DropDownPicClaims, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @v_model = "ClaimRegister.PicClaimId" })
+                                        <div class="input-group-prepend">
+                                            <button type="button" class="btn btn-generate" id="assignPicBtn" :disabled="PicClaimId == ClaimRegister.PicClaimId">ASSIGN</button>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @Html.HiddenFor(model => model.PicClaimId);
+                                    @Html.DropDownListFor(model => model.PicClaimId, (List<SelectListItem>)ViewBag.DropDownPicClaims, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                                }
+                                @Html.ValidationMessageFor(model => model.PicClaimId, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.LabelFor(model => model.PicDaaId, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.PicDaaBo.UserName, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                            </div>
+                        </div>
+
+                        <div class="form-row my-4"></div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @*<div class="col-form-label pb-0 font-weight-bold">Claims Data</div>*@
+                                @Html.LabelFor(model => model.DuplicationCheckStatus, htmlAttributes: new { @class = "col-form-label" })
+                                <div class="input-group">
+                                    <input type="text" readonly class="form-control" value="@BusinessObject.ClaimRegisterBo.GetDuplicationCheckStatusName(Model.DuplicationCheckStatus)">
+                                    @if (Model.DuplicationCheckStatus == BusinessObject.ClaimRegisterBo.DuplicationCheckStatusHasDuplicate)
+                                    {
+                                        <div class="input-group-prepend">
+                                            <button type="button" class="input-group-text prevent-disable" data-toggle="modal" data-target="#duplicateClaimsDataModal">VIEW DUPLICATE</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.Label("Claims Data Mapping Status", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.HiddenFor(model => model.OriginalClaimRegisterId)
+                                <div class="input-group">
+                                    <input class="form-control" id="ClaimRegisterStr" readonly value="" />
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="input-group-text" data-toggle="modal" data-target="#matchClaimsDataModal" v-on:click="resetMatchClaimData()">MATCH CLAIMS DATA</button>
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.OriginalClaimRegisterId, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.OriginalClaimRegisterError, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.OriginalClaimRegisterError, new { htmlAttributes = new { @class = "form-control", @readonly = true } })
+                            </div>
+                        </div>
+
+                        @Html.Partial("_Details")
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>Related Claim Record(s)</h4>
+                </div>
+                <div class="card-body" style="min-height: 1px;">
+                    <div class="table-responsive">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Policy No</th>
+                                    <th class="w-10">Claim Type</th>
+                                    <th class="w-10">Referral ID</th>
+                                    <th class="w-10">Ceding Company</th>
+                                    <th class="w-10">Sum Insured (MYR)</th>
+                                    <th class="w-15">Cause of Event</th>
+                                    <th class="w-15">Claim Recovery Amount (MYR)</th>
+                                    <th class="w-10">Person In-Charge</th>
+                                    <th class="w-10">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!RelatedClaims.length">
+                                    <td colspan="9" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(relatedClaim, index) in RelatedClaims">
+                                    <td> {{ relatedClaim.PolicyNumber }} </td>
+                                    <td>  </td>
+                                    <td> <a v-bind:href="urlReferralEditLink(index)" target="_blank" class="linkbtn"><u> {{ relatedClaim.ReferralId }} </u></a></td>
+                                    <td> {{ relatedClaim.CedingCompany }} </td>
+                                    <td> {{ relatedClaim.SumInsStr }} </td>
+                                    <td> {{ relatedClaim.CauseOfEvent }} </td>
+                                    <td> {{ relatedClaim.ClaimRecoveryAmtStr }} </td>
+                                    <td> {{ relatedClaim.PicClaimBo?.UserName }} </td>
+                                    <td> {{ relatedClaim.StatusName }} </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-btn" style="margin-top: 80px;">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+
+                    <div class="row m-0 p-0 float-right">
+                        @{
+                            var actionUrls = (Dictionary<string, object>)ViewBag.ActionUrls;
+                            if (Model.ClaimStatus == BusinessObject.ClaimRegisterBo.StatusRegistered)
+                            {
+                                <div class="mr-1">
+                                    @*<input type="button" class="btn btn-submit float-right" v-on:click="linkToReferral()" value="LINK TO REFERRAL" />*@
+                                    <button type="submit" class="btn btn-submit prevent-disable" formaction="@Url.Action("LinkReferral", new { id = Model.Id })">LINK TO REFERRAL</button>
+                                </div>
+                                <div class="mr-1">
+                                    <input type="submit" class="btn btn-submit float-right" value="SAVE" />
+                                </div>
+                                if (actionUrls != null && actionUrls.Count > 0)
+                                {
+                                    <div class="btn-group actionDropdown mr-1">
+                                        <button type="button" class="btn btn-submit dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</button>
+                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                            @foreach (var item in actionUrls)
+                                            {
+                                                string value = item.Key;
+                                                if (value == "Overwrite")
+                                                {
+                                                    value = "Approve";
+                                                }
+
+                                                <button type="submit" class="dropdown-item" id="@Shared.Util.ToPascalCase(item.Key + "Btn")" formaction="@item.Value">@value</button>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else if (Model.ClaimStatus == BusinessObject.ClaimRegisterBo.StatusPendingClarification)
+                            {
+                                <div class="mr-1">
+                                    <input type="submit" class="btn btn-submit float-right" value="SAVE" />
+                                </div>
+                            }
+                            else if (actionUrls != null && actionUrls.Count > 0)
+                            {
+                                foreach (var item in actionUrls)
+                                {
+                                    string value = item.Key;
+                                    if (value == "Overwrite")
+                                    {
+                                        value = "Approve";
+                                    }
+
+                                    <div class="mr-1">
+                                        @*<a class="btn btn-submit" href="@item.Value" onclick=@onclick>@value</a>*@
+                                        <button type="submit" class="btn btn-submit prevent-disable" id="@Shared.Util.ToPascalCase(item.Key + "Btn")" formaction="@item.Value">@value</button>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="confirmDuplicateClaimModal" tabindex="-1" role="dialog" aria-labelledby="confirmDuplicateClaimModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Duplicate Claim</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <span>Are you sure this is a duplicate claim? <br /> This claim would be pushed to <b>Declined</b></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-submit prevent-disable" formaction="@Url.Action("UpdateStatus", new { id = Model.Id, status = BusinessObject.ClaimRegisterBo.StatusDeclined })">CONFIRM</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/Scripts/models/ClaimRegister.js")
+    @Scripts.Render("~/Scripts/models/ClaimRegisterClaim.js")
+
+    <script>    
+        var readOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+
+        
+    </script>
+}

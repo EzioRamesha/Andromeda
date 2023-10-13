@@ -1,0 +1,136 @@
+﻿@model WebApp.Models.PerLifeSoaViewModel
+
+@{
+    ViewBag.Title = "Per Life Retro SOA";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Create", "PerLifeSoa", FormMethod.Post, new { id = "editform" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.InvoiceStatus)
+            @Html.HiddenFor(model => model.ModuleId)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RetroPartyBo, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RetroPartyId, (List<SelectListItem>)ViewBag.DropDownRetroParties, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getRetroTreatyByRetroParty(this.value)" })
+                        @Html.ValidationMessageFor(model => model.RetroPartyId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RetroTreatyBo, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RetroTreatyId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.RetroTreatyId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.SoaQuarter, new { htmlAttributes = new { @class = "form-control", @onchange = "validateQuarter(this.value, 'SOA Quarter')", placeholder = "YYYY MM", autocomplete = "off", id = "Quarter" } })
+                        @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ProcessingDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.ProcessingDateStr, new { htmlAttributes = new { id = "ProcessingDate", @class = "form-control", placeholder = "DD MM YYYY", @readonly = true } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ProcessingDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Per Life Profit Comission Data", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        <div class="row m-0 p-0">
+                            <div> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch" style="padding-left:1rem;">
+                                @Html.CheckBoxFor(model => model.IsProfitCommissionData, new { @class = "custom-control-input", id = "PCSwitch" })
+                                <label class="custom-control-label" for="PCSwitch">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <div class="row m-0 p-0 float-right">
+                            <div class="mr-1">
+                                <button type="submit" class="btn btn-submit">SAVE</button>
+                            </div>
+                            <div>
+                                <input type="button" onclick="updateStatus(@BusinessObject.Retrocession.PerLifeSoaBo.StatusSubmitForProcessing);" class="btn btn-submit float-right" style="width: auto;" value="SUBMIT FOR PROCESSING" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script type="text/javascript">
+        var Model = @Html.Raw(Json.Encode(Model));
+
+        // Others
+        var QuarterFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+        var DateTimeFormat = "@(Shared.Util.GetDateTimeFormatMomentJs())";
+        var AuthUserName = "@ViewBag.AuthUserName";
+        var WMWithin = '@BusinessObject.Retrocession.PerLifeSoaSummariesBo.WMOMWithin';
+        var OMOutside = '@BusinessObject.Retrocession.PerLifeSoaSummariesBo.WMOMOutside';
+        var TypePremium = '@BusinessObject.Retrocession.PerLifeSoaSummariesSoaBo.PremiumClaimPremium';
+        var TypeClaim = '@BusinessObject.Retrocession.PerLifeSoaSummariesSoaBo.PremiumClaimClaim';
+
+        // List
+        var SoaWMOMs = [];
+        var RetroStatements = [];
+        var SoaSummaries = [];
+        var SoaSummaryByTreaties = [];
+        var RemarksList = [];
+        var DocumentBos = [];
+        var StatusHistoriesList = [];
+        var DropDownUsers = [];
+        var DocumentTypeItems = [];
+        var DropDownTreatyCodes = [];
+
+        // Url
+        var GetRetroTreatyUrl = "@(Url.Action("GetRetroTreatyByRetroParty"))";
+
+        // Status
+        var StatusPending = @BusinessObject.Retrocession.PerLifeSoaBo.StatusPending;
+        var StatusSubmitForProcessing = @BusinessObject.Retrocession.PerLifeSoaBo.StatusSubmitForProcessing;
+        var StatusProcessing = @BusinessObject.Retrocession.PerLifeSoaBo.StatusProcessing;
+        var StatusPendingName = "@BusinessObject.Retrocession.PerLifeSoaBo.GetStatusName(BusinessObject.Retrocession.PerLifeSoaBo.StatusPending)";
+    </script>
+
+    @Scripts.Render("~/Scripts/models/PerLifeSoa.js")
+}

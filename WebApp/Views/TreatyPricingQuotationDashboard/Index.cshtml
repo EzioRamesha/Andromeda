@@ -1,0 +1,195 @@
+﻿@{
+    ViewBag.Title = "Quotation Dashboard";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="card">
+            <div class="card-header">
+                <h4>Quoting Case by Person In-Charge <span class="small">&bull; {{TotalQuotationCaseByReinsuranceTypes}} Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="row m-0" v-cloak>
+                    <div class="col-md-3 col-sm-6 py-2" v-for="(QuotationCaseByReinsuranceType, index) in QuotationCaseByReinsuranceTypes">
+                        <div class="dashboard-clickable-wrapper" v-on:click="redirectByReinsuranceType(index)">
+                            <span class="col-form-label font-weight-bold">{{QuotationCaseByReinsuranceType.ReinsuranceType}}</span>
+                            <br />
+                            <span class="col-form-label small">Reinsurance Type</span>
+                            <br />
+                            <div class="text-right">
+                                <span class="col-form-label font-weight-bold font-xl">{{QuotationCaseByReinsuranceType.NoOfCase}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Person In-Charge</th>
+                                <th class="w-15" v-for="(QuotationCaseByReinsuranceType, index) in QuotationCaseByReinsuranceTypes">{{QuotationCaseByReinsuranceType.ReinsuranceType}}</th>
+                                <th class="w-20">Total</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!QuotationCaseByPics.length">
+                                <td colspan="7" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(QuotationCaseByPic, index) in QuotationCaseByPics">
+                                <td class="w-25 font-weight-bold">{{ QuotationCaseByPic.UserName }}</td>
+                                <td class="w-15" v-for="(QuotationCaseByReinsuranceType, index) in QuotationCaseByReinsuranceTypes">
+                                    {{ QuotationCaseByPic.TreatyPricingQuotationWorkflowBos[index].NoOfCase }}
+                                </td>
+                                <td class="w-20 font-weight-bold">{{ QuotationCaseByPic.TotalCase }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectByPersonInCharge(index)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Quoting Case - Pending Department's Review</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Department</th>
+                                <th class="w-15" v-for="(Status, index) in Statuses">{{ Status.StatusName }}</th>
+                                <th class="w-20">Total</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!DepartmentQuotingCases.length">
+                                <td colspan="7" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(DepartmentQuotingCase, index) in DepartmentQuotingCases">
+                                <td class="w-25 font-weight-bold">{{ DepartmentQuotingCase.DepartmentName }}</td>
+                                <td class="w-15" v-for="(Status, statusIndex) in Statuses">{{ DepartmentQuotingCase.CaseCountByDepartmentStatus[statusIndex] }}</td>
+                                <td class="w-20 font-weight-bold">{{ DepartmentQuotingCase.TotalCase }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectByDepartment(index)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Active Cases by Company</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Ceding Company</th>
+                                <th class="w-15">Reinsurance Type</th>
+                                <th class="w-15">No of Quoting Case</th>
+                                <th class="w-25">No of Quoted Case &ge; 14 days</th>
+                                <th class="w-20">Expected RI Premium Receivable</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!CompanyActiveCases.length">
+                                <td colspan="6" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(CompanyActiveCase, index) in CompanyActiveCases">
+                                <td class="w-20">{{ CompanyActiveCase.CedantName }}</td>
+                                <td class="w-15">{{ CompanyActiveCase.ReinsuranceType }}</td>
+                                <td class="w-15">{{ CompanyActiveCase.TotalCase }}</td>
+                                <td class="w-25">{{ CompanyActiveCase.NoOfQuotedCaseExceed14 }}</td>
+                                <td class="w-20">{{ CompanyActiveCase.ExpectedRIPremiumReceivable }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="redirectByCompany(index)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var QuotationCaseByReinsuranceTypes = @Html.Raw(Json.Encode(ViewBag.QuotationCaseByReinsuranceTypes));
+        var TotalQuotationCaseByReinsuranceTypes = '@ViewBag.TotalQuotationCaseByReinsuranceTypes';
+        var QuotationWorkflowIndexUrl = "@(Url.Action("Index", "TreatyPricingQuotationWorkflow"))";
+        var QuotationCaseByPics = @Html.Raw(Json.Encode(ViewBag.QuotationCaseByPics));
+        var DepartmentQuotingCases = @Html.Raw(Json.Encode(ViewBag.DepartmentQuotingCases));
+        var Statuses = @Html.Raw(Json.Encode(ViewBag.Statuses));
+        var CompanyActiveCases = @Html.Raw(Json.Encode(ViewBag.CompanyActiveCases));
+        var StatusQuoting = @BusinessObject.TreatyPricing.TreatyPricingQuotationWorkflowBo.StatusQuoting;
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Statuses: Statuses ? Statuses : [],
+                QuotationCaseByReinsuranceTypes: QuotationCaseByReinsuranceTypes ? QuotationCaseByReinsuranceTypes : [],
+                TotalQuotationCaseByReinsuranceTypes: TotalQuotationCaseByReinsuranceTypes,
+                QuotationCaseByPics: QuotationCaseByPics ? QuotationCaseByPics : [],
+                DepartmentQuotingCases: DepartmentQuotingCases ? DepartmentQuotingCases : [],
+                CompanyActiveCases: CompanyActiveCases ? CompanyActiveCases : [],
+            },
+            methods: {
+                redirectByReinsuranceType(index) {
+                    var reinsuranceTypeId = this.QuotationCaseByReinsuranceTypes[index].ReinsuranceTypePickListDetailId;
+                    var url = QuotationWorkflowIndexUrl;
+                    url = url + '?' + "ReinsuranceTypePickListDetailId=" + reinsuranceTypeId;
+                    window.location.href = url;
+                },
+                redirectByPersonInCharge(index) {
+                    var userId = this.QuotationCaseByPics[index].UserId;
+                    var url = QuotationWorkflowIndexUrl;
+
+                    if (userId == null || userId == 0)
+                        userId = 0;
+
+                    url = url + '?' + "BDPersonInChargeId=" + userId + "&Status=" + StatusQuoting;
+                    window.location.href = url;
+                },
+                redirectByDepartment(index) {
+                    var department = this.DepartmentQuotingCases[index].DepartmentId;
+                    var url = QuotationWorkflowIndexUrl;
+                    url = url + '?' + "InternalTeam=" + department + "&Status=" + StatusQuoting + "&FromQuotationDashboard=1";
+                    window.location.href = url;
+                },
+                redirectByCompany(index) {
+                    var cedantId = this.CompanyActiveCases[index].CedantId;
+                    var reinsuranceType = this.CompanyActiveCases[index].ReinsuranceTypePickListDetailId;
+                    var url = QuotationWorkflowIndexUrl;
+                    url = url + '?' + "CedantId=" + cedantId + "&ReinsuranceTypePickListDetailId=" + reinsuranceType + "&Status=" + StatusQuoting;
+                    window.location.href = url;
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

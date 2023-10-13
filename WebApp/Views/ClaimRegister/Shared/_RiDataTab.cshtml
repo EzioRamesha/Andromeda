@@ -1,0 +1,230 @@
+﻿@model WebApp.Models.ClaimRegisterViewModel
+
+<div class="tab-pane fade show" id="riDataTab" role="tabpanel" aria-labelledby="data-tab">
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            @Html.LabelFor(model => model.RiDataWarehouseId, htmlAttributes: new { @class = "col-form-label font-weight-bold prevent-disable" })
+            @Html.HiddenFor(model => model.RiDataWarehouseId)
+            @Html.HiddenFor(model => model.ReferralRiDataId)
+            <div class="input-group mb-2">
+                <input class="form-control" id="RiDataStr" readonly value="" />
+                <div class="input-group-prepend">
+                    <button type="button" class="input-group-text" data-toggle="modal" v-on:click="ResetMatchRiDataModal()" data-target="#matchRiDataModal">MATCH RI DATA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive mt-2">
+        <table class="table table-hover tableBodyScroll" id="riDataTable">
+            <thead>
+                <tr>
+                    <th class="w-40">
+                        Label
+                    </th>
+                    <th class="w-60">
+                        Value
+                    </th>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.TextBox("RiDataLabel", null, new { @class = "form-control form-control-sm prevent-disable", @placeholder = "Type here", onkeyup = "toggleRowView()" })
+                    </th>
+                    <th>
+                        @Html.CheckBox("HasValue", htmlAttributes: new { onclick = "toggleRowView()", @class = "prevent-disable" }) @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var item in ViewBag.StandardOutputList)
+                    {
+                        string FieldName = null;
+                        if (item.Type == BusinessObject.StandardOutputBo.TypeCustomField)
+                        {
+                            continue;
+                        }
+                        if (item.Type == BusinessObject.StandardOutputBo.TypeRecordType)
+                        {
+                            FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type) + "Str";
+                            continue;
+                        }
+                        switch (item.DataType)
+                        {
+                            case BusinessObject.StandardOutputBo.DataTypeDate:
+                            case BusinessObject.StandardOutputBo.DataTypeAmount:
+                            case BusinessObject.StandardOutputBo.DataTypePercentage:
+                                FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type) + "Str";
+                                break;
+                            default:
+                                FieldName = BusinessObject.StandardOutputBo.GetPropertyNameByType(item.Type);
+                                break;
+                        }
+                        <tr>
+                            <td class="w-40">@item.Code</td>
+                            <td class="w-60">
+                                <span v-if="RiDataWarehouse != null">
+                                    {{RiDataWarehouse.@(FieldName)}}
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="matchRiDataModal" tabindex="-1" role="dialog" aria-labelledby="matchRiDataTitle" aria-hidden="true">
+    <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Match RI Data</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="MatchRiDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in MatchRiDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form-row">
+                    <div class="col-form-label col-12 pb-0 font-weight-bold">Search</div>
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="MatchRiDataPolicyNumber">Policy Number</label>
+                        <input type="text" class="form-control" v-model="MatchRiData.PolicyNumber" id="MatchRiDataPolicyNumber" placeholder="Type Here">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <label class="col-form-label" for="MatchRiDataCedingPlanCode">Ceding Plan Code</label>
+                        <input type="text" class="form-control" v-model="MatchRiData.CedingPlanCode" id="MatchRiDataCedingPlanCode" placeholder="Type Here">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="MatchRiDataRiskYear">Risk Year</label>
+                        <input type="text" class="form-control" v-model="MatchRiData.RiskYear" id="MatchRiDataRiskYear" placeholder="Type Here" onclick="openYearPicker('MatchRiDataRiskYear')">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <label class="col-form-label" for="MatchRiDataRiskMonth">Risk Month</label>
+                        <select v-model="MatchRiData.RiskMonth" class="form-control selectpicker" ref="select" id="MatchRiDataRiskMonth" data-container="body">
+                            <option v-for="month in Months" :value="month.Value">{{ month.Text }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="MatchRiDataSoaQuarter">SOA Quarter</label>
+                        <input type="text" class="form-control" v-model="MatchRiData.SoaQuarter" id="MatchRiDataSoaQuarter" v-on:click="openDatePicker('MatchRiDataSoaQuarter')" placeholder="Type Here" autocomplete="off">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <label class="col-form-label" for="MatchRiDataMlreBenefitCode">MLRe Benefit Code</label>
+                        <select v-model="MatchRiData.MlreBenefitCode" class="form-control selectpicker" ref="select" id="MatchRiDataMlreBenefitCode" data-container="body">
+                            <option v-for="benefit in DropDownBenefits" :value="benefit.Value">{{ benefit.Text }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="MatchRiDataCedingBenefitRiskCode">Ceding Benefit Risk Code</label>
+                        <input type="text" class="form-control" v-model="MatchRiData.CedingBenefitRiskCode" id="MatchRiDataCedingBenefitRiskCode" placeholder="Type Here">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <label class="col-form-label" for="MatchRiDataTreatyCode">Treaty Code</label>
+                        <select v-model="MatchRiData.TreatyCode" class="form-control selectpicker" id="MatchRiDataTreatyCode">
+                            <option v-for="treatyCode in TreatyCodes" :value="treatyCode.Value">{{ treatyCode.Text }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <label class="col-form-label" for="MatchRiDataDateOfEvent">Date of Event</label>
+                        <input type="text" class="form-control" v-model="MatchRiData.DateOfEvent" id="MatchRiDataDateOfEvent" v-on:click="openDatePicker('MatchRiDataDateOfEvent')" placeholder="DD MM YYYY" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4" v-if="MatchedRiData != null">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-10">Record Type</th>
+                                <th class="w-10">Risk Year</th>
+                                <th class="w-10">Risk Month</th>
+                                <th class="w-10">Policy Number</th>
+                                <th class="w-10">Policy Issue Date</th>
+                                <th class="w-10">Treaty Code</th>
+                                <th class="w-10">Reinsurance Effective Date</th>
+                                <th class="w-10">MLRe Benefit Code</th>
+                                <th class="w-10">Gender Code</th>
+                                <th class="w-10">Date of Birth</th>
+                                <th class="w-10">AAR</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!MatchedRiData.length">
+                                <td colspan="11" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(matchedRiData, index) in MatchedRiData">
+                                <td>{{ matchedRiData.RecordTypeStr }}</td>
+                                <td>{{ matchedRiData.RiskPeriodYear }}</td>
+                                <td>{{ matchedRiData.RiskPeriodMonth }}</td>
+                                <td>{{ matchedRiData.PolicyNumber }}</td>
+                                <td>{{ matchedRiData.IssueDatePolStr }}</td>
+                                <td>{{ matchedRiData.TreatyCode }}</td>
+                                <td>{{ matchedRiData.ReinsEffDatePolStr }}</td>
+                                <td>{{ matchedRiData.MlreBenefitCode }}</td>
+                                <td>{{ matchedRiData.InsuredGenderCode }}</td>
+                                <td>{{ matchedRiData.InsuredDateOfBirthStr }}</td>
+                                <td>{{ matchedRiData.AarStr }}</td>
+                                <td class="text-center">
+                                    <div class="form-check mr-3">
+                                        <input class="form-check-input mt-0" type="radio" name="matchedRiDataOptions" :value="index">
+                                    </div>
+                                    <div class="ml-3">
+                                        <a v-bind:href="viewRiData(index)" target="_blank"><span class="fas fa-eye" /></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                <button type="button" class="btn btn-submit" v-on:click="SearchRiData()" style="width: auto;">SEARCH</button>
+                <button type="button" class="btn btn-submit" v-on:click="SetRiData()" :disabled="!MatchedRiData.length">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleRowView() {
+        var search = $('#RiDataLabel').val() ?? "";
+        var filter = search.toUpperCase();
+        var hasValueOnly = $('#HasValue').prop("checked");
+
+        var table = document.getElementById("riDataTable");
+        var tr = table.getElementsByTagName("tr");
+
+
+        for (i = 0; i < tr.length; i++) {
+            field = tr[i].getElementsByTagName("td")[0];
+            value = tr[i].getElementsByTagName("td")[1];
+
+            if (field) {
+                fieldTxt = field.textContent || field.innerText;
+                valueTxt = value.textContent || value.innerText;
+                if (hasValueOnly == true && (valueTxt == null || valueTxt.trim() == "")) {
+                    tr[i].style.display = "none";
+                } else if (fieldTxt.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>

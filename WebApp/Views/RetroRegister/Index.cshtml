@@ -1,0 +1,661 @@
+﻿@using PagedList.Mvc
+
+@model WebApp.Models.RetroRegisterViewModel
+
+@{
+    ViewBag.Title = "Retro Register";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    bool readOnly = ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-12"><h4>@ViewBag.Title</h4></div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#retroReg" class="@(Model.ActiveTab == null || Model.ActiveTab == 1 ? "active" : "") underline-tab">Retro Register</a></li>
+            <li class="nav-item"><a class="@(Model.ActiveTab == 2 ? "active" : "") underline-tab" data-toggle="tab" href="#batch">Batch</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(Model.ActiveTab == null || Model.ActiveTab == 1 ? "show active" : "")" id="retroReg" role="tabpanel" aria-labelledby="retroReg-tab">
+
+                <div class="form-row mb-4">
+                    <div class="form-group col-md-12 text-right btn-row-inline">
+                        @if (readOnly)
+                        {
+                            <span class="btn btn-submit disabled">ADD NEW</span>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Details", new { id = 0 })" class="btn btn-submit">ADD NEW</a>
+                        }
+                        @if (readOnly)
+                        {
+                            <div class="file btn btn-upload disabled" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                                <label>UPLOAD</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="file btn btn-upload" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                                <label>UPLOAD</label>
+                                @using (Html.BeginForm("Upload", "RetroRegister", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="file" id="dataFile" name="upload" accept=".csv" onchange="this.form.submit()" />
+                                }
+                            </div>
+                        }
+                        <div class="btn-group" style="display: inline-flex;">
+                            <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                DOWNLOAD AS
+                            </button>
+                            <div class="dropdown-menu">
+                                @Html.ActionLink("All", "Download", new { type = 1 }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Filtered", "Download", new
+                               {
+                                   type = 2,
+                                   RetroType = routeValue["Type"],
+                                   TreatyCodeId = routeValue["TreatyCodeId"],
+                                   InvoiceNo = routeValue["InvoiceNo"],
+                                   InvoiceDate = routeValue["InvoiceDate"],
+                                   ReportCompletedDate = routeValue["ReportCompletedDate"],
+                                   RetroConfirmationDate = routeValue["RetroConfirmationDate"],
+                                   CedantId = routeValue["CedantId"],
+                                   RetroCode = routeValue["RetroCode"],
+                                   RiskQuarter = routeValue["RiskQuarter"],
+                                   AccountFor = routeValue["AccountFor"],
+                                   TotalPaid = routeValue["TotalPaid"],
+                                   Year1st = routeValue["Year1st"],
+                                   Renewal = routeValue["Renewal"],
+                                   Gross1st = routeValue["Gross1st"],
+                                   GrossRen = routeValue["GrossRen"],
+                                   PreparedById = routeValue["PreparedById"],
+                                   ApprovalStatus = routeValue["ApprovalStatus"],
+                               }, new { @class = "dropdown-item" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortType;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Type", "Type", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortInvoiceNo;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "MLRe Ref", "InvoiceNo", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortInvoiceDate;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Invoice Date", "InvoiceDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortReportCompletedDate;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Report Completed Date", "ReportCompletedDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortRetroConfirmationDate;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Retro Confirmation Date", "RetroConfirmationDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortCedantId;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Client Name", "CedantId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortRiskQuarter;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Risk Quarter", "RiskQuarter", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortRetroId;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Retro Party", "RetroCode", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortTreatyCodeId;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Treaty Code", "TreatyCodeId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortAccountFor;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Accounts For", "AccountFor", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortTotalPaid;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Net Total", "TotalPaid", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.Sort1stYear;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "1st Year", "Year1st", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortRenewal;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Renewal", "Renewal", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortGross1st;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Gross - 1st", "Gross1st", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortGrossRen;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Gross - Ren", "GrossRenewal", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.SortPersonInCharge;
+                                        routeValue["Sort2Order"] = ViewBag.Sort2Order;
+                                        routeValue["TabIndex"] = 1;
+                                        @Shared.Html.Sorter(ViewBag, "Person In-Charge", "PersonInChargeId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    Approval Status
+                                </th>
+                                <th class="w-10">
+                                    Retro Status
+                                </th>
+                                <th class="text-center w-5">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Index", "RetroRegister", FormMethod.Get))
+                                {
+                                    @Html.Hidden("Sort1Order", (string)ViewBag.Sort1Order)
+                                    @Html.Hidden("Sort2Order", (string)ViewBag.Sort2Order)
+                                    @Html.Hidden("Results1Page", (string)Model.SearchResults1Page.ToString())
+                                    @Html.Hidden("Results2Page", (string)Model.SearchResults2Page.ToString())
+                                    @Html.Hidden("TabIndex", 1)
+
+                                    <th>
+                                        @Html.DropDownList("Type", (List<SelectListItem>)ViewBag.DropDownTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("InvoiceNo", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("InvoiceDate", null, new { id = "InvoiceDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('InvoiceDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReportCompletedDate", null, new { id = "ReportCompletedDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReportCompletedDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RetroConfirmationDate", null, new { id = "RetroConfirmationDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RetroConfirmationDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("CedantId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiskQuarter", null, new { id = "RiskQuarter", @class = "form-control", placeholder = "YYMM", autocomplete = "off" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RetoPartyId", (List<SelectListItem>)ViewBag.DropDownRetroParties, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("TreatyCodeId", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("AccountFor", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("TotalPaid", null, new { @class = "form-control text-right", placeholder = "0.00" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("Year1st", null, new { @class = "form-control text-right", placeholder = "0.00" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("Renewal", null, new { @class = "form-control text-right", placeholder = "0.00" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("Gross1st", null, new { @class = "form-control text-right", placeholder = "0.00" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("GrossRenewal", null, new { @class = "form-control text-right", placeholder = "0.00" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("PreparedById", (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ApprovalStatus", (List<SelectListItem>)ViewBag.ApprovalStatusItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RetroStatus", (List<SelectListItem>)ViewBag.RetroStatusItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Index", new { Sort2Order = ViewBag.Sort2Order, Results2Page = Model.SearchResults2Page, TabIndex = 1 })" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RetroRegisters.Count > 0)
+                            {
+                                foreach (var item in Model.RetroRegisters)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (item.Type.HasValue)
+                                            {
+                                                @BusinessObject.RetroRegisterBo.GetTypeName(item.Type.Value)
+                                            }
+                                        </td>
+                                        <td>@item.InvoiceNo</td>
+                                        <td>
+                                            @if (item.InvoiceDate != null)
+                                            {
+                                                @item.InvoiceDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReportCompletedDate != null)
+                                            {
+                                                @item.ReportCompletedDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RetroConfirmationDate != null)
+                                            {
+                                                @item.RetroConfirmationDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>@item.ClientName</td>
+                                        <td>@item.RiskQuarter</td>
+                                        <td>@item.RetroPartyName</td>
+                                        <td>
+                                            @if (item.TreatyCode != null)
+                                            {
+                                                @item.TreatyCode.Code
+                                            }
+                                        </td>
+                                        <td>@item.AccountsFor</td>
+                                        <td class="text-right">@Shared.Util.DoubleToString(item.TotalPaid)</td>
+                                        <td class="text-right">@Shared.Util.DoubleToString(item.Year1st)</td>
+                                        <td class="text-right">@Shared.Util.DoubleToString(item.Renewal)</td>
+                                        <td class="text-right">@Shared.Util.DoubleToString(item.Gross1st)</td>
+                                        <td class="text-right">@Shared.Util.DoubleToString(item.GrossRenewal)</td>
+                                        <td>@item.PreparedByName</td>
+                                        <td class="va-middle">
+                                            <span class="@BusinessObject.RetroRegisterBo.GetStatusApprovalClass(item.Status)">
+                                                @BusinessObject.RetroRegisterBo.GetStatusApprovalName(item.Status)
+                                            </span>
+                                        </td>
+                                        <td class="va-middle">
+                                            @if (item.DirectRetro != null)
+                                            {
+                                                <span class="@BusinessObject.DirectRetroBo.GetRetroStatusClass(item.DirectRetro.RetroStatus)">
+                                                    @BusinessObject.DirectRetroBo.GetRetroStatusName(item.DirectRetro.RetroStatus)
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("Details", new { id = item.Id })" title="Edit">
+                                                <span class="fas fa-pencil-alt" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="19" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @{
+                                ViewBag.CurrentPageNumber = Model.RetroRegisters.PageNumber;
+                                ViewBag.CurrentPageItems = Model.RetroRegisters.Count;
+                                ViewBag.PageSize = Model.RetroRegisters.PageSize;
+                                ViewBag.Total = ViewBag.TotalInvoices;
+                            }
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(Model.RetroRegisters, Page => Url.Action("Index", new
+                            {
+                                Type = routeValue["Type"],
+                                InvoiceNo = routeValue["InvoiceNo"],
+                                InvoiceDate = routeValue["InvoiceDate"],
+                                ReportCompletedDate = routeValue["ReportCompletedDate"],
+                                RetroConfirmationDate = routeValue["RetroConfirmationDate"],
+                                CedantId = routeValue["CedantId"],
+                                RetroPartyId = routeValue["RetroCode"],
+                                RiskQuarter = routeValue["RiskQuarter"],
+                                TreatyCodeId = routeValue["TreatyCodeId"],
+                                AccountFor = routeValue["AccountFor"],
+                                TotalPaid = routeValue["TotalPaid"],
+                                Year1st = routeValue["Year1st"],
+                                Renewal = routeValue["Renewal"],
+                                Gross1st = routeValue["Gross1st"],
+                                GrossRenewal = routeValue["GrossRenewal"],
+                                PreparedById = routeValue["PreparedById"],
+                                ApprovalStatus = routeValue["ApprovalStatus"],
+                                RetroStatus = routeValue["RetroStatus"],
+                                BatchNo = routeValue["CedantId"],
+                                BatchDate = routeValue["BatchDate"],
+                                NoOfInvoices = routeValue["NoOfInvoices"],
+                                BatchPersonInChargeId = routeValue["BatchPersonInChargeId"],
+                                BatchStatus = routeValue["BatchStatus"],
+                                Sort1Order = ViewBag.Sort1Order,
+                                Sort2Order = ViewBag.Sort2Order,
+                                Results1Page = Page,
+                                Results2Page = Model.SearchResults2Page,
+                                TabIndex = 1,
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(Model.ActiveTab == 2 ? "show active" : "")" id="batch" role="tabpanel" aria-labelledby="batch-tab">
+
+                <div class="text-right mb-2">
+                    @if (readOnly)
+                    {
+                        <span class="btn btn-submit disabled">ADD NEW BATCH</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Create")" class="btn btn-add">ADD NEW BATCH</a>
+                    }
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-25">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.Sort1Order;
+                                        routeValue["Sort2Order"] = ViewBag.SortBatchNo;
+                                        routeValue["TabIndex"] = 2;
+                                        @Shared.Html.Sorter(ViewBag, "Batch No", "BatchNo", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-25">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.Sort1Order;
+                                        @Shared.Html.Sorter(ViewBag, "Retro Type", "BatchType", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-25">
+                                    @{
+                                        routeValue["Sort2Order"] = ViewBag.SortBatchDate;
+                                        routeValue["TabIndex"] = 2;
+                                        @Shared.Html.Sorter(ViewBag, "Batch Date", "BatchDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.Sort1Order;
+                                        routeValue["Sort2Order"] = ViewBag.SortTotalInvoices;
+                                        routeValue["TabIndex"] = 2;
+                                        @Shared.Html.Sorter(ViewBag, "No of Invoices", "NoOfInvoices", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    @{
+                                        routeValue["Sort1Order"] = ViewBag.Sort1Order;
+                                        routeValue["Sort2Order"] = ViewBag.SortPersonInCharge;
+                                        routeValue["TabIndex"] = 2;
+                                        @Shared.Html.Sorter(ViewBag, "Person In-Charge", "BatchPersonInChargeId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    Status
+                                </th>
+                                <th class="text-center w-5">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Index", "RetroRegister", FormMethod.Get))
+                                {
+                                    @Html.Hidden("Sort1Order", (string)ViewBag.Sort1Order)
+                                    @Html.Hidden("Sort2Order", (string)ViewBag.Sort2Order)
+                                    @Html.Hidden("Results1Page", (string)Model.SearchResults1Page.ToString())
+                                    @Html.Hidden("Results2Page", (string)Model.SearchResults2Page.ToString())
+                                    @Html.Hidden("TabIndex", 2)
+                                    <th>
+                                        @Html.TextBox("BatchNo", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownListFor(model => model.Batch.BatchType, (List<SelectListItem>)ViewBag.DropDownTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBoxFor(model => model.Batch.BatchDateStr, null, new { id = "BatchDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('BatchDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("NoOfInvoices", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("BatchPersonInChargeId", (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("BatchStatus", (List<SelectListItem>)ViewBag.StatusItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Index", new { Sort1Order = ViewBag.Sort1Order, Results1Page = Model.SearchResults1Page, TabIndex = 2 })" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RetroRegisterBatches.Count > 0)
+                            {
+                                foreach (var item in Model.RetroRegisterBatches)
+                                {
+                                    <tr>
+                                        <td>@item.BatchNo</td>
+                                        <td>
+                                            @BusinessObject.RetroRegisterBatchBo.GetTypeName(item.BatchType)
+                                        </td>
+                                        <td>
+                                            @if (item.BatchDate != null)
+                                            {
+                                                @item.BatchDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>@item.TotalInvoice</td>
+                                        <td>@item.PersonInChargeName</td>
+                                        <td class="va-middle">
+                                            <span class="@BusinessObject.RetroRegisterBatchBo.GetStatusClass(item.Status.Value)">
+                                                @BusinessObject.RetroRegisterBatchBo.GetStatusName(item.Status.Value)
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                    @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @{
+                                ViewBag.CurrentPageNumber = Model.RetroRegisterBatches.PageNumber;
+                                ViewBag.CurrentPageItems = Model.RetroRegisterBatches.Count;
+                                ViewBag.PageSize = Model.RetroRegisterBatches.PageSize;
+                                ViewBag.Total = ViewBag.TotalBatches;
+                            }
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(Model.RetroRegisterBatches, Page => Url.Action("Index", new
+                            {
+                                Type = routeValue["Type"],
+                                InvoiceNo = routeValue["InvoiceNo"],
+                                InvoiceDate = routeValue["InvoiceDate"],
+                                ReportCompletedDate = routeValue["ReportCompletedDate"],
+                                RetroConfirmationDate = routeValue["RetroConfirmationDate"],
+                                CedantId = routeValue["CedantId"],
+                                RetroPartyId = routeValue["RetroCode"],
+                                RiskQuarter = routeValue["RiskQuarter"],
+                                TreatyCodeId = routeValue["TreatyCodeId"],
+                                AccountFor = routeValue["AccountFor"],
+                                TotalPaid = routeValue["TotalPaid"],
+                                Year1st = routeValue["Year1st"],
+                                Renewal = routeValue["Renewal"],
+                                Gross1st = routeValue["Gross1st"],
+                                GrossRenewal = routeValue["GrossRenewal"],
+                                PreparedById = routeValue["PreparedById"],
+                                ApprovalStatus = routeValue["ApprovalStatus"],
+                                RetroStatus = routeValue["RetroStatus"],
+                                BatchNo = routeValue["CedantId"],
+                                BatchDate = routeValue["BatchDate"],
+                                NoOfInvoices = routeValue["NoOfInvoices"],
+                                BatchPersonInChargeId = routeValue["BatchPersonInChargeId"],
+                                BatchStatus = routeValue["BatchStatus"],
+                                Sort1Order = ViewBag.Sort1Order,
+                                Sort2Order = ViewBag.Sort2Order,
+                                Results1Page = Model.SearchResults1Page,
+                                Results2Page = Page,
+                                TabIndex = 2,
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#BatchDate, #InvoiceDate, #ReportCompletedDate, #RetroConfirmationDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+
+            $('#RiskQuarter').datepicker({
+                format: '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs',
+                minViewMode: 1,
+                autoclose: true,
+                language: "qtrs",
+                forceParse: false
+            })
+                .on('show', function (e) {
+                    var datepickerDropDown = $('.datepicker');
+                    datepickerDropDown.addClass('quarterpicker');
+            });
+
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+    </script>
+}

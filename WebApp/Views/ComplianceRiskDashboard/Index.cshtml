@@ -1,0 +1,110 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>Dashboard</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Sanction Summary</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <table class="table table-hover" style="table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center w-40">Potential Match</th>
+                                    <th class="text-center w-30">Exact Match</th>
+                                    <th class="text-center w-30">Whitelist</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">{{Summary?.PotentialCount}}</td>
+                                    <td class="text-center">{{Summary?.ExactMatchCount}}</td>
+                                    <td class="text-center">{{Summary?.WhitelistCount}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Potential Matched Cases (Unprocessed Data)</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <table class="table table-hover" style="table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th class="w-30">Source</th>
+                                    <th class="text-right w-20">RI Data</th>
+                                    <th class="text-right w-20">ClaimRegister</th>
+                                    <th class="text-right w-20">Referral Claim</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!PotentialMatchedCases.length">
+                                    <td colspan="4" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(potentialMatchedCase, index) in PotentialMatchedCases">
+                                    <td>{{ potentialMatchedCase.SourceBo?.Name }}</td>
+                                    <td class="text-right">{{ potentialMatchedCase.RiDataCount }}</td>
+                                    <td class="text-right">{{ potentialMatchedCase.ClaimRegisterCount }}</td>
+                                    <td class="text-right">{{ potentialMatchedCase.ReferralClaimCount }}</td>
+                                </tr>
+                                <tr v-if="PotentialMatchedCases.length">
+                                    <td class="font-weight-bold">Total</td>
+                                    <td class="text-right">{{TotalPotentialMatch?.RiDataCount}}</td>
+                                    <td class="text-right">{{TotalPotentialMatch?.ClaimRegisterCount}}</td>
+                                    <td class="text-right">{{TotalPotentialMatch?.ReferralClaimCount}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var Summary = @Html.Raw(Json.Encode(ViewBag.Summary));
+        var PotentialMatchedCases = @Html.Raw(Json.Encode(ViewBag.PotentialMatchedCases));
+        var TotalPotentialMatch = @Html.Raw(Json.Encode(ViewBag.TotalPotentialMatch));
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Summary: Summary ? Summary : null,
+                PotentialMatchedCases: PotentialMatchedCases ? PotentialMatchedCases : [],
+                TotalPotentialMatch: TotalPotentialMatch ? TotalPotentialMatch : null,
+            },
+            methods: {
+
+            },
+            created: function () {
+
+            },
+            updated() {
+
+            }
+        });
+    </script>
+}

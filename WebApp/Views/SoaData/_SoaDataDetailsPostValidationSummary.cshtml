@@ -1,0 +1,564 @@
+﻿@model WebApp.Models.SoaDataPostValidationListingViewModel
+
+@{
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    var typeTabKey = 0;
+    if (routeValue["type"].ToString() == "1" & routeValue["originalCurrency"].ToString() == "False")
+    { typeTabKey = BusinessObject.SoaDatas.SoaDataBatchBo.TabSoaPostValidationMLReShareMyr; }
+    else if (routeValue["type"].ToString() == "1" & routeValue["originalCurrency"].ToString() != "False")
+    { typeTabKey = BusinessObject.SoaDatas.SoaDataBatchBo.TabSoaPostValidationMLReShareOri; }
+    else if (routeValue["type"].ToString() == "2")
+    { typeTabKey = BusinessObject.SoaDatas.SoaDataBatchBo.TabSoaPostValidationLayerShare; }
+    else if (routeValue["type"].ToString() == "3")
+    { typeTabKey = BusinessObject.SoaDatas.SoaDataBatchBo.TabSoaPostValidationRetakaful; }
+}
+
+<div class="text-right mt-2 mb-2">
+    @*@Html.ActionLink("DOWNLOAD", "DownloadSoaDataPostValidation", new { soaDataBatchId = routeValue["Id"], type = routeValue["Type"], originalCurrency = routeValue["OriginalCurrency"] }, new { @class = "btn btn-submit" })*@
+    <button type="button" class="btn btn-download float-right mt-2 mb-2" onclick="downloadSoaPostValidationFile('@typeTabKey')">Download</button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-soa" id="@(BusinessObject.SoaDatas.SoaDataBatchBo.GetTabName(typeTabKey))CheckingTabRows">
+        <thead>
+            <tr>
+                <th class="w-20 text-header">MLRe CHECKING</th>
+                <th colspan="3">&nbsp;</th>
+                <th colspan="3" class="text-center text-header">PREMIUM</th>
+                <th>&nbsp;</th>
+                <th colspan="3" class="text-center text-header">DISCOUNT</th>
+                <th colspan="@(routeValue["type"].ToString() == "3" ? 2 : 4)">&nbsp;</th>
+                <th colspan="3" class="text-center text-header">CESSION</th>
+                <th colspan="3" class="text-center text-header">SAR</th>
+                <th colspan="5" class="text-center text-header">Premium By Valuation Benefit Code</th>
+                <th colspan="2" @(routeValue["originalCurrency"].ToString() != "False" ? "" : "hidden")>&nbsp;</th>
+            </tr>
+            <tr>
+                <th class="w-20">TREATY CODE</th>
+                <th class="w-10">SOA QTR</th>
+                <th class="w-10">RISK QTR</th>
+                <th class="w-10">RISK MONTH</th>
+                <th class="w-10">NB PREMIUM</th>
+                <th class="w-10">RN PREMIUM</th>
+                <th class="w-10">ALT PREMIUM</th>
+                <th class="w-10">GROSS PREMIUM</th>
+                <th class="w-10">NB DISCOUNT</th>
+                <th class="w-10">RN DISCOUNT</th>
+                <th class="w-10">ALT DISCOUNT</th>
+                <th class="w-10">TOTAL DISCOUNT</th>
+                @if (routeValue["type"].ToString() != "3")
+                {
+                    <th class="w-10">NO CLAIM BONUS</th>
+                    <th class="w-10">SURR VALUE</th>
+                }
+                <th class="w-10">NET TOTAL AMOUNT</th>
+                <th class="w-10">NB CESSION</th>
+                <th class="w-10">RN CESSION</th>
+                <th class="w-10">ALT CESSION</th>
+                <th class="w-10">NB SAR</th>
+                <th class="w-10">RN SAR</th>
+                <th class="w-10">ALT SAR</th>
+                <th class="w-10">DTH</th>
+                <th class="w-10">TPD</th>
+                <th class="w-10">CI</th>
+                <th class="w-10">PA</th>
+                <th class="w-10">HS</th>
+                @if (routeValue["originalCurrency"].ToString() != "False")
+                {
+                    <th class="w-10">Currency Code</th>
+                    <th class="w-10">Currency Rate</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model.MLReCheckings.Count > 0)
+                {
+                    foreach (var item in Model.MLReCheckings)
+                    {
+                        <tr>
+                            <td>@item.TreatyCode</td>
+                            <td>@item.SoaQuarter</td>
+                            <td>@item.RiskQuarter</td>
+                            <td>@item.RiskMonth</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.GrossPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TotalDiscount)</td>
+                            @if (routeValue["type"].ToString() != "3")
+                            {
+                                <td class="text-right">@Shared.Util.DoubleToString(item.NoClaimBonus)</td>
+                                <td class="text-right">@Shared.Util.DoubleToString(item.SurrenderValue)</td>
+                            }
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NetTotalAmount)</td>
+                            <td>@item.NbCession</td>
+                            <td>@item.RnCession</td>
+                            <td>@item.AltCession</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.DTH)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TPD)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.CI)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.PA)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.HS)</td>
+                            @if (routeValue["originalCurrency"].ToString() != "False")
+                            {
+                                <td>@item.CurrencyCode</td>
+                                <td class="text-right">@Shared.Util.DoubleToString(item.CurrencyRate)</td>
+                            }
+                        </tr>
+                    }
+                    <tr>
+                        <td>TOTAL</td>
+                        <td>@Model.MLReCheckings.Select(item => item.SoaQuarter).FirstOrDefault()</td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.NbPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.RnPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.AltPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.GrossPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.NbDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.RnDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.AltDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.TotalDiscount))</td>
+                        @if (routeValue["type"].ToString() != "3")
+                        {
+                            <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.NoClaimBonus))</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.SurrenderValue))</td>
+                        }
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.NetTotalAmount))</td>
+                        <td>@Model.MLReCheckings.Sum(item => item.NbCession)</td>
+                        <td>@Model.MLReCheckings.Sum(item => item.RnCession)</td>
+                        <td>@Model.MLReCheckings.Sum(item => item.AltCession)</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.NbSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.RnSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.AltSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.DTH))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.TPD))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.CI))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.PA))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.MLReCheckings.Sum(item => item.HS))</td>
+                        @if (routeValue["originalCurrency"].ToString() != "False")
+                        {
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        }
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="@(routeValue["type"].ToString() == "3" ? 24 : (routeValue["originalCurrency"].ToString() != "False" ? 29 : 26))" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-soa" id="@(BusinessObject.SoaDatas.SoaDataBatchBo.GetTabName(typeTabKey))CedantTabRows">
+        <thead>
+            <tr>
+                <th class="w-20 text-header">CEDANT AMOUNT</th>
+                <th colspan="3">&nbsp;</th>
+                <th colspan="3" class="text-center text-header">PREMIUM</th>
+                <th>&nbsp;</th>
+                <th colspan="3" class="text-center text-header">DISCOUNT</th>
+                <th colspan="@(routeValue["type"].ToString() == "3" ? 2 : 4)">&nbsp;</th>
+                <th colspan="3" class="text-center text-header">CESSION</th>
+                <th colspan="3" class="text-center text-header">SAR</th>
+                <th colspan="5" class="text-center text-header">RBC</th>
+                <th colspan="2" @(routeValue["originalCurrency"].ToString() != "False" ? "" : "hidden")>&nbsp;</th>
+            </tr>
+            <tr>
+                <th class="w-20">TREATY CODE</th>
+                <th class="w-10">SOA QTR</th>
+                <th class="w-10">RISK QTR</th>
+                <th class="w-10">RISK MONTH</th>
+                <th class="w-10">NB PREMIUM</th>
+                <th class="w-10">RN PREMIUM</th>
+                <th class="w-10">ALT PREMIUM</th>
+                <th class="w-10">GROSS PREMIUM</th>
+                <th class="w-10">NB DISCOUNT</th>
+                <th class="w-10">RN DISCOUNT</th>
+                <th class="w-10">ALT DISCOUNT</th>
+                <th class="w-10">TOTAL DISCOUNT</th>
+                @if (routeValue["type"].ToString() != "3")
+                {
+                    <th class="w-10">NO CLAIM BONUS</th>
+                    <th class="w-10">SURR VALUE</th>
+                }
+                <th class="w-10">NET TOTAL AMOUNT</th>
+                <th class="w-10">NB CESSION</th>
+                <th class="w-10">RN CESSION</th>
+                <th class="w-10">ALT CESSION</th>
+                <th class="w-10">NB SAR</th>
+                <th class="w-10">RN SAR</th>
+                <th class="w-10">ALT SAR</th>
+                <th class="w-10">DTH</th>
+                <th class="w-10">TPD</th>
+                <th class="w-10">CI</th>
+                <th class="w-10">PA</th>
+                <th class="w-10">HS</th>
+                @if (routeValue["originalCurrency"].ToString() != "False")
+                {
+                    <th class="w-10">Currency Code</th>
+                    <th class="w-10">Currency Rate</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model.CedantAmounts.Count > 0)
+                {
+                    foreach (var item in Model.CedantAmounts)
+                    {
+                        <tr>
+                            <td>@item.TreatyCode</td>
+                            <td>@item.SoaQuarter</td>
+                            <td>@item.RiskQuarter</td>
+                            <td>@item.RiskMonth</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.GrossPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TotalDiscount)</td>
+                            @if (routeValue["type"].ToString() != "3")
+                            {
+                                <td class="text-right">@Shared.Util.DoubleToString(item.NoClaimBonus)</td>
+                                <td class="text-right">@Shared.Util.DoubleToString(item.SurrenderValue)</td>
+                            }
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NetTotalAmount)</td>
+                            <td>@item.NbCession</td>
+                            <td>@item.RnCession</td>
+                            <td>@item.AltCession</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.DTH)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TPD)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.CI)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.PA)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.HS)</td>
+                            @if (routeValue["originalCurrency"].ToString() != "False")
+                            {
+                                <td>@item.CurrencyCode</td>
+                                <td class="text-right">@Shared.Util.DoubleToString(item.CurrencyRate)</td>
+                            }
+                        </tr>
+                    }
+                    <tr>
+                        <td>TOTAL</td>
+                        <td>@Model.CedantAmounts.Select(item => item.SoaQuarter).FirstOrDefault()</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.NbPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.RnPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.AltPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.GrossPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.NbDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.RnDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.AltDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.TotalDiscount))</td>
+                        @if (routeValue["type"].ToString() != "3")
+                        {
+                            <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.NoClaimBonus))</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.SurrenderValue))</td>
+                        }
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.NetTotalAmount))</td>
+                        <td>@Model.CedantAmounts.Sum(item => item.NbCession)</td>
+                        <td>@Model.CedantAmounts.Sum(item => item.RnCession)</td>
+                        <td>@Model.CedantAmounts.Sum(item => item.AltCession)</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.NbSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.RnSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.AltSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.DTH))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.TPD))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.CI))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.PA))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.CedantAmounts.Sum(item => item.HS))</td>
+                        @if (routeValue["originalCurrency"].ToString() != "False")
+                        {
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        }
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="@(routeValue["type"].ToString() == "3" ? 24 : (routeValue["originalCurrency"].ToString() != "False" ? 29 : 26))" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-soa" id="@(BusinessObject.SoaDatas.SoaDataBatchBo.GetTabName(typeTabKey))DiscrepancyTabRows">
+        <thead>
+            <tr>
+                <th class="w-20 text-header">DISCREPANCY CHECK</th>
+                <th class="w-10 text-left"><a href="#discrepancyModal@(routeValue["Type"])@(routeValue["originalCurrency"].ToString() != "False" ?  "ORG" : "MYR")" data-toggle="modal" data-target="#discrepancyModal@(routeValue["Type"])@(routeValue["originalCurrency"].ToString() != "False" ?  "ORG" : "MYR")"><span class="fa fa-info-circle"></span></a></th>
+                <th colspan="2">&nbsp;</th>
+                <th colspan="3" class="text-center text-header">PREMIUM</th>
+                <th>&nbsp;</th>
+                <th colspan="3" class="text-center text-header">DISCOUNT</th>
+                <th colspan="@(routeValue["type"].ToString() == "3" ? 2 : 4)">&nbsp;</th>
+                <th colspan="3" class="text-center text-header">CESSION</th>
+                <th colspan="3" class="text-center text-header">SAR</th>
+                <th colspan="5" class="text-center text-header">RBC</th>
+                <th colspan="2" @(routeValue["originalCurrency"].ToString() != "False" ? "" : "hidden")>&nbsp;</th>
+            </tr>
+            <tr>
+                <th class="w-20">TREATY CODE</th>
+                <th class="w-10">SOA QTR</th>
+                <th class="w-10">RISK QTR</th>
+                <th class="w-10">RISK MONTH</th>
+                <th class="w-10">NB PREMIUM</th>
+                <th class="w-10">RN PREMIUM</th>
+                <th class="w-10">ALT PREMIUM</th>
+                <th class="w-10">GROSS PREMIUM</th>
+                <th class="w-10">NB DISCOUNT</th>
+                <th class="w-10">RN DISCOUNT</th>
+                <th class="w-10">ALT DISCOUNT</th>
+                <th class="w-10">TOTAL DISCOUNT</th>
+                @if (routeValue["type"].ToString() != "3")
+                {
+                    <th class="w-10">NO CLAIM BONUS</th>
+                    <th class="w-10">SURR VALUE</th>
+                }
+                <th class="w-10">NET TOTAL AMOUNT</th>
+                <th class="w-10">NB CESSION</th>
+                <th class="w-10">RN CESSION</th>
+                <th class="w-10">ALT CESSION</th>
+                <th class="w-10">NB SAR</th>
+                <th class="w-10">RN SAR</th>
+                <th class="w-10">ALT SAR</th>
+                <th class="w-10">DTH</th>
+                <th class="w-10">TPD</th>
+                <th class="w-10">CI</th>
+                <th class="w-10">PA</th>
+                <th class="w-10">HS</th>
+                @if (routeValue["originalCurrency"].ToString() != "False")
+                {
+                    <th class="w-10">Currency Code</th>
+                    <th class="w-10">Currency Rate</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model.DiscrepancyChecks.Count > 0)
+                {
+                    foreach (var item in Model.DiscrepancyChecks)
+                    {
+                        <tr>
+                            <td>@item.TreatyCode</td>
+                            <td>@item.SoaQuarter</td>
+                            <td>@item.RiskQuarter</td>
+                            <td>@item.RiskMonth</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.GrossPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltDiscount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TotalDiscount)</td>
+                            @if (routeValue["type"].ToString() != "3")
+                            {
+                                <td class="text-right">@Shared.Util.DoubleToString(item.NoClaimBonus)</td>
+                                <td class="text-right">@Shared.Util.DoubleToString(item.SurrenderValue)</td>
+                            }
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NetTotalAmount)</td>
+                            <td>@item.NbCession</td>
+                            <td>@item.RnCession</td>
+                            <td>@item.AltCession</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.NbSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.RnSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.AltSar)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.DTH)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.TPD)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.CI)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.PA)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.HS)</td>
+                            @if (routeValue["originalCurrency"].ToString() != "False")
+                            {
+                                <td>@item.CurrencyCode</td>
+                                <td class="text-right">@Shared.Util.DoubleToString(item.CurrencyRate)</td>
+                            }
+                        </tr>
+                    }
+                    <tr>
+                        <td>TOTAL</td>
+                        <td>@Model.DiscrepancyChecks.Select(item => item.SoaQuarter).FirstOrDefault()</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.NbPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.RnPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.AltPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.GrossPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.NbDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.RnDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.AltDiscount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.TotalDiscount))</td>
+                        @if (routeValue["type"].ToString() != "3")
+                        {
+                            <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.NoClaimBonus))</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.SurrenderValue))</td>
+                        }
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.NetTotalAmount))</td>
+                        <td>@Model.DiscrepancyChecks.Sum(item => item.NbCession)</td>
+                        <td>@Model.DiscrepancyChecks.Sum(item => item.RnCession)</td>
+                        <td>@Model.DiscrepancyChecks.Sum(item => item.AltCession)</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.NbSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.RnSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.AltSar))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.DTH))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.TPD))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.CI))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.PA))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.DiscrepancyChecks.Sum(item => item.HS))</td>
+                        @if (routeValue["originalCurrency"].ToString() != "False")
+                        {
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        }
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="@(routeValue["type"].ToString() == "3" ? 24 : (routeValue["originalCurrency"].ToString() != "False" ? 29 : 26))" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-soa" id="@(BusinessObject.SoaDatas.SoaDataBatchBo.GetTabName(typeTabKey))DifferencesTabRows">
+        <thead>
+            <tr>
+                <th class="w-20 text-header">DIFFERENCES</th>
+                <th colspan="6">&nbsp;</th>
+            </tr>
+            <tr>
+                <th class="w-20">TREATY CODE</th>
+                <th class="w-10">SOA QTR</th>
+                <th class="w-10">GROSS PREMIUM</th>
+                <th class="w-10">NET DIFFERENCE</th>
+                <th class="w-10">% DIFFERENCE</th>
+                <th class="w-20">REMARK</th>
+                <th class="w-20">CHECK</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model.Differences.Count > 0)
+                {
+                    int index = int.Parse(routeValue["Index"].ToString());
+                    foreach (var item in Model.Differences)
+                    {
+                        <tr>
+                            <td>
+                                @item.TreatyCode
+                                <input type="text" class="form-control" value="@(item.Id)" :name="'differencesId[' + @(index) + ']'" :id="'differencesId[' + @(index) + ']'" hidden>
+                            </td>
+                            <td>@item.SoaQuarter</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.GrossPremium)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.DifferenceNetTotalAmount)</td>
+                            <td class="text-right">@Shared.Util.DoubleToString(item.DifferencePercetage)</td>
+                            <td><input type="text" class="form-control" value="@(item.Remark)" :name="'remark[' + @(index) + ']'" :id="'remark[' + @(index) + ']'" placeholder="Type here"></td>
+                            <td><input type="text" class="form-control" value="@(item.Check)" :name="'check[' + @(index) + ']'" :id="'check[' + @(index) + ']'" placeholder="Type here"></td>
+                        </tr>
+                        index++;
+                    }
+                    <tr>
+                        <td>TOTAL</td>
+                        <td>@Model.Differences.Select(item => item.SoaQuarter).FirstOrDefault()</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Differences.Sum(item => item.GrossPremium))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Differences.Sum(item => item.DifferenceNetTotalAmount))</td>
+                        <td class="text-right">@Shared.Util.DoubleToString(Model.Differences.Sum(item => item.DifferencePercetage))</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="discrepancyModal@(routeValue["Type"])@(routeValue["originalCurrency"].ToString() != "False" ? "ORG" : "MYR")" tabindex="-1" role="dialog" aria-labelledby="discrepancyModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Discrepancy Screen</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="max-height: 500px; overflow: auto;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-5">No.</th>
+                                <th class="w-20">Treaty Code</th>
+                                <th class="w-20">Ceding Plan Code</th>
+                                <th class="w-20">Cedant Amount</th>
+                                <th class="w-20">MLRE Checking</th>
+                                <th class="w-15">Discrepancy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model.Discrepancies.Count > 0)
+                                {
+                                    int i = 0;
+                                    foreach (var item in Model.Discrepancies)
+                                    {
+                                        <tr>
+                                            <td>@(i + 1)</td>
+                                            <td>@item.TreatyCode</td>
+                                            <td>@item.CedingPlanCode</td>
+                                            <td>@Shared.Util.DoubleToString(item.CedantAmount)</td>
+                                            <td>@Shared.Util.DoubleToString(item.MlreChecking)</td>
+                                            <td>@Shared.Util.DoubleToString(item.Discrepancy)</td>
+                                        </tr>
+
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

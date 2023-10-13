@@ -1,0 +1,118 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.StandardOutputViewModel>
+
+@{
+    ViewBag.Title = "Standard Output";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Title</h4></div>
+            @*
+                <div class="col-md-6 text-right">
+                    <a href="@Url.Action("Create")" class="btn btn-add">
+                        ADD STANDARD OUTPUT
+                    </a>
+                </div>
+            *@
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-20">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().Type)
+                        </th>
+                        <th class="w-20">
+                            @Html.DisplayNameFor(model => model.FirstOrDefault().DataType)
+                        </th>
+                        <th class="w-55">
+                            @Shared.Html.Sorter(ViewBag, "Name", "name", @Url.Action("Index", new { sortOrder = ViewBag.NameSortParm, name = ViewBag.NameFilter }))
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "StandardOutput", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th></th>
+                            <th></th>
+                            <th>
+                                @Html.TextBox("HeaderName", null, new { @class = "form-control form-control-sm", placeholder = "Type here" })
+                            </th>
+                            <th class="text-center">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @BusinessObject.StandardOutputBo.GetCodeByType(item.Type)
+                            </td>
+                            <td>
+                                @BusinessObject.StandardOutputBo.GetDataTypeName(item.DataType)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fas fa-ellipsis-v dropbtn" />
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+
+        <div class="pagination-footer btn-row">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, page => Url.Action("Index", new { page, sortOrder = ViewBag.SortOrder, code = ViewBag.CodeFilter, name = ViewBag.NameFilter }), new PagedListRenderOptions { LinkToPreviousPageFormat = "Prev", LinkToNextPageFormat = "Next" })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

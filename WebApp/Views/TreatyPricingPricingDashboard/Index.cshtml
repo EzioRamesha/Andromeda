@@ -1,0 +1,169 @@
+﻿@{
+    ViewBag.Title = "Pricing Dashboard";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#productPricing" class="active underline-tab">Product Pricing</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#groupPricing">Group Pricing</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="productPricing" role="tabpanel" aria-labelledby="productPricing-tab">
+                @Html.Partial("_DashboardTab")
+            </div>
+
+            <div class="tab-pane fade" id="groupPricing" role="tabpanel" aria-labelledby="groupPricing-tab">
+                @Html.Partial("_DashboardTab")
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var QuotationWorkflowIndexUrl = "@(Url.Action("Index", "TreatyPricingQuotationWorkflow"))";
+        var GetDetailsUrl = "@(Url.Action("GetDetails", "TreatyPricingPricingDashboard"))";
+        var GetDueDateFilteredIdsUrl = "@(Url.Action("GetDueDateFilteredIds", "TreatyPricingPricingDashboard"))";
+
+        $(document).ready(function () {
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                var target = $(e.target).attr("href") // activated tab
+
+                if (target == "#productPricing") {
+                    app.getDetails("PP");
+                }
+                else {
+                    app.getDetails("GP");
+                }
+            });
+
+            app.getDetails("PP");
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                PricingTeamPickListDetailId: 0,
+                TotalQuotationCaseByPricingStatus: 0,
+                TotalQuotationCaseByDueDateOverview: 0,
+                TotalQuotationCaseByStatusQuoting: 0,
+                QuotationCaseByPricingStatus: [],
+                QuotationCaseByPics: [],
+                DueDateOverviews: [],
+                DueDateOverviewsPics: [],
+                QuotingCases: [],
+            },
+            methods: {
+                getDetails(pricingTeam) {
+                    var pricingTeamPickListDetailId = 0;
+                    var totalQuotationCaseByPricingStatus = 0;
+                    var totalQuotationCaseByDueDateOverview = 0;
+                    var totalQuotationCaseByStatusQuoting = 0;
+                    var quotationCaseByPricingStatus = [];
+                    var quotationCaseByPics = [];
+                    var quotationCaseByDueDateOverview = [];
+                    var quotationCaseByDueDateOverviewPIC = [];
+                    var quotationCaseByStatusQuoting = [];
+
+                    $.ajax({
+                        url: GetDetailsUrl ? GetDetailsUrl : null,
+                        type: "POST",
+                        data: {
+                            pricingTeam: pricingTeam,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            pricingTeamPickListDetailId = data.pricingTeamPickListDetailId;
+                            totalQuotationCaseByPricingStatus = data.totalQuotationCaseByPricingStatus;
+                            totalQuotationCaseByDueDateOverview = data.totalQuotationCaseByDueDateOverview;
+                            totalQuotationCaseByStatusQuoting = data.totalQuotationCaseByStatusQuoting;
+                            quotationCaseByPricingStatus = data.quotationCaseByPricingStatus;
+                            quotationCaseByPics = data.quotationCaseByPics;
+                            quotationCaseByDueDateOverview = data.quotationCaseByDueDateOverview;
+                            quotationCaseByDueDateOverviewPIC = data.quotationCaseByDueDateOverviewPIC;
+                            quotationCaseByStatusQuoting = data.quotationCaseByStatusQuoting;
+                        }
+                    });
+
+                    this.PricingTeamPickListDetailId = pricingTeamPickListDetailId;
+                    this.TotalQuotationCaseByPricingStatus = totalQuotationCaseByPricingStatus;
+                    this.TotalQuotationCaseByDueDateOverview = totalQuotationCaseByDueDateOverview;
+                    this.TotalQuotationCaseByStatusQuoting = totalQuotationCaseByStatusQuoting;
+                    this.QuotationCaseByPricingStatus = quotationCaseByPricingStatus;
+                    this.QuotationCaseByPics = quotationCaseByPics;
+                    this.DueDateOverviews = quotationCaseByDueDateOverview;
+                    this.DueDateOverviewsPics = quotationCaseByDueDateOverviewPIC;
+                    this.QuotingCases = quotationCaseByStatusQuoting;
+                },
+                redirectByPricingStatus(index) {
+                    var pricingTeam = this.PricingTeamPickListDetailId;
+                    var pricingStatus = this.QuotationCaseByPricingStatus[index].PricingStatus;
+                    var url = QuotationWorkflowIndexUrl;
+                    url = url + '?' + "PricingStatus=" + pricingStatus + "&PricingTeamPickListDetailId=" + pricingTeam;
+                    window.location.href = url;
+                },
+                redirectByPersonInCharge(index, type) {
+                    var pricingTeam = this.PricingTeamPickListDetailId;
+                    var userId = this.QuotationCaseByPics[index].UserId;
+
+                    if (type == 1)
+                        userId = this.QuotationCaseByPics[index].UserId;
+                    else
+                        userId = this.DueDateOverviewsPics[index].UserId;
+
+                    var url = QuotationWorkflowIndexUrl;
+                    url = url + '?' + "PersonInChargeId=" + userId + "&PricingTeamPickListDetailId=" + pricingTeam;
+                    window.location.href = url;
+                },
+                redirectByDueDateOverview(index) {
+                    var pricingTeam = this.PricingTeamPickListDetailId;
+                    var idList = [];
+
+                    $.ajax({
+                        url: GetDueDateFilteredIdsUrl ? GetDueDateFilteredIdsUrl : null,
+                        type: "POST",
+                        data: {
+                            pricingTeamPickListDetailId: pricingTeam,
+                            dueDateOverviewType: index,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            idList = data.idList;
+                        }
+                    });
+
+                    if (idList.length > 0) {
+                        var url = QuotationWorkflowIndexUrl;
+                        url = url + '?' + "PricingTeamPickListDetailId=" + pricingTeam + "&IdList=" + idList.join(",");
+                        window.location.href = url;
+                    }
+                },
+                redirectByCompany(index) {
+                    var pricingTeam = this.PricingTeamPickListDetailId;
+                    var cedantId = this.QuotingCases[index].CedantId;
+                    var status = this.QuotingCases[index].Status;
+                    var url = QuotationWorkflowIndexUrl;
+                    url = url + '?' + "PricingTeamPickListDetailId=" + pricingTeam + "&CedantId=" + cedantId + "&Status=" + status;
+                    window.location.href = url;
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

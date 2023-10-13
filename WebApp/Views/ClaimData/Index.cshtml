@@ -1,0 +1,257 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.ClaimDataBatchViewModel>
+
+@{
+    ViewBag.Title = "Claim Data";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    var disabled = ViewBag.CutOffReadOnly || ViewBag.ReadOnly;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right" id="addNewBtnDiv">
+                <a href="@Url.Action("Create")" class="btn btn-add" id="addNewBtn">
+                    ADD CLAIM DATA
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-30">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedantId;
+                                @Shared.Html.Sorter(ViewBag, "Ceding Company", "CedantId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-10">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortUploadDate;
+                                @Shared.Html.Sorter(ViewBag, "Upload Date", "UploadDate", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-25">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTreatyCode;
+                                @Shared.Html.Sorter(ViewBag, "Treaty ID", "TreatyId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortQuarter;
+                                @Shared.Html.Sorter(ViewBag, "Quarter", "Quarter", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPersonInCharge;
+                                @Shared.Html.Sorter(ViewBag, "Person In-Charge", "PersonInCharge", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            Status
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+                    <tr>
+                        @using (Html.BeginForm("Index", "ClaimData", FormMethod.Get))
+                        {
+                            @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+                            @Html.Hidden("TreatyId", (string)routeValue["TreatyId"])
+                            <th>
+                                @Html.DropDownList("CedantId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @onchange = "getTreaty(this.value)" })
+                            </th>
+                            <th>
+                                @Html.TextBox("UploadDate", null, new { id = "UploadDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('UploadDate')" />
+                            </th>
+                            <th>
+                                @Html.DropDownList("TreatyIds", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @multiple = "multiple", title = "Please select", @data_selected_text_format = "count > 1" })
+                            </th>
+                            <th>
+                                @Html.TextBox("Quarter", null, new { id = "Quarter", @class = "form-control", placeholder = "YYYY MM", autocomplete = "off" })
+                            </th>
+                            <th>
+                                @Html.TextBox("PersonInCharge", null, new { @class = "form-control", placeholder = "Type Here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("Status", (List<SelectListItem>)ViewBag.DropDownStatus, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle" id="submitSearch"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Count > 0)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @string.Format("{0} - {1}", item.Cedant.Code, item.Cedant.Name)
+                                </td>
+                                <td>
+                                    @item.UploadDate.Value.ToString(Shared.Util.GetDateFormat())
+                                </td>
+                                <td>
+                                    @if (item.Treaty != null)
+                                    {
+                                        @(string.Format("{0} - {1}", item.Treaty.TreatyIdCode, item.Treaty.Description))
+                                    }
+                                </td>
+                                <td>
+                                    @item.Quarter
+                                </td>
+                                <td>
+                                    @item.PersonInCharge.FullName
+                                </td>
+                                <td class="va-middle">
+                                    <span class="@BusinessObject.Claims.ClaimDataBatchBo.GetStatusClass(item.Status)">
+                                        @BusinessObject.Claims.ClaimDataBatchBo.GetStatusName(item.Status)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="fas fa-ellipsis-v dropbtn" />
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                            @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="no-data">No available data found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        TreatyId = routeValue["TreatyId"],
+                        CedantId = routeValue["CedantId"],
+                        UploadDate = routeValue["UploadDate"],
+                        Status = routeValue["Status"],
+                        Quarter = routeValue["Quarter"],
+                        PersonInCharge = routeValue["PersonInCharge"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    <script>
+        var GetTreatyUrl = "@(Url.Action("GetTreatyByCedant", "Treaty"))";
+        var selectedTreaty = '@ViewBag.routeValue["TreatyId"]';
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#UploadDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#Quarter').datepicker({
+            format: '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs',
+            minViewMode: 1,
+            autoclose: true,
+            language: "qtrs",
+            forceParse: false
+            }).on('show', function (e) {
+                var datepickerDropDown = $('.datepicker');
+                datepickerDropDown.addClass('quarterpicker');
+            });
+
+            var cedantId = 0;
+            if ($('#CedantId')[0].selectedIndex != 0) {
+                cedantId = $('#CedantId').val();
+            }
+            getTreaty(cedantId);
+
+            $('#TreatyIds').on('change', function () {
+                var arr = $(this).val().join(",");
+                $('#TreatyId').val(arr);
+            });
+
+            var readOnly = @(disabled.ToString().ToLower());
+            if (readOnly) {
+                $('#addNewBtnDiv').addClass("wrapper-isDisabled");
+                $('#addNewBtn').addClass("isDisabled");
+            }
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function getTreaty(cedantId) {
+            $.ajax({
+                url: GetTreatyUrl,
+                type: "POST",
+                data: { cedantId: cedantId },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    var treatyList = data.treatyBos;
+                    refreshDropDownTreatyItems('TreatyIds', treatyList, selectedTreaty, 'TreatyIdCode', 'Description')
+                }
+            });
+        }
+
+        function refreshDropDownTreatyItems(id, items, selectedId, first, second = "", style = true) {
+            $(`#${id} option`).remove();
+            items.forEach(function (obj) {
+                var text = obj[first];
+                if (second && obj[second])
+                    text += ` - ${obj[second]}`;
+                $(`#${id}`).append(new Option(text, obj.Id, false));
+            });
+            if (selectedId !== '') {
+                var selectedIdArr = selectedId.split(',');
+                $(`#${id}`).selectpicker('val', selectedIdArr)
+            }
+            if (style) {
+                $(`#${id}`).selectpicker('refresh');
+            }
+        }
+    </script>
+}

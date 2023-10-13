@@ -1,0 +1,205 @@
+﻿@model WebApp.Models.CedantWorkgroupViewModel
+
+@{
+    var disabled = ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly;
+}
+
+<div class="mt-5">
+    <div class="form-row my-2 mr-0">
+        <div class="col">
+            <span class="font-weight-bold">@Html.Label("Cedant Company List", htmlAttributes: new { @class = "col-form-label" })</span>
+        </div>
+        <div class="float-right">
+            <button type="button" id="addCedantButton" v-on:click="openCedantSelection" data-toggle="modal" data-target="#cedantModal" class="btn btn-add-sub" style="width: auto;">ADD CEDANT</button>
+        </div>
+    </div>
+
+    <input type="hidden" v-model="CedantMaxIndex" name="Cedant.MaxIndex" />
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="w-5">
+                        No
+                    </th>
+                    <th class="w-80">
+                        Cedant Company
+                    </th>
+                    <th class="w-15 text-center align-middle">
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="!CedantWorkgroupCedants.length">
+                    <td colspan="9" class="no-data">No available data found.</td>
+                </tr>
+                <tr v-for="(cedant, index) in CedantWorkgroupCedants">
+                    <td>
+                        {{index + 1}}
+                    </td>
+                    <td>
+                        {{ cedant.CedantName }}
+                        <input type="hidden" v-model="cedant.CedantName" :name="'Cedant.CedantName[' + index + ']'" />
+                        <input type="hidden" v-model="cedant.CedantId" :name="'Cedant.CedantId[' + index + ']'" />
+                    </td>
+                    <td class="text-center align-middle">
+                        @if (disabled)
+                        {
+                            <span class="fas fa-trash-alt text-secondary" />
+                        }
+                        else
+                        {
+                            <a href="javascript:void();" v-on:click="removeCedant(index)"><span class="fas fa-trash-alt" /></a>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-5">
+    <div class="form-row my-2 mr-0">
+        <div class="col">
+            <span class="font-weight-bold">@Html.Label("User List", htmlAttributes: new { @class = "col-form-label" })</span>
+        </div>
+        <div class="float-right">
+            <button type="button" id="addUserButton" v-on:click="openUserSelection" data-toggle="modal" data-target="#userModal" class="btn btn-add-sub" style="width: auto;">ADD USER</button>
+        </div>
+    </div>
+
+    <input type="hidden" v-model="UserMaxIndex" name="User.MaxIndex" />
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="w-5">
+                        No
+                    </th>
+                    <th class="w-80">
+                        User ID
+                    </th>
+                    <th class="w-15 text-center align-middle">
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="!CedantWorkgroupUsers.length">
+                    <td colspan="9" class="no-data">No available data found.</td>
+                </tr>
+                <tr v-for="(user, index) in CedantWorkgroupUsers">
+                    <td>
+                        {{index + 1}}
+                    </td>
+                    <td>
+                        {{ user.UserName }}
+                        <input type="hidden" v-model="user.UserName" :name="'User.UserName[' + index + ']'" />
+                        <input type="hidden" v-model="user.UserId" :name="'User.UserId[' + index + ']'" />
+                    </td>
+                    <td class="text-center align-middle">
+                        @if (disabled)
+                        {
+                            <span class="fas fa-trash-alt text-secondary" />
+                        }
+                        else
+                        {
+                            <a href="javascript:void();" v-on:click="removeUser(index)"><span class="fas fa-trash-alt" /></a>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="cedantModal" tabindex="-1" role="dialog" aria-labelledby="cedantModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cedants</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <input type="text" class="form-control" id="cedantSearch" onkeyup="searchCedant()" placeholder="Search for Cedant">
+                </div>
+                <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                    <table class="table sticky-top-table" id="cedantListTable">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!Cedants.length">
+                                <td colspan="2" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(cedant, index) in Cedants" v-on:click="toggleCedantCheck(cedant.Id)">
+                                <td>{{cedant.Code}}</td>
+                                <td>{{cedant.Name}}</td>
+                                <td>
+                                    <span class="fas fa-check" v-if="cedant.selected" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-right form-row-btn">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                    <button type="button" v-on:click="saveCedantSelection" class="btn btn-submit" data-dismiss="modal">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Users</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <input type="text" class="form-control" id="userSearch" onkeyup="searchUser()" placeholder="Search for User">
+                </div>
+                <div style="min-height: 400px; max-height: 400px; overflow: auto;">
+                    <table class="table sticky-top-table" id="userListTable">
+                        <thead>
+                            <tr>
+                                <th>UserName</th>
+                                <th>Full Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!Users.length">
+                                <td colspan="2" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(user, index) in Users" v-on:click="toggleUserCheck(user.Id)">
+                                <td>{{user.UserName}}</td>
+                                <td>{{user.FullName}}</td>
+                                <td>
+                                    <span class="fas fa-check" v-if="user.selected" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-right form-row-btn">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                    <button type="button" v-on:click="saveUserSelection" class="btn btn-submit" data-dismiss="modal">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

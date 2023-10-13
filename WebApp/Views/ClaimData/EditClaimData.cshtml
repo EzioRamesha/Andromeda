@@ -1,0 +1,262 @@
+﻿@using WebApp.Models
+@model WebApp.Models.ClaimDataViewModel
+
+@{
+    ViewBag.Title = "Claims Data Details";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "Claim Data Batch";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", new { id = Model.ClaimDataBatchId });
+
+    var disabled = ViewBag.ReadOnly || !ViewBag.CanEdit;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("EditClaimData", "ClaimData", new { id = Model.Id }, FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.ClaimDataBatchId)
+            @Html.HiddenFor(model => model.ClaimDataFileId)
+            @Html.HiddenFor(model => model.CopyAndOverwriteData)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@(Model.ClaimDataBatchBo != null ? string.Format("{0} - {1}", Model.ClaimDataBatchBo.CedantBo.Code, Model.ClaimDataBatchBo.CedantBo.Name) : "")">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Policy Number", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" v-model="RIData.PolicyNumber" value="@Model.PolicyNumber">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Treaty Code", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" v-model="RIData.TreatyCode" value="@Model.TreatyCode">
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Pre-Computation Status", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@BusinessObject.Claims.ClaimDataBo.GetPreComputationStatusName(Model.PreComputationStatus)">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Pre-Validation Status", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@BusinessObject.Claims.ClaimDataBo.GetPreValidationStatusName(Model.PreValidationStatus)">
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Reporting Status", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@BusinessObject.Claims.ClaimDataBo.GetReportingStatusName(Model.ReportingStatus)">
+                    </div>
+                </div>
+
+                <div class="form-row  mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Pre-Validation Error", htmlAttributes: new { @class = "col-form-label" })
+                        <textarea class="form-control" rows="5" readonly style="resize: none;">@(ViewBag.PreValidationError)</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row mt-4">
+                <div class="form-group col-md-12">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item"><a data-toggle="tab" href="#claimOutput" class="active underline-tab">Claim Output</a></li>
+                        <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#reference">Reference</a></li>
+                    </ul>
+                    <div class="tab-content underline-tab-content">
+                        <div class="tab-pane fade show active" id="claimOutput" role="tabpanel" aria-labelledby="claimOutput-tab">
+                            <div class="text-right" style="margin-bottom: 20px;">
+                                <button id="editButton" class="btn btn-edit" type="button" onclick="toggleEdit();">EDIT</button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover tableBodyScroll">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-30"> Label </th>
+                                            <th class="w-30"> Value </th>
+                                            <th class="w-35"> Error </th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                @Html.TextBox("SearchProperty", null, new { @class = "form-control form-control-sm w-50 prevent-disable", @placeholder = "Type here", onkeyup = "toggleRowView()" })
+                                            </th>
+                                            <th>
+                                                @Html.CheckBox("HasValue", htmlAttributes: new { onclick = "toggleRowView()", @class = "prevent-disable" }) @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                                            </th>
+                                            <th>
+                                                @Html.CheckBox("HasError", htmlAttributes: new { onclick = "toggleRowView()", @class = "prevent-disable" }) @Html.Label("Has Error Only", htmlAttributes: new { @class = "col-form-label" })
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            foreach (var item in ViewBag.ClaimOutputList)
+                                            {
+                                                string propertyName = BusinessObject.StandardClaimDataOutputBo.GetPropertyNameByType(item.Type);
+                                                var propertyValue = @Shared.Util.GetPropertyValue(Model, propertyName);
+
+                                                <tr>
+                                                    <td class="w-30">@item.Code</td>
+                                                    <td>
+                                                        <div class="toggleView">@propertyValue</div>
+                                                        <div class="toggleView" style="display: none;">
+                                                            @{
+                                                                var dataType = item.DataType;
+                                                                switch (dataType)
+                                                                {
+                                                                    case BusinessObject.StandardOutputBo.DataTypeAmount:
+                                                                        <div class="input-group">
+                                                                            <div class="input-group-prepend">
+                                                                                <div class="input-group-text">MYR</div>
+                                                                            </div>
+                                                                            @Html.Editor(propertyName, (object)Model.GetHtmlViewData(dataType))
+                                                                        </div>
+                                                                        break;
+                                                                    case BusinessObject.StandardOutputBo.DataTypePercentage:
+                                                                        <div class="input-group">
+                                                                            <div class="input-group-prepend">
+                                                                                <div class="input-group-text">%</div>
+                                                                            </div>
+                                                                            @Html.Editor(propertyName, (object)Model.GetHtmlViewData(dataType))
+                                                                        </div>
+                                                                        break;
+                                                                    case BusinessObject.StandardOutputBo.DataTypeDropDown:
+                                                                        @Html.DropDownList(propertyName, (List<SelectListItem>)ViewBag.StandardClaimOutputDropDownItems[item.Id.ToString()], htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                        break;
+                                                                    default:
+                                                                        @Html.Editor(propertyName, (object)Model.GetHtmlViewData(dataType))
+                                                                        if (dataType == BusinessObject.StandardOutputBo.DataTypeDate)
+                                                                        {
+                                                                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('@propertyName')" />
+                                                                        }
+                                                                        break;
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            if (!string.IsNullOrEmpty(Model.Errors) && ViewBag.Errors != null && ViewBag.Errors.ContainsKey(propertyName))
+                                                            {
+                                                                var error = ViewBag.Errors[propertyName];
+                                                                <ul>
+                                                                    @{ if (error is string)
+                                                                        {
+                                                                            <li>@(error)</li>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            foreach (var errorVal in error)
+                                                                            {
+                                                                                <li>@(errorVal)</li>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </ul>
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="reference" role="tabpanel" aria-labelledby="reference-tab">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-50">
+                                                Label
+                                            </th>
+                                            <th class="w-50">
+                                                Value
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            if (!string.IsNullOrEmpty(Model.CustomField) && ViewBag.CustomFields != null)
+                                            {
+                                                foreach (var item in ViewBag.CustomFields)
+                                                {
+                                                    <tr>
+                                                        <td>@item.Key</td>
+                                                        <td>@item.Value</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="2" class="no-data">No available data found.</td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="reference" role="tabpanel" aria-labelledby="reference-tab">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Edit", new { id = Model.ClaimDataBatchId }, new { @class = "btn btn-cancel" })
+                    @if (Model.ClaimDataBatchBo.Status == BusinessObject.Claims.ClaimDataBatchBo.StatusSuccess)
+                    {
+                        if (disabled)
+                        {
+                            <span class="btn btn-del disabled">DELETE</span>
+                        }
+                        else
+                        {
+                            @Html.ActionLink("DELETE", "DeleteClaimData", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        }
+                    }
+                    <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var readOnly = @(disabled.ToString().ToLower());
+        var editMode = false;
+    </script>
+
+    @Scripts.Render("~/Scripts/models/ClaimData.js")
+}

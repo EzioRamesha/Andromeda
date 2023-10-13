@@ -1,0 +1,881 @@
+﻿@{
+    ViewBag.Title = "Group Dashboard";
+
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="card">
+            <div class="card-header">
+                <h4>Turnaround Time for @ViewBag.CurrentYear</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="row m-0" v-cloak>
+                    <div class="col-md-4 col-sm-6 py-2" @*v-for="(TurnaroundTime, index) in TurnaroundTimes"*@>
+                        <div class="dashboard-clickable-wrapper" v-on:click="redirectTAT('unassigned', '')" @*onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';"*@>
+                            <div class="row m-0">
+                                <div class="col-9">
+                                    <span class="col-form-label font-weight-bold">Unassigned</span>
+                                    <br />
+                                    <span class="col-form-label small">since latest request date</span>
+                                    <br />
+                                </div>
+                                <div class="col-3 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">{{ TurnaroundTime.UnassignedTotal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2" @*v-for="(TurnaroundTime, index) in TurnaroundTimes"*@>
+                        <div class="dashboard-clickable-wrapper" @*v-on:click="redirectTAT('both', '0')"*@ @*onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';"*@>
+                            <div class="row m-0">
+                                <div class="col-9">
+                                    <span class="col-form-label font-weight-bold">No of Days</span>
+                                    <br />
+                                    <span class="col-form-label small">since latest request date</span>
+                                    <br />
+                                </div>
+                                <div class="col-3 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">0</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row m-0">
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('1')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Cedant Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('1')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays0Cedant }}</span>
+                                </div>
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('2')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Internal Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('2')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays0Internal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2" @*v-for="(TurnaroundTime, index) in TurnaroundTimes"*@>
+                        <div class="dashboard-clickable-wrapper" @*v-on:click="redirectTAT('both', '1')"*@ @*onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';"*@>
+                            <div class="row m-0">
+                                <div class="col-9">
+                                    <span class="col-form-label font-weight-bold">No of Days</span>
+                                    <br />
+                                    <span class="col-form-label small">since latest request date</span>
+                                    <br />
+                                </div>
+                                <div class="col-3 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">1</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row m-0">
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('3')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Cedant Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('3')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays1Cedant }}</span>
+                                </div>
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('4')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Internal Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('4')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays1Internal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2" @*v-for="(TurnaroundTime, index) in TurnaroundTimes"*@>
+                        <div class="dashboard-clickable-wrapper" @*v-on:click="redirectTAT('both', '2')"*@ @*onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';"*@>
+                            <div class="row m-0">
+                                <div class="col-9">
+                                    <span class="col-form-label font-weight-bold">No of Days</span>
+                                    <br />
+                                    <span class="col-form-label small">since latest request date</span>
+                                    <br />
+                                </div>
+                                <div class="col-3 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">2</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row m-0">
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('5')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Cedant Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('5')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays2Cedant }}</span>
+                                </div>
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('6')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Internal Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('6')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays2Internal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2" @*v-for="(TurnaroundTime, index) in TurnaroundTimes"*@>
+                        <div class="dashboard-clickable-wrapper" @*v-on:click="redirectTAT('both', '3')"*@ @*onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';"*@>
+                            <div class="row m-0">
+                                <div class="col-9">
+                                    <span class="col-form-label font-weight-bold">No of Days</span>
+                                    <br />
+                                    <span class="col-form-label small">since latest request date</span>
+                                    <br />
+                                </div>
+                                <div class="col-3 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">3</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row m-0">
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('7')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Cedant Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('7')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays3Cedant }}</span>
+                                </div>
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('8')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Internal Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('8')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays3Internal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6 py-2" @*v-for="(TurnaroundTime, index) in TurnaroundTimes"*@>
+                        <div class="dashboard-clickable-wrapper" @*v-on:click="redirectTAT('both', '4')"*@ @*onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';"*@>
+                            <div class="row m-0">
+                                <div class="col-9">
+                                    <span class="col-form-label font-weight-bold">No of Days</span>
+                                    <br />
+                                    <span class="col-form-label small">since latest request date</span>
+                                    <br />
+                                </div>
+                                <div class="col-3 text-right">
+                                    <span class="col-form-label font-weight-bold font-lg">>3</span>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row m-0">
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('9')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Cedant Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('9')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays4Cedant }}</span>
+                                </div>
+                                <div class="col-9" v-on:click="openTurnaroundTimeModal('10')">
+                                    <span class="col-form-label" style="text-decoration: underline;">Internal Active case(s)</span>
+                                </div>
+                                <div class="col-3 text-right" v-on:click="openTurnaroundTimeModal('10')">
+                                    <span class="col-form-label font-weight-bold">{{ TurnaroundTime.NoOfDays4Internal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Active Case by Person In-Charge for @ViewBag.CurrentYear</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Person In-Charge</th>
+                                <th class="w-15">No of Cases</th>
+                                <th class="w-15">Total Active Case</th>
+                                <th class="w-25">Total Active Internal Case</th>
+                                <th class="w-15">Average Score</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!PicActiveCases.length">
+                                <td colspan="6" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PicActiveCase, index) in PicActiveCases" v-on:click="openPendingPICModal(PicActiveCase.PersonInChargeId)">
+                                <td class="w-25 font-weight-bold">{{ PicActiveCase.PersonInChargeName }}</td>
+                                <td class="w-15">{{ PicActiveCase.NoOfCasesByPic }}</td>
+                                <td class="w-15">{{ PicActiveCase.NoOfActiveCasesByPic }}</td>
+                                <td class="w-25">{{ PicActiveCase.ActiveCaseWithNoOfDays4 }}</td>
+                                <td class="w-15">{{ PicActiveCase.AverageScore }}</td>
+                                <td class="w-5 text-center">
+                                    @*<span class="fas fa-eye" v-on:click="redirectActiveCasePic(index)" />*@
+                                    <span class="fas fa-eye" v-on:click="openPendingPICModal(PicActiveCase.PersonInChargeId)" />
+                                </td>
+                            </tr>
+                            <tr v-if="PicActiveCases.length">
+                                <td class="w-25 font-weight-bold">Total</td>
+                                <td class="w-15">@ViewBag.TotalNoOfCasesByPic</td>
+                                <td class="w-15">@ViewBag.TotalNoOfActiveCasesByPic</td>
+                                <td class="w-25">@ViewBag.TotalActiveCaseWithNoOfDays4</td>
+                                <td class="w-15">@ViewBag.TotalAverageScore</td>
+                                <td class="w-5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Active Case - Pending Reviewer for @ViewBag.CurrentYear</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Person In-Charge</th>
+                                <th class="w-20">No of Cases</th>
+                                <th class="w-20">Total Active Case</th>
+                                <th class="w-30">Total Active Internal Case</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!PendingReviewerActiveCases.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PendingReviewerActiveCase, index) in PendingReviewerActiveCases" v-on:click="openPendingReviewerModal(PendingReviewerActiveCase.PersonInChargeName)">
+                                <td class="w-25 font-weight-bold">{{ PendingReviewerActiveCase.PersonInChargeName }}</td>
+                                <td class="w-20">{{ PendingReviewerActiveCase.NoOfCasesByPic }}</td>
+                                <td class="w-20">{{ PendingReviewerActiveCase.NoOfActiveCasesByPic }}</td>
+                                <td class="w-30">{{ PendingReviewerActiveCase.ActiveCaseWithNoOfDays4 }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="openPendingReviewerModal(PendingReviewerActiveCase.PersonInChargeName)" />
+                                </td>
+                            </tr>
+                            <tr v-if="PendingReviewerActiveCases.length">
+                                <td class="w-25 font-weight-bold">Total</td>
+                                <td class="w-20">@ViewBag.TotalNoOfCasesPendingReviewer</td>
+                                <td class="w-20">@ViewBag.TotalNoOfActiveCasesPendingReviewer</td>
+                                <td class="w-30">@ViewBag.TotalActiveCasePendingReviewerWithNoOfDays4</td>
+                                <td class="w-5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row m-0">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Active Case - Pending on HOD for @ViewBag.CurrentYear</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div class="my-3" v-cloak>
+                            <table class="table table-hover tableBodyScroll">
+                                <thead>
+                                    <tr>
+                                        <th class="w-20">HOD</th>
+                                        <th class="w-20">No of Cases</th>
+                                        <th class="w-20">Total Active Case</th>
+                                        <th class="w-30">Total Active Internal Case</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="max-height: 160px !important;">
+                                    <tr v-if="!PendingHodActiveCases.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(PendingHodActiveCase, index) in PendingHodActiveCases" v-on:click="openPendingHODModal(PendingHodActiveCase.PersonInChargeName)">
+                                        <td class="w-20 font-weight-bold">{{ PendingHodActiveCase.PersonInChargeName }}</td>
+                                        <td class="w-20">{{ PendingHodActiveCase.NoOfCasesByPic }}</td>
+                                        <td class="w-20">{{ PendingHodActiveCase.NoOfActiveCasesByPic }}</td>
+                                        <td class="w-30">{{ PendingHodActiveCase.ActiveCaseWithNoOfDays4 }}</td>
+                                        <td class="w-10 text-center">
+                                            <span class="fas fa-eye" v-on:click="openPendingHODModal(PendingHodActiveCase.PersonInChargeName)" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Active Case - Pending on CEO for @ViewBag.CurrentYear</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div class="my-3" v-cloak>
+                            <table class="table table-hover tableBodyScroll">
+                                <thead>
+                                    <tr>
+                                        <th class="w-20">CEO</th>
+                                        <th class="w-20">No of Cases</th>
+                                        <th class="w-20">Total Active Case</th>
+                                        <th class="w-30">Total Active Internal Case</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="max-height: 160px !important;">
+                                    <tr v-if="!PendingCeoActiveCases.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(PendingCeoActiveCase, index) in PendingCeoActiveCases" v-on:click="openPendingCEOModal(PendingCeoActiveCase.PersonInChargeName)">
+                                        <td class="w-20 font-weight-bold">{{ PendingCeoActiveCase.PersonInChargeName }}</td>
+                                        <td class="w-20">{{ PendingCeoActiveCase.NoOfCasesByPic }}</td>
+                                        <td class="w-20">{{ PendingCeoActiveCase.NoOfActiveCasesByPic }}</td>
+                                        <td class="w-30">{{ PendingCeoActiveCase.ActiveCaseWithNoOfDays4 }}</td>
+                                        <td class="w-10 text-center">
+                                            <span class="fas fa-eye" v-on:click="openPendingCEOModal(PendingCeoActiveCase.PersonInChargeName)" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Active Case - Pending Department Review for @ViewBag.CurrentYear</h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Department</th>
+                                <th class="w-20">No of Cases</th>
+                                <th class="w-20">Total Active Case</th>
+                                <th class="w-30">Total Active Internal Case</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!PendingDepartmentActiveCases.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PendingDepartmentActiveCase, index) in PendingDepartmentActiveCases" v-on:click="openPendingDepartmentModal(PendingDepartmentActiveCase.DepartmentId)">
+                                <td class="w-25 font-weight-bold">{{ PendingDepartmentActiveCase.DepartmentName }}</td>
+                                <td class="w-20">{{ PendingDepartmentActiveCase.NoOfCasesByPic }}</td>
+                                <td class="w-20">{{ PendingDepartmentActiveCase.NoOfActiveCasesByPic }}</td>
+                                <td class="w-30">{{ PendingDepartmentActiveCase.ActiveCaseWithNoOfDays4 }}</td>
+                                <td class="w-5 text-center">
+                                    <span class="fas fa-eye" v-on:click="openPendingDepartmentModal(PendingDepartmentActiveCase.DepartmentId)" />
+                                </td>
+                            </tr>
+                            <tr v-if="PendingDepartmentActiveCases.length">
+                                <td class="w-25 font-weight-bold">Total</td>
+                                <td class="w-20">@ViewBag.TotalNoOfCasesPendingDepartment</td>
+                                <td class="w-20">@ViewBag.TotalNoOfActiveCasesPendingDepartment</td>
+                                <td class="w-30">@ViewBag.TotalActiveCasePendingDepartmentWithNoOfDays4</td>
+                                <td class="w-5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="pendingTurnaroundTimeModal" tabindex="-1" role="dialog" aria-labelledby="pendingTurnaroundTimeLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="turnaroundTimeModalLabel">Turnaround Time</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Turnaround Time</label>
+                        <input class="form-control" v-model="PendingReviewerDetailReviewer" readonly />
+                    </div>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-15">Ceding Company</th>
+                                    <th class="w-15">Insured Group Name</th>
+                                    <th class="w-15">Group Referral ID</th>
+                                    <th class="w-15">Group Referral Description</th>
+                                    <th class="w-5">Version</th>
+                                    @*<th class="w-10">Workflow Status</th>*@
+                                    <th class="w-5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!PendingReviewerDetails.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(PendingReviewerDetail, index) in PendingReviewerDetails">
+                                    <td>{{ PendingReviewerDetail.CedantName  }}</td>
+                                    <td>{{ PendingReviewerDetail.InsuredGroupNameName }}</td>
+                                    <td>{{ PendingReviewerDetail.Code }}</td>
+                                    <td>{{ PendingReviewerDetail.Description }}</td>
+                                    <td>{{ PendingReviewerDetail.Version }}.0</td>
+                                    @*<td>{{ PendingReviewerDetail.TotalCountPic }}</td>*@
+                                    <td class="w-5 text-center">
+                                        <span class="fas fa-eye" v-on:click="redirectGroupReferral(PendingReviewerDetail.Id)" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="pendingPicModal" tabindex="-1" role="dialog" aria-labelledby="pendingReviewerLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="picDraftOverviewModalLabel">Pending Person In-Charge</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Person In-Charge</label>
+                        <input class="form-control" v-model="PendingReviewerDetailReviewer" readonly />
+                    </div>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-15">Ceding Company</th>
+                                    <th class="w-15">Insured Group Name</th>
+                                    <th class="w-15">Group Referral ID</th>
+                                    <th class="w-15">Group Referral Description</th>
+                                    <th class="w-5">Version</th>
+                                    @*<th class="w-10">Workflow Status</th>*@
+                                    <th class="w-5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!PendingReviewerDetails.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(PendingReviewerDetail, index) in PendingReviewerDetails">
+                                    <td>{{ PendingReviewerDetail.CedantName  }}</td>
+                                    <td>{{ PendingReviewerDetail.InsuredGroupNameName }}</td>
+                                    <td>{{ PendingReviewerDetail.Code }}</td>
+                                    <td>{{ PendingReviewerDetail.Description }}</td>
+                                    <td>{{ PendingReviewerDetail.Version }}.0</td>
+                                    @*<td>{{ PendingReviewerDetail.TotalCountPic }}</td>*@
+                                    <td class="w-5 text-center">
+                                        <span class="fas fa-eye" v-on:click="redirectGroupReferral(PendingReviewerDetail.Id)" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="pendingReviewerModal" tabindex="-1" role="dialog" aria-labelledby="pendingReviewerLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="picDraftOverviewModalLabel">Pending Reviewer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Reviewer</label>
+                        <input class="form-control" v-model="PendingReviewerDetailReviewer" readonly />
+                    </div>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-15">Ceding Company</th>
+                                    <th class="w-15">Insured Group Name</th>
+                                    <th class="w-15">Group Referral ID</th>
+                                    <th class="w-15">Group Referral Description</th>
+                                    <th class="w-5">Version</th>
+                                    @*<th class="w-10">Workflow Status</th>*@
+                                    <th class="w-5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!PendingReviewerDetails.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(PendingReviewerDetail, index) in PendingReviewerDetails">
+                                    <td>{{ PendingReviewerDetail.CedantName  }}</td>
+                                    <td>{{ PendingReviewerDetail.InsuredGroupNameName }}</td>
+                                    <td>{{ PendingReviewerDetail.Code }}</td>
+                                    <td>{{ PendingReviewerDetail.Description }}</td>
+                                    <td>{{ PendingReviewerDetail.Version }}.0</td>
+                                    @*<td>{{ PendingReviewerDetail.TotalCountPic }}</td>*@
+                                    <td class="w-5 text-center">
+                                        <span class="fas fa-eye" v-on:click="redirectGroupReferral(PendingReviewerDetail.Id)" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="pendingDepartmentModal" tabindex="-1" role="dialog" aria-labelledby="pendingDepartmentModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="picDraftOverviewModalLabel">Pending Department</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-form-label">Department</label>
+                        <input class="form-control" v-model="PendingDepartmentDetailDepartment" readonly />
+                    </div>
+                    <div class="table-responsive mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-15">Ceding Company</th>
+                                    <th class="w-15">Insured Group Name</th>
+                                    <th class="w-15">Group Referral ID</th>
+                                    <th class="w-15">Group Referral Description</th>
+                                    <th class="w-5">Version</th>
+                                    @*<th class="w-10">Workflow Status</th>*@
+                                    <th class="w-5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!PendingDepartmentDetails.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(PendingDepartmentDetail, index) in PendingDepartmentDetails">
+                                    <td>{{ PendingDepartmentDetail.CedantName  }}</td>
+                                    <td>{{ PendingDepartmentDetail.InsuredGroupNameName }}</td>
+                                    <td>{{ PendingDepartmentDetail.Code }}</td>
+                                    <td>{{ PendingDepartmentDetail.Description }}</td>
+                                    <td>{{ PendingDepartmentDetail.Version }}.0</td>
+                                    @*<td>{{ PendingDepartmentDetail.TotalCountPic }}</td>*@
+                                    <td class="w-5 text-center">
+                                        <span class="fas fa-eye" v-on:click="redirectGroupReferral(PendingDepartmentDetail.Id)" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+    var TurnaroundTime = @Html.Raw(Json.Encode(@ViewBag.TurnaroundTime));
+    var PicActiveCases = @Html.Raw(Json.Encode(@ViewBag.ActiveCasesByPic));
+    var PendingReviewerCases = @Html.Raw(Json.Encode(@ViewBag.ActiveCasesPendingReviewer));
+    var PendingHODCases = @Html.Raw(Json.Encode(@ViewBag.ActiveCasesPendingHOD));
+    var PendingCEOCases = @Html.Raw(Json.Encode(@ViewBag.ActiveCasesPendingCEO));
+    var PendingDepartmentCases = @Html.Raw(Json.Encode(@ViewBag.ActiveCasesPendingDepartment));
+
+    // Urls
+    var TreatyPricingGroupReferralndexUrl = "@(Url.Action("Index", "TreatyPricingGroupReferral"))";
+    var TreatyPricingGroupReferraEditUrl = "@(Url.Action("Edit", "TreatyPricingGroupReferral"))";
+    var GetActiveCaseTurnaroundTimeUrl = "@Url.Action("GetTurnaroundTimeDetail", "TreatyPricingGroupDashboard")";
+    var GetActiveCasePendingPICDetailUrl = "@Url.Action("GetActiveCaseByPicDetail", "TreatyPricingGroupDashboard")";
+    var GetActiveCasePendingReviewerDetailUrl = "@Url.Action("GetActiveCasePendingReviewerDetail", "TreatyPricingGroupDashboard")";
+    var GetActiveCasePendingDepartmentDetailUrl = "@Url.Action("GetActiveCasePendingDepartmentDetail", "TreatyPricingGroupDashboard")";
+    var GetActiveCasePendingHODDetailUrl = "@Url.Action("GetActiveCasePendingHODDetail", "TreatyPricingGroupDashboard")";
+    var GetActiveCasePendingCEODetailUrl = "@Url.Action("GetActiveCasePendingCEODetail", "TreatyPricingGroupDashboard")";
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                TurnaroundTime: TurnaroundTime,
+                PicActiveCases: PicActiveCases,
+                PendingReviewerActiveCases: PendingReviewerCases,
+                PendingHodActiveCases: PendingHODCases,
+                PendingCeoActiveCases: PendingCEOCases,
+                PendingDepartmentActiveCases: PendingDepartmentCases,
+                PendingReviewerDetails: "",
+                PendingReviewerDetailReviewer: "",
+                PendingDepartmentDetails: "",
+                PendingDepartmentDetailDepartment: ""
+            },
+            methods: {
+                openTurnaroundTimeModal: function (type) {
+                    var pendingReviewer = this.PendingReviewerDetails;
+                    var pendingReviewerName = this.PendingReviewerDetailReviewer
+
+                    if (type != null && type != "" && type != 0) {
+                        $.ajax({
+                            url: GetActiveCaseTurnaroundTimeUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { type: type },
+                            success: function (data) {
+                                pendingReviewer = data.details;
+                                pendingReviewerName = data.turnaroundTime;
+                            }
+                        });
+                    }
+
+                    this.PendingReviewerDetails = pendingReviewer;
+                    this.PendingReviewerDetailReviewer = pendingReviewerName;
+
+                    $("#pendingTurnaroundTimeModal").modal()
+                },
+                openPendingReviewerModal: function (reviewer) {
+                    var pendingReviewer = this.PendingReviewerDetails;
+                    var pendingReviewerName = this.PendingReviewerDetailReviewer
+
+                    if (reviewer != null && reviewer != "") {
+                        $.ajax({
+                            url: GetActiveCasePendingReviewerDetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { reviewer: reviewer },
+                            success: function (data) {
+                                pendingReviewer = data.details;
+                                pendingReviewerName = data.reviewer;
+                            }
+                        });
+                    }
+
+                    this.PendingReviewerDetails = pendingReviewer;
+                    this.PendingReviewerDetailReviewer = pendingReviewerName;
+
+                    $("#pendingReviewerModal").modal()
+                },
+                openPendingPICModal: function (picId) {
+                    var pendingReviewer = this.PendingReviewerDetails;
+                    var pendingReviewerName = this.PendingReviewerDetailReviewer;
+
+                    if (picId != null && picId != 0) {
+                        $.ajax({
+                            url: GetActiveCasePendingPICDetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { picId: picId },
+                            success: function (data) {
+                                pendingReviewer = data.details;
+                                pendingReviewerName = data.pic;
+                            }
+                        });
+                    }
+
+                    this.PendingReviewerDetails = pendingReviewer;
+                    this.PendingReviewerDetailReviewer = pendingReviewerName;
+
+                    $("#pendingPicModal").modal()
+                },
+                openPendingHODModal: function (reviewer) {
+                    var pendingReviewer = this.PendingReviewerDetails;
+                    var pendingReviewerName = this.PendingReviewerDetailReviewer;
+
+                    if (reviewer != null && reviewer != "") {
+                        $.ajax({
+                            url: GetActiveCasePendingHODDetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { reviewer: reviewer },
+                            success: function (data) {
+                                pendingReviewer = data.details;
+                                pendingReviewerName = data.reviewer;
+                            }
+                        });
+                    }
+
+                    this.PendingReviewerDetails = pendingReviewer;
+                    this.PendingReviewerDetailReviewer = pendingReviewerName;
+
+                    $("#pendingReviewerModal").modal()
+                },
+                openPendingCEOModal: function (reviewer) {
+                    var pendingReviewer = this.PendingReviewerDetails;
+                    var pendingReviewerName = this.PendingReviewerDetailReviewer
+
+                    if (reviewer != null && reviewer != "") {
+                        $.ajax({
+                            url: GetActiveCasePendingCEODetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { reviewer: reviewer },
+                            success: function (data) {
+                                pendingReviewer = data.details;
+                                pendingReviewerName = data.reviewer;
+                            }
+                        });
+                    }
+
+                    this.PendingReviewerDetails = pendingReviewer;
+                    this.PendingReviewerDetailReviewer = pendingReviewerName;
+
+                    $("#pendingReviewerModal").modal()
+                },
+                openPendingDepartmentModal: function (dept) {
+                    var pendingDepartment = this.PendingDepartmentDetails;
+                    var pendingDepartmentName = this.PendingDepartmentDetailDepartment;
+
+                    if (dept != null && dept != 0) {
+                        $.ajax({
+                            url: GetActiveCasePendingDepartmentDetailUrl,
+                            type: "POST",
+                            cache: false,
+                            async: false,
+                            data: { dept: dept },
+                            success: function (data) {
+                                pendingDepartment = data.details;
+                                pendingDepartmentName = data.deptName;
+                            }
+                        });
+                    }
+
+                    this.PendingDepartmentDetails = pendingDepartment;
+                    this.PendingDepartmentDetailDepartment = pendingDepartmentName;
+
+                    $("#pendingDepartmentModal").modal()
+                },
+                redirectGroupReferral(id) {
+                    url = TreatyPricingGroupReferraEditUrl + '/' + id;
+                    window.location.href = url;
+                },
+                redirectTAT(quoint, days) {
+                    var url = TreatyPricingGroupReferralndexUrl;
+
+                    if (quoint == 'quotation') {
+                        url = url + '?' + 'QuotationTAT=';
+                        if (days == '0') {
+                            url = url + '0' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '1') {
+                            url = url + '1' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '2') {
+                            url = url + '2' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '3') {
+                            url = url + '3' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '4') {
+                            url = url + '4' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                    } else if (quoint == 'internal') {
+                        url = url + '?' + 'InternalTAT=';
+                        if (days == '0') {
+                            url = url + '0' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '1') {
+                            url = url + '1' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '2') {
+                            url = url + '2' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '3') {
+                            url = url + '3' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '4') {
+                            url = url + '4' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                    } else if (quoint == 'both') {
+                        if (days == '0') {
+                            url = url + '?' + 'InternalTAT=' + '0' + "&QuotationTAT=" + '0' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '1') {
+                            url = url + '?' + 'InternalTAT=' + '1' + "&QuotationTAT=" + '1' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '2') {
+                            url = url + '?' + 'InternalTAT=' + '2' + "&QuotationTAT=" + '2' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '3') {
+                            url = url + '?' + 'InternalTAT=' + '3' + "&QuotationTAT=" + '3' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                        else if (days == '4') {
+                            url = url + '?' + 'InternalTAT=' + '4' + "&QuotationTAT=" + '4' + "&QuotationSentDate=true" + "&RequestReceivedYear=" + @ViewBag.CurrentYear;
+                        }
+                    }
+                    else if (quoint == 'unassigned') {
+                        url = url + '?' + 'GroupReferralPIC=' + '9999999';
+                    }
+                    window.location.href = url;
+                },
+                redirectActiveCasePic(index) {
+                    var picId = this.PicActiveCases[index].PersonInChargeId;
+                    var url = TreatyPricingGroupReferralndexUrl;
+                    url = url + '?' + "GroupReferralPIC=" + picId + "&RequestReceivedYear=" + @ViewBag.CurrentYear + "&QuotationSentDate=true";
+                    window.location.href = url;
+                },
+                redirectActiveCasePendingReviewer(index) {
+                    var picUser = this.PendingReviewerActiveCases[index].PersonInChargeName;
+                    var url = TreatyPricingGroupReferralndexUrl;
+                    url = url + '?' + "InternalTeamPIC=" + picUser + "&InternalTeam=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.DefaultInternalTeamReviewer + "&InternalTeamStatusId=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.StatusPendingApproval;
+                    window.location.href = url;
+                },
+                redirectActiveCasePendingHod(index) {
+                    var picUser = this.PendingHodActiveCases[index].PersonInChargeName;
+                    var url = TreatyPricingGroupReferralndexUrl;
+                    url = url + '?' + "InternalTeamPIC=" + picUser + "&InternalTeam=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.DefaultInternalTeamHOD + "&InternalTeamStatusId=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.StatusPendingApproval;
+                    window.location.href = url;
+                },
+                redirectActiveCasePendingCeo(index) {
+                    var picUser = this.PendingCeoActiveCases[index].PersonInChargeName;
+                    var url = TreatyPricingGroupReferralndexUrl;
+                    url = url + '?' + "InternalTeamPIC=" + picUser + "&InternalTeam=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.DefaultInternalTeamCEO + "&InternalTeamStatusId=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.StatusPendingApproval;
+                    window.location.href = url;
+                },
+                redirectActiveCasePendingDept(index) {
+                    var deptId = this.PendingDepartmentActiveCases[index].DepartmentId;
+                    var url = TreatyPricingGroupReferralndexUrl;
+                    url = url + '?' + "InternalTeam=" + deptId + "&InternalTeamStatusId=" + @BusinessObject.TreatyPricing.TreatyPricingGroupReferralChecklistBo.StatusPendingReview;
+                    window.location.href = url;
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

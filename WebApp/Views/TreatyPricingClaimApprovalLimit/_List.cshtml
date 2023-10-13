@@ -1,0 +1,185 @@
+﻿@using PagedList.Mvc
+
+@{
+    Layout = null;
+}
+
+@{
+    var IsEnabledAddClaimApprovalLimit = ViewBag.IsEnabledAddClaimApprovalLimit ? ViewBag.IsEnabledAddClaimApprovalLimit : false;
+    var TreatyPricingClaimApprovalLimits = ViewBag.TreatyPricingClaimApprovalLimits as PagedList.IPagedList<BusinessObject.TreatyPricing.TreatyPricingClaimApprovalLimitBo>;
+    var TreatyPricingCedantId = ViewBag.TreatyPricingCedantId;
+}
+
+<div class="text-right">
+    @if (IsEnabledAddClaimApprovalLimit)
+    {
+        <button type="button" v-on:click="resetAddClaimApprovalLimitModal(false)" data-toggle="modal" data-target="#addClaimApprovalLimitModal" class="btn btn-add-sub">ADD NEW</button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-add-sub" disabled="disabled">ADD NEW</button>
+    }
+</div>
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+        @Html.Label("Search Product Name", htmlAttributes: new { @class = "col-form-label col-md-6 p-0 font-weight-bold" })
+        <div class="input-group mb-2">
+            @Html.Editor("ClaimApprovalLimitProduct", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+            <div class="input-group-prepend">
+                <button type="button" class="input-group-text" onclick="SearchClaimApprovalLimit()"><span class="fas fa-search" /></button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="claimApprovalLimitTable table-responsive">
+    <table class="table table-hover mt-3" v-cloak id="claimApprovalLimitList">
+        <thead>
+            <tr>
+                <th>Claim Approval Limit ID</th>
+                <th>Name</th>
+                <th>Benefit Code</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th class="w-5 text-center">Action</th>
+            </tr>
+            <tr id="claimApprovalLimitFilterRow">
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="claimApprovalLimitFilter-ClaimApprovalLimitID" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="claimApprovalLimitFilter-ClaimApprovalLimitName" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="claimApprovalLimitFilter-BenefitCode" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="claimApprovalLimitFilter-Amount" />
+                </th>
+                <th>
+                    <input class="form-control prevent-disable" placeholder="Type Here" id="claimApprovalLimitFilter-Description" />
+                </th>
+                <th>
+                    <select class="form-control selectpicker prevent-disable" id="claimApprovalLimitFilter-Status">
+                        @foreach (SelectListItem item in ViewBag.DropDownClaimApprovalLimitStatuses)
+                        {
+                            <option value="@(item.Text == "Please select" ? "null" : item.Text)">@item.Text</option>
+                        }
+                    </select>
+                </th>
+                <th class="text-center align-middle">
+                    <div class="btn-row-action">
+                        <button type="button" title="Clear" class="btn-circle prevent-disable"><span class="fas fa-backspace" onclick="clearTableFilters('TreatyPricingClaimApprovalLimits', 'claimApprovalLimit', 'claimApprovalLimitCodeFilters')" /></button>
+                        <button type="button" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" onclick="filterTable('TreatyPricingClaimApprovalLimits', 'claimApprovalLimit', 'claimApprovalLimitCodeFilters')" /></button>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!TreatyPricingClaimApprovalLimits.length">
+                <td colspan="6" class="no-data">No available data found.</td>
+            </tr>
+            <tr id="claimApprovalLimitNoData" style="display: none;">
+                <td colspan="6" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(TreatyPricingClaimApprovalLimit, index) in TreatyPricingClaimApprovalLimits">
+                <td>{{ TreatyPricingClaimApprovalLimit.Code }}</td>
+                <td>{{ TreatyPricingClaimApprovalLimit.Name }}</td>
+                <td>{{ TreatyPricingClaimApprovalLimit.BenefitCode }}</td>
+                <td>{{ TreatyPricingClaimApprovalLimit.Amount }}</td>
+                <td>{{ TreatyPricingClaimApprovalLimit.Description }}</td>
+                <td class="va-middle"><span class="status-badge">{{ TreatyPricingClaimApprovalLimit.StatusName }}</span></td>
+                <td class="text-center">
+                    <a v-bind:href="editClaimApprovalLimitLink(index)" title="Edit Claim Approval Limit">
+                        <span class="fas fa-pencil-alt" />
+                    </a>
+                    @*<a href="javascript:void(0);" v-on:click="cloneClaimApprovalLimit(index)" title="Duplicate Claim Approval Limit" class="ml-2">
+                            <span class="fas fa-clone" />
+                        </a>*@
+                    <span class="fas fa-clone ml-2" style="cursor:pointer" v-on:click="resetCloneModal('Claim Approval Limit', TreatyPricingClaimApprovalLimit.Code, index)" data-toggle="modal" data-target="#cloneModal" title="Duplicate Claim Approval Limit" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<table class="table table-hover mt-3">
+</table>
+
+<div class="pagination-footer">
+    <div class="row">
+        <div class="col-md-4">
+            @{
+                ViewBag.CurrentPageNumber = TreatyPricingClaimApprovalLimits.PageNumber;
+                ViewBag.CurrentPageItems = TreatyPricingClaimApprovalLimits.Count;
+                ViewBag.PageSize = TreatyPricingClaimApprovalLimits.PageSize;
+                ViewBag.Total = ViewBag.TreatyPricingClaimApprovalLimitTotal;
+            }
+            @Html.Partial("_PageInfo")
+        </div>
+        <div class="col-md-8" id="contentPager">
+            @Html.PagedListPager(TreatyPricingClaimApprovalLimits, Page => Url.Action("Edit", "TreatyPricingCedant", new { id = TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexClaimApprovalLimit, Page, }), Shared.Html.GetPagedListRenderOptions())
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addClaimApprovalLimitModal" tabindex="-1" role="dialog" aria-labelledby="addClaimApprovalLimitModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Claim Approval Limit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addClaimApprovalLimitError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label">Name</label>
+                        <input id="calNameInput" type="text" v-model="ClaimApprovalLimitModal.Name" style="resize: none" class="form-control" placeholder="Type here">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label" for="calHasDuplicate">Duplicate Existing Claim Approval Limit</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="calHasDuplicate" name="calHasDuplicateName" type="checkbox" v-model="ClaimApprovalLimitModal.IsDuplicateExisting" v-on:change="resetClaimApprovalLimitDuplicate()" />
+                                <label class="custom-control-label" for="calHasDuplicate">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Company</label>
+                        <select v-model="ClaimApprovalLimitModal.CedantId" class="form-control selectpicker" id="dropDownClaimApprovalLimitCedants" v-on:change="updateDropDownDuplicateObjects(GetClaimApprovalLimitByCedantUrl, 'ClaimApprovalLimit')">
+                            <option v-for="cedant in DropDownTreatyPricingCedants" :value="cedant.Value">
+                                {{ cedant.Text }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Claim Approval Limit</label>
+                        <select v-model="ClaimApprovalLimitModal.DuplicateTreatyPricingClaimApprovalLimitId" id="dropDownTreatyPricingClaimApprovalLimits" class="form-control selectpicker" v-on:change="updateDropDownDuplicateObjectVersions(GetClaimApprovalLimitVersionByIdUrl, 'ClaimApprovalLimit')">
+                            <option v-for="claimApprovalLimit in DropDownTreatyPricingClaimApprovalLimits" :value="claimApprovalLimit.Id">
+                                {{ claimApprovalLimit.Code }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Version</label>
+                        <select v-model="ClaimApprovalLimitModal.DuplicateTreatyPricingClaimApprovalLimitVersionId" id="dropDownTreatyPricingClaimApprovalLimitVersions" class="form-control selectpicker">
+                            <option v-for="claimApprovalLimitVersion in DropDownTreatyPricingClaimApprovalLimitVersions" :value="claimApprovalLimitVersion.Id">
+                                {{ claimApprovalLimit.Version }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button v-on:click="saveClaimApprovalLimit()" type="button" class="btn btn-submit">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>

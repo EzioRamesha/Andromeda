@@ -1,0 +1,246 @@
+﻿@model WebApp.Models.AccountCodeMappingViewModel
+
+@{
+    ViewBag.Title = "Account Code Mapping";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_LoadingSpinner")
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReportType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.ReportType, (List<SelectListItem>)ViewBag.DropDownReportTypes, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "reportTypeChange()" })
+                        @Html.ValidationMessageFor(model => model.ReportType, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.AccountCodeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.AccountCodeId, (List<SelectListItem>)ViewBag.DropDownAccountCode, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.AccountCodeId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Type, (List<SelectListItem>)ViewBag.DropDownIfrsType, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "typeChange()" })
+                        @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="row">
+                            <div class="col-md-6">
+                                @Html.LabelFor(model => model.DebitCreditIndicatorPositive, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownListFor(model => model.DebitCreditIndicatorPositive, (List<SelectListItem>)ViewBag.DropDownDebitCreditIndicator, htmlAttributes: new { @class = "form-control selectpicker" })
+                                @Html.ValidationMessageFor(model => model.DebitCreditIndicatorPositive, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-6">
+                                @Html.LabelFor(model => model.DebitCreditIndicatorNegative, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownListFor(model => model.DebitCreditIndicatorNegative, (List<SelectListItem>)ViewBag.DropDownDebitCreditIndicator, htmlAttributes: new { @class = "form-control selectpicker" })
+                                @Html.ValidationMessageFor(model => model.DebitCreditIndicatorNegative, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ifrs4Row" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label class="col-form-label" for="TreatyType">Treaty Type <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.TreatyType, new { htmlAttributes = new { id = "TreatyTypeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.TreatyType, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.TreatyCodeId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.TreatyCodeId, (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.TreatyCodeId, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label class="col-form-label" for="ClaimCode">Claim Code <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.ClaimCode, new { htmlAttributes = new { id = "ClaimCodeTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.ClaimCode, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label class="col-form-label" for="BusinessOrigin">Business Origin <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.BusinessOrigin, new { htmlAttributes = new { id = "BusinessOriginTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.BusinessOrigin, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.TransactionTypeCodePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.TransactionTypeCodePickListDetailId, (List<SelectListItem>)ViewBag.DropDownTransactionTypeCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.TransactionTypeCodePickListDetailId, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                </div>
+                <div id="modifiedContractCodeRow" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.ModifiedContractCodeId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.ModifiedContractCodeId, (List<SelectListItem>)ViewBag.DropDownMfrs17ContractCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.ModifiedContractCodeId, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                    <div class="form-row" id="invoiceField" style="display: none;">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label class="col-form-label" for="InvoiceField">Invoice Field <span class="sub-label">(Separated by Comma)</span></label>
+                            @Html.EditorFor(model => model.InvoiceField, new { htmlAttributes = new { id = "InvoiceFieldTokenField", @class = "form-control", placeholder = "Type here" } })
+                            @Html.ValidationMessageFor(model => model.InvoiceField, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.IsBalanceSheet, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.IsBalanceSheet, (List<SelectListItem>)ViewBag.DropDownPLBS, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @Html.ValidationMessageFor(model => model.IsBalanceSheet, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyTypes = @Html.Raw(Json.Encode(ViewBag.TreatyTypes));
+        var ClaimCodes = @Html.Raw(Json.Encode(ViewBag.ClaimCodes));
+        var BusinessOrigins = @Html.Raw(Json.Encode(ViewBag.BusinessOrigins));
+        var InvoiceFields = @Html.Raw(Json.Encode(ViewBag.InvoiceFields));
+        var DropDownIfrs4Types = @Html.Raw(Json.Encode(ViewBag.DropDownIfrs4Types));
+        var DropDownIfrs17Types = @Html.Raw(Json.Encode(ViewBag.DropDownIfrs17Types));
+        var DropDownIfrs4AccountCodes = @Html.Raw(Json.Encode(ViewBag.DropDownIfrs4AccountCodes));
+        var DropDownIfrs17AccountCodes = @Html.Raw(Json.Encode(ViewBag.DropDownIfrs17AccountCodes));
+        var ShowModifiedContractCode = @Html.Raw(Json.Encode(ViewBag.ShowModifiedContractCode));
+        var ReportTypeIfrs4 = "@BusinessObject.AccountCodeMappingBo.ReportTypeIfrs4";
+        var ReportTypeIfrs17 = "@BusinessObject.AccountCodeMappingBo.ReportTypeIfrs17";
+        var TypeCedantAccountCode = "@BusinessObject.AccountCodeMappingBo.TypeCedantAccountCode";
+        var treatyTypeCount = 0;
+        var claimCodeCount = 0;
+    var businessOriginCount = 0;
+    var invoiceFieldCount = 0;
+
+        var tokenfieldReady = {
+            treatyType: false,
+            claimCode: false,
+            businessOrigin: false,
+            invoiceField: false,
+        };
+
+    var loadingDiv = $("#loadingSpinner");
+
+    $(document).ready(function () {
+        if ($("#Type").val() == TypeCedantAccountCode) {
+            $("#invoiceField").css("display", "block");
+        } else {
+            $("#invoiceField").css("display", "none");
+            $("#InvoiceFieldTokenField").tokenfield('setTokens', []);
+            $("#InvoiceFieldTokenField").val(null);
+        }
+
+        if ($("#ReportType").val() == ReportTypeIfrs4) {
+            console.log($("#ReportType").val())
+            $("#modifiedContractCodeRow").css("display", "none");
+            $("#ifrs4Row").css("display", "block");
+        } else if ($("#ReportType").val() == ReportTypeIfrs17) {
+            $("#modifiedContractCodeRow").css("display", "block");
+            $("#ifrs4Row").css("display", "none");
+        } else {
+            $("#modifiedContractCodeRow").css("display", "none");
+            $("#ifrs4Row").css("display", "none");
+        }
+    });
+
+    function reportTypeChange() {
+        if ($("#ReportType").val() == ReportTypeIfrs4) {
+            refreshDropDownItems('Type', DropDownIfrs4Types, $("#Type").val(), 'Text', null, true, 'Value', false);
+            refreshDropDownItems('AccountCodeId', DropDownIfrs4AccountCodes, $("#Type").val(), 'Text', null, true, 'Value', false);
+            $("#modifiedContractCodeRow").css("display", "none");
+            $("#ifrs4Row").css("display", "block");
+
+            // Empty Value for IFRS17
+            $("#ModifiedContractCodeId").val(null);
+            $("#ModifiedContractCodeId").selectpicker('refresh');
+            $("#InvoiceFieldTokenField").tokenfield('setTokens', []);
+            $("#InvoiceFieldTokenField").val(null);
+
+        } else if ($("#ReportType").val() == ReportTypeIfrs17) {
+            refreshDropDownItems('Type', DropDownIfrs17Types, $("#Type").val(), 'Text', null, true, 'Value', false);
+            refreshDropDownItems('AccountCodeId', DropDownIfrs17AccountCodes, $("#Type").val(), 'Text', null, true, 'Value', false);
+            $("#modifiedContractCodeRow").css("display", "block");
+            $("#ifrs4Row").css("display", "none");
+
+            // Empty Value for IFRS4
+            $("#TreatyTypeTokenField").tokenfield('setTokens', []);
+            $("#TreatyTypeTokenField").val(null);
+            $("#TreatyCodeId").val(null);
+            $("#TreatyCodeId").selectpicker('refresh');
+            $("#ClaimCodeTokenField").tokenfield('setTokens', []);
+            $("#ClaimCodeTokenField").val(null);
+            $("#BusinessOriginTokenField").tokenfield('setTokens', []);
+            $("#BusinessOriginTokenField").val(null);
+            $("#TransactionTypeCodePickListDetailId").val(null);
+            $("#TransactionTypeCodePickListDetailId").selectpicker('refresh');
+        } else {
+            $("#ModifiedContractCodeId").val(0);
+            $("#modifiedContractCodeRow").css("display", "none");
+            $("#ifrs4Row").css("display", "none");
+        }
+    }
+
+        function typeChange() {
+            if ($("#Type").val() == TypeCedantAccountCode) {
+                $("#invoiceField").css("display", "block");
+            } else {
+                $("#invoiceField").css("display", "none");
+                $("#InvoiceFieldTokenField").tokenfield('setTokens', []);
+                $("#InvoiceFieldTokenField").val(null);
+            }
+        }
+</script>
+
+    @Scripts.Render("~/Scripts/models/AccountCodeMapping.js")
+}

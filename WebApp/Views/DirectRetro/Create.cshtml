@@ -1,0 +1,81 @@
+﻿@model WebApp.Models.DirectRetroViewModel
+
+@{
+    ViewBag.Title = "Direct Retro";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.RetroStatus, new { @Id = "RetroStatus", @Value = BusinessObject.DirectRetroBo.RetroStatusPending })
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "refreshTreatyCode(this.value)" })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.SoaDataBatchId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.SoaDataBatchId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.SoaDataBatchId, "", new { @class = "text-danger" })
+                    </div>  
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TreatyCodeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyCodeId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "changeTreatyCode(this.value)" })
+                        @Html.ValidationMessageFor(model => model.TreatyCodeId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.SoaQuarter, new { htmlAttributes = new { @class = "form-control", @onchange = "validateQuarter(this.value)", placeholder = "YYYY MM", autocomplete = "off" } })
+                        @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <br />
+                <br />
+
+                @Html.Partial("_DirectRetroDetails")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/models/DirectRetro.js")
+}

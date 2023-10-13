@@ -1,0 +1,2401 @@
+﻿@using PagedList.Mvc
+@model WebApp.Models.PerLifeAggregationDetailViewModel
+
+@{
+    ViewBag.Title = "Per Life Aggregation Detail";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index", "PerLifeAggregation");
+
+    ViewBag.PrevTitle = "Per Life Aggregation";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", "PerLifeAggregation", new { id = Model.PerLifeAggregationId });
+
+    // RI Data Details
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel> RiDetailList = ViewBag.RiDetailList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel>;
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    var IsEnableValidate = ViewBag.IsEnableValidate != null ? ViewBag.IsEnableValidate : false;
+    var IsEnableProcess = ViewBag.IsEnableProcess != null ? ViewBag.IsEnableProcess : false;
+    var IsEnableAggregate = ViewBag.IsEnableAggregate != null ? ViewBag.IsEnableAggregate : false;
+    var IsEnableFinalise = ViewBag.IsEnableFinalise != null ? ViewBag.IsEnableFinalise : false;
+
+    // Exception
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel> ExceptionList = ViewBag.ExceptionList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel>;
+    var exceptionRouteValue = (RouteValueDictionary)ViewBag.ExceptionRouteValue;
+
+    // Retro RI Data
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationMonthlyDataViewModel> RetroRiDataList = ViewBag.RetroRiDataList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationMonthlyDataViewModel>;
+    var retroRiDataRouteValue = (RouteValueDictionary)ViewBag.RetroRiDataRouteValue;
+
+    // Retention & Premium
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationMonthlyDataViewModel> RetentionPremiumList = ViewBag.RetentionPremiumList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationMonthlyDataViewModel>;
+    var retentionPremiumRouteValue = (RouteValueDictionary)ViewBag.RetentionPremiumRouteValue;
+
+    var RetroParties = ViewBag.RetroParties;
+    var TotalRetroParty = ViewBag.TotalRetroParty;
+
+    // Treaty Summary
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailTreatyViewModel> TreatySummaryList = ViewBag.TreatySummaryList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailTreatyViewModel>;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.Retrocession.PerLifeAggregationDetailBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.Retrocession.PerLifeAggregationDetailBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+        <div class="form-horizontal">
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.Label("Funds Accounting Type", htmlAttributes: new { @class = "col-form-label" })
+                    @Html.Editor("ParentFundsAccountingType", new { htmlAttributes = new { @class = "form-control", Value = Model.PerLifeAggregationBo?.FundsAccountingTypePickListDetailBo?.Code, @readonly = true } })
+                </div>
+
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.Label("SOA Quarter", htmlAttributes: new { @class = "col-form-label" })
+                    @Html.Editor("ParentSoaQuarter", new { htmlAttributes = new { @class = "form-control", Value = Model.PerLifeAggregationBo?.SoaQuarter, @readonly = true } })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.Label("Snapshot Version", htmlAttributes: new { @class = "col-form-label" })
+                    @Html.Editor("ParentCutOffId", new { htmlAttributes = new { @class = "form-control", Value = Model.PerLifeAggregationBo?.CutOffBo?.GetQuarterWithDate(), @readonly = true } })
+                </div>
+
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.Label("Processing Date", htmlAttributes: new { @class = "col-form-label" })
+                    @Html.Editor("ParentProcessingDate", new { htmlAttributes = new { @class = "form-control", Value = Model.PerLifeAggregationBo?.ProcessingDate?.ToString(Shared.Util.GetDateTimeFormat()), @readonly = true } })
+                </div>
+            </div>
+        </div>
+
+        @using (Html.BeginForm("Edit", "PerLifeAggregationDetail", FormMethod.Post, new { id = "SubmitEditForm" }))
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.PerLifeAggregationId)
+            @Html.HiddenFor(model => model.RiskQuarter)
+            @Html.HiddenFor(model => model.ProcessingDate)
+            @Html.HiddenFor(model => model.ProcessingDateStr)
+            @Html.HiddenFor(model => model.Status)
+
+            @Html.HiddenFor(model => model.ActiveTab)
+            @Html.HiddenFor(model => model.SelectedExceptionIds)
+        }
+
+        <ul class="nav nav-tabs mt-5">
+            <li class="nav-item"><a href="@Url.Action("Edit", "PerLifeAggregationDetail", new { id = Model.Id })" class="@(Model.ActiveTab == null || Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRiData ? "active" : "") underline-tab">RI Details</a></li>
+            <li class="nav-item"><a href="@Url.Action("Exception", "PerLifeAggregationDetail", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabException ? "active" : "") underline-tab">Exception</a></li>
+            <li class="nav-item"><a href="@Url.Action("RetroRiData", "PerLifeAggregationDetail", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRetroRiData ? "active" : "") underline-tab">Retro RI Data</a></li>
+            <li class="nav-item"><a href="@Url.Action("RetentionPremium", "PerLifeAggregationDetail", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRetentionPremium ? "active" : "") underline-tab">Retention & Premium</a></li>
+            <li class="nav-item"><a href="@Url.Action("Summary", "PerLifeAggregationDetail", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabSummary ? "active" : "") underline-tab">Summary</a></li>
+            <li class="nav-item"><a href="@Url.Action("TreatySummary", "PerLifeAggregationDetail", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabTreatySummary ? "active" : "") underline-tab">Treaty Summary</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(Model.ActiveTab == null || Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRiData ? "show active" : "")" id="riDataTab" role="tabpanel" aria-labelledby="riDataTab-tab">
+                @using (Html.BeginForm("Edit", "PerLifeAggregationDetail", FormMethod.Get, new { id = "PerLifeAggregationDetailEditForm" }))
+                {
+                    <div class="form-horizontal mt-3">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                @Html.Label("Search Paramaters", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.Label("Risk Month", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownList("SearchRiskMonth", (List<SelectListItem>)ViewBag.DropDownMonths, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </div>
+
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.Label("Treaty Code", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownList("SearchTreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.Label("Insured Name", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.Editor("SearchInsuredName", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.Label("Insured Date of Birth", htmlAttributes: new { @class = "col-form-label" })
+                                <div class="input-w-icon">
+                                    @Html.TextBox("SearchInsuredDateOfBirth", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('SearchInsuredDateOfBirth')" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.Label("Policy Number", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.Editor("SearchPolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                            </div>
+
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.Label("MLRe Benefit Code", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownList("SearchMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.Label("Transaction Type Code", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownList("SearchTransactionTypeCode", (List<SelectListItem>)ViewBag.DropDownTransactionTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="w-100 text-right">
+                                @Html.ActionLink("CLEAR", "Edit", "PerLifeAggregationDetail", new { id = Model.Id }, new { @class = "btn btn-cancel" })
+                                <button type="button" class="btn btn-submit float-right ml-1" onclick="searchRiData()">SEARCH</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-5">
+                        <div class="w-100 text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    DOWNLOAD AS
+                                </button>
+                                <div class="dropdown-menu">
+                                    @Html.ActionLink("All", "DownloadRiData", new
+                                    {
+                                        id = Model.Id,
+                                        SearchRiskMonth = routeValue["SearchRiskMonth"],
+                                        SearchTreatyCode = routeValue["SearchTreatyCode"],
+                                        SearchInsuredName = routeValue["SearchInsuredName"],
+                                        SearchInsuredDateOfBirth = routeValue["SearchInsuredDateOfBirth"],
+                                        SearchPolicyNumber = routeValue["SearchPolicyNumber"],
+                                        SearchMlreBenefitCode = routeValue["SearchMlreBenefitCode"],
+                                        SearchTransactionTypeCode = routeValue["SearchTransactionTypeCode"],
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                    @Html.ActionLink("Filtered", "DownloadRiData", new
+                                    {
+                                        id = Model.Id,
+                                        SearchRiskMonth = routeValue["SearchRiskMonth"],
+                                        SearchTreatyCode = routeValue["SearchTreatyCode"],
+                                        SearchInsuredName = routeValue["SearchInsuredName"],
+                                        SearchInsuredDateOfBirth = routeValue["SearchInsuredDateOfBirth"],
+                                        SearchPolicyNumber = routeValue["SearchPolicyNumber"],
+                                        SearchMlreBenefitCode = routeValue["SearchMlreBenefitCode"],
+                                        SearchTransactionTypeCode = routeValue["SearchTransactionTypeCode"],
+                                        RiTreatyCode = routeValue["RiTreatyCode"],
+                                        RiCedingTreatyCode = routeValue["RiCedingTreatyCode"],
+                                        RiInsuredName = routeValue["RiInsuredName"],
+                                        RiInsuredGenderCode = routeValue["RiInsuredGenderCode"],
+                                        RiInsuredDateOfBirth = routeValue["RiInsuredDateOfBirth"],
+                                        RiPolicyNumber = routeValue["RiPolicyNumber"],
+                                        RiCurrencyCode = routeValue["RiCurrencyCode"],
+                                        RiTerritoryOfIssueCode = routeValue["RiTerritoryOfIssueCode"],
+                                        RiCedingPlanCode = routeValue["RiCedingPlanCode"],
+                                        RiCedingBenefitRiskCode = routeValue["RiCedingBenefitRiskCode"],
+                                        RiCedingBenefitTypeCode = routeValue["RiCedingBenefitTypeCode"],
+                                        RiStandardPremium = routeValue["RiStandardPremium"],
+                                        RiSubstandardPremium = routeValue["RiSubstandardPremium"],
+                                        RiStandardDiscount = routeValue["RiStandardDiscount"],
+                                        RiSubstandardDiscount = routeValue["RiSubstandardDiscount"],
+                                        RiFlatExtraPremium = routeValue["RiFlatExtraPremium"],
+                                        RiFlatExtraAmount = routeValue["RiFlatExtraAmount"],
+                                        RiBrokerageFee = routeValue["RiBrokerageFee"],
+                                        RiRiskPeriodStartDate = routeValue["RiRiskPeriodStartDate"],
+                                        RiRiskPeriodEndDate = routeValue["RiRiskPeriodEndDate"],
+                                        RiTransactionTypeCode = routeValue["RiTransactionTypeCode"],
+                                        RiEffectiveDate = routeValue["RiEffectiveDate"],
+                                        RiPolicyTerm = routeValue["RiPolicyTerm"],
+                                        RiPolicyExpiryDate = routeValue["RiPolicyExpiryDate"],
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">
+                                        Treaty Code
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Number
+                                    </th>
+                                    <th class="w-10">
+                                        Reins Basis Code
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Name
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Gender
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Date of Birth
+                                    </th>
+                                    <th class="w-10">
+                                        Reinsurance Issue Age
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Plan Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Benefit Type Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Benefit Risk Code
+                                    </th>
+                                    <th class="w-10">
+                                        MLRe Benefit Code
+                                    </th>
+                                    <th class="w-10">
+                                        AAR
+                                    </th>
+                                    <th class="w-10">
+                                        Gross Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Total Discount
+                                    </th>
+                                    <th class="w-10">
+                                        Net Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Brokerage Fee
+                                    </th>
+                                    <th class="w-10">
+                                        Group Policy Number
+                                    </th>
+                                    <th class="w-10">
+                                        Group Policy Name
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Term
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Expiry Date
+                                    </th>
+                                    <th class="w-10">
+                                        Currency Code
+                                    </th>
+                                    <th class="w-10">
+                                        Territory of Issue Code
+                                    </th>
+                                    <th class="w-10">
+                                        Transaction Type Code
+                                    </th>
+                                    <th class="w-10">
+                                        Issue Date Pol
+                                    </th>
+                                    <th class="w-10">
+                                        Reins Eff Date Pol
+                                    </th>
+                                    <th class="w-10">
+                                        Report Period Month
+                                    </th>
+                                    <th class="w-10">
+                                        Report Period Year
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Period Month
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Period Year
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Period Start Date
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Period End Date
+                                    </th>
+                                    <th class="text-center w-5">
+                                        Action
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <th>
+                                        @Html.DropDownList("RiTreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiPolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiReinsBasisCode", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiInsuredName", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiInsuredGenderCode", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiInsuredDateOfBirth", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiInsuredDateOfBirth')" />
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiReinsuranceIssueAge", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiCedingPlanCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiCedingBenefitTypeCode", (List<SelectListItem>)ViewBag.DropDownCedingBenefitTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiCedingBenefitRiskCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiAar", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiGrossPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiTotalDiscount", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiNetPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiBrokerageFee", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiGroupPolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiGroupPolicyName", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiPolicyTerm", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiPolicyExpiryDate", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiPolicyExpiryDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiCurrencyCode", (List<SelectListItem>)ViewBag.DropDownCurrencyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiTerritoryOfIssueCode", (List<SelectListItem>)ViewBag.DropDownTerritoryOfIssueCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiTransactionTypeCode", (List<SelectListItem>)ViewBag.DropDownTransactionTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiIssueDatePol", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiReinsEffDatePol", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiReportPeriodMonth", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiReportPeriodYear", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiRiskPeriodMonth", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RiRiskPeriodYear", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiRiskPeriodStartDate", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiRiskPeriodStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiRiskPeriodEndDate", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiRiskPeriodEndDate')" />
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <button type="button" title="Clear" class="btn-circle" onclick="clearRiData()"><span class="fas fa-backspace" /></button>
+                                            <button type="button" title="Search" class="btn-circle" onclick="filterRiData()"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (RiDetailList.Count > 0)
+                                {
+                                    foreach (var item in RiDetailList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TreatyCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PolicyNumber)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.ReinsBasisCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredName)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredGenderCode)
+                                            </td>
+                                            <td>
+                                                @if (item.InsuredDateOfBirth.HasValue)
+                                                {
+                                                    @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.ReinsuranceIssueAge)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingPlanCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingBenefitTypeCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingBenefitRiskCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.Aar)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.GrossPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.TotalDiscount)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.NetPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.BrokerageFee)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.GroupPolicyNumber)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.GroupPolicyName)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.PolicyTerm)
+                                            </td>
+                                            <td>
+                                                @if (item.PolicyExpiryDate.HasValue)
+                                                {
+                                                    @item.PolicyExpiryDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CurrencyCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TerritoryOfIssueCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TransactionTypeCode)
+                                            </td>
+                                            <td>
+                                                @if (item.IssueDatePol.HasValue)
+                                                {
+                                                    @item.IssueDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.ReinsEffDatePol.HasValue)
+                                                {
+                                                    @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.ReportPeriodMonth)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.ReportPeriodYear)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RiskPeriodMonth)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RiskPeriodYear)
+                                            </td>
+                                            <td>
+                                                @if (item.RiskPeriodStartDate.HasValue)
+                                                {
+                                                    @item.RiskPeriodStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.RiskPeriodEndDate.HasValue)
+                                                {
+                                                    @item.RiskPeriodEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="@Url.Action("Edit", "RiDataWarehouse", new { id = item.RiDataWarehouseHistoryId, IsSnapshotVersion = true })" class="bg-transparent linkbtn" target="_blank"><span class="fas fa-eye"></span></a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="28" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ViewBag.CurrentPageNumber = RiDetailList.PageNumber;
+                    ViewBag.CurrentPageItems = RiDetailList.Count;
+                    ViewBag.PageSize = RiDetailList.PageSize;
+                    ViewBag.Total = ViewBag.RiDetailTotal;
+
+                    <div class="pagination-footer position-relative">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.Partial("_PageInfo")
+                            </div>
+                            <div class="col-md-8" id="RiDetailPager">
+                                @Html.PagedListPager(RiDetailList, Page => Url.Action("Edit", new
+                                {
+                                    id = Model.Id,
+                                    SearchRiskMonth = routeValue["SearchRiskMonth"],
+                                    SearchTreatyCode = routeValue["SearchTreatyCode"],
+                                    SearchInsuredName = routeValue["SearchInsuredName"],
+                                    SearchInsuredDateOfBirth = routeValue["SearchInsuredDateOfBirth"],
+                                    SearchPolicyNumber = routeValue["SearchPolicyNumber"],
+                                    SearchMlreBenefitCode = routeValue["SearchMlreBenefitCode"],
+                                    SearchTransactionTypeCode = routeValue["SearchTransactionTypeCode"],
+                                    RiTreatyCode = routeValue["RiTreatyCode"],
+                                    RiCedingTreatyCode = routeValue["RiCedingTreatyCode"],
+                                    RiInsuredName = routeValue["RiInsuredName"],
+                                    RiInsuredGenderCode = routeValue["RiInsuredGenderCode"],
+                                    RiInsuredDateOfBirth = routeValue["RiInsuredDateOfBirth"],
+                                    RiPolicyNumber = routeValue["RiPolicyNumber"],
+                                    RiCurrencyCode = routeValue["RiCurrencyCode"],
+                                    RiTerritoryOfIssueCode = routeValue["RiTerritoryOfIssueCode"],
+                                    RiCedingPlanCode = routeValue["RiCedingPlanCode"],
+                                    RiCedingBenefitRiskCode = routeValue["RiCedingBenefitRiskCode"],
+                                    RiCedingBenefitTypeCode = routeValue["RiCedingBenefitTypeCode"],
+                                    RiStandardPremium = routeValue["RiStandardPremium"],
+                                    RiSubstandardPremium = routeValue["RiSubstandardPremium"],
+                                    RiStandardDiscount = routeValue["RiStandardDiscount"],
+                                    RiSubstandardDiscount = routeValue["RiSubstandardDiscount"],
+                                    RiFlatExtraPremium = routeValue["RiFlatExtraPremium"],
+                                    RiFlatExtraAmount = routeValue["RiFlatExtraAmount"],
+                                    RiBrokerageFee = routeValue["RiBrokerageFee"],
+                                    RiRiskPeriodStartDate = routeValue["RiRiskPeriodStartDate"],
+                                    RiRiskPeriodEndDate = routeValue["RiRiskPeriodEndDate"],
+                                    RiTransactionTypeCode = routeValue["RiTransactionTypeCode"],
+                                    RiEffectiveDate = routeValue["RiEffectiveDate"],
+                                    RiPolicyTerm = routeValue["RiPolicyTerm"],
+                                    RiPolicyExpiryDate = routeValue["RiPolicyExpiryDate"],
+                                    Page = Page
+                                }), Shared.Html.GetPagedListRenderOptions())
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabException ? "show active" : "")" id="exceptionTab" role="tabpanel" aria-labelledby="exceptionTab-tab">
+                @using (Html.BeginForm("Exception", "PerLifeAggregationDetail", FormMethod.Get, new { id = "PerLifeAggregationDetailExceptionForm" }))
+                {
+                    <div class="form-row mt-5">
+                        <div class="w-100 text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    DOWNLOAD AS
+                                </button>
+                                <div class="dropdown-menu">
+                                    @Html.ActionLink("All", "DownloadException", new
+                                    {
+                                        id = Model.Id,
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                    @Html.ActionLink("Filtered", "DownloadException", new
+                                    {
+                                        id = Model.Id,
+                                        ExRecordType = exceptionRouteValue["ExRecordType"],
+                                        ExPolicyNumber = exceptionRouteValue["ExPolicyNumber"],
+                                        ExIssueDatePol = exceptionRouteValue["ExIssueDatePol"],
+                                        ExTreatyCode = exceptionRouteValue["ExTreatyCode"],
+                                        ExReinsEffDatePol = exceptionRouteValue["ExReinsEffDatePol"],
+                                        ExInsuredName = exceptionRouteValue["ExInsuredName"],
+                                        ExInsuredGenderCode = exceptionRouteValue["ExInsuredGenderCode"],
+                                        ExInsuredDateOfBirth = exceptionRouteValue["ExInsuredDateOfBirth"],
+                                        ExCedingPlanCode = exceptionRouteValue["ExCedingPlanCode"],
+                                        ExCedingBenefitTypeCode = exceptionRouteValue["ExCedingBenefitTypeCode"],
+                                        ExCedingBenefitRiskCode = exceptionRouteValue["ExCedingBenefitRiskCode"],
+                                        ExMlreBenefitCode = exceptionRouteValue["ExMlreBenefitCode"],
+                                        ExAar = exceptionRouteValue["ExAar"],
+                                        ExExceptionType = exceptionRouteValue["ExExceptionType"],
+                                        ExProceedStatus = exceptionRouteValue["ExProceedStatus"],
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">
+                                        Record Type
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Number
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Issue Date
+                                    </th>
+                                    <th class="w-10">
+                                        Treaty Code
+                                    </th>
+                                    <th class="w-10">
+                                        Reinsurance Effective Date
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Name
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Gender Code
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Date of Birth
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Plan Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Benefit Type Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Benefit Risk Code
+                                    </th>
+                                    <th class="w-10">
+                                        MLRe Benefit Code
+                                    </th>
+                                    <th class="w-10">
+                                        AAR
+                                    </th>
+                                    <th class="w-10">
+                                        Status
+                                    </th>
+                                    <th class="w-10">
+                                        Proceed
+                                    </th>
+                                    <th class="text-center w-5">
+                                        Action
+                                    </th>
+                                    <th class="text-center w-5">
+                                        @Html.CheckBox("SelectAllException", new { @onclick = "selectAllException()" })
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <th>
+                                        @Html.DropDownList("ExRecordType", (List<SelectListItem>)ViewBag.DropDownRiDataRecordTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ExPolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ExIssueDatePol", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExIssueDatePol')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExTreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ExReinsEffDatePol", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExReinsEffDatePol')" />
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ExInsuredName", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExInsuredGenderCode", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ExInsuredDateOfBirth", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExInsuredDateOfBirth')" />
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ExCedingPlanCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExCedingBenefitTypeCode", (List<SelectListItem>)ViewBag.DropDownCedingBenefitTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ExCedingBenefitRiskCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ExAar", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExExceptionType", (List<SelectListItem>)ViewBag.DropDownExceptionTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ExProceedStatus", (List<SelectListItem>)ViewBag.DropDownProceedStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Exception", "PerLifeAggregationDetail", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                    <th>
+
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ExceptionList.Count > 0)
+                                {
+                                    foreach (var item in ExceptionList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @BusinessObject.RiDatas.RiDataBo.GetRecordTypeName(item.RecordType)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PolicyNumber)
+                                            </td>
+                                            <td>
+                                                @if (item.IssueDatePol.HasValue)
+                                                {
+                                                    @item.IssueDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TreatyCode)
+                                            </td>
+                                            <td>
+                                                @if (item.ReinsEffDatePol.HasValue)
+                                                {
+                                                    @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredName)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredGenderCode)
+                                            </td>
+                                            <td>
+                                                @if (item.InsuredDateOfBirth.HasValue)
+                                                {
+                                                    @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingPlanCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingBenefitTypeCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingBenefitRiskCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.Aar)
+                                            </td>
+                                            <td style="cursor: pointer;" v-on:click="openExceptionTypeModal(@item.Id, @item.ExceptionType)">
+                                                @BusinessObject.Retrocession.PerLifeAggregationDetailDataBo.GetExceptionTypeName(item.ExceptionType)
+                                            </td>
+                                            <td>
+                                                @BusinessObject.Retrocession.PerLifeAggregationDetailDataBo.GetProceedStatusName(item.ProceedStatus)
+                                            </td>
+                                            <td>
+                                            </td>
+                                            <td>
+                                                <div class="actionCheckbox" name="selectException">
+                                                    @if (Model.PerLifeAggregationBo != null &&
+                                                        Model.PerLifeAggregationBo.Status != BusinessObject.Retrocession.PerLifeAggregationBo.StatusSubmitForProcessing &&
+                                                        Model.PerLifeAggregationBo.Status != BusinessObject.Retrocession.PerLifeAggregationBo.StatusProcessing &&
+                                                        Model.PerLifeAggregationBo.Status != BusinessObject.Retrocession.PerLifeAggregationBo.StatusFinalised &&
+                                                        Model.Status != BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusSubmitForProcessing &&
+                                                        @*Model.Status != BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusProcessing &&*@
+                                                        Model.Status != BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusFinalised)
+                                                    {
+                                                        @Html.CheckBox("SelectException", new { id = item.Id })
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="19" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ViewBag.CurrentPageNumber = ExceptionList.PageNumber;
+                    ViewBag.CurrentPageItems = ExceptionList.Count;
+                    ViewBag.PageSize = ExceptionList.PageSize;
+                    ViewBag.Total = ViewBag.ExceptionListTotal;
+
+                    <div class="pagination-footer position-relative">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.Partial("_PageInfo")
+                            </div>
+                            <div class="col-md-8" id="RiDetailPager">
+                                @Html.PagedListPager(ExceptionList, Page => Url.Action("Exception", new
+                                {
+                                    id = Model.Id,
+                                    ExRecordType = exceptionRouteValue["ExRecordType"],
+                                    ExPolicyNumber = exceptionRouteValue["ExPolicyNumber"],
+                                    ExIssueDatePol = exceptionRouteValue["ExIssueDatePol"],
+                                    ExTreatyCode = exceptionRouteValue["ExTreatyCode"],
+                                    ExReinsEffDatePol = exceptionRouteValue["ExReinsEffDatePol"],
+                                    ExInsuredName = exceptionRouteValue["ExInsuredName"],
+                                    ExInsuredGenderCode = exceptionRouteValue["ExInsuredGenderCode"],
+                                    ExInsuredDateOfBirth = exceptionRouteValue["ExInsuredDateOfBirth"],
+                                    ExCedingPlanCode = exceptionRouteValue["ExCedingPlanCode"],
+                                    ExCedingBenefitTypeCode = exceptionRouteValue["ExCedingBenefitTypeCode"],
+                                    ExCedingBenefitRiskCode = exceptionRouteValue["ExCedingBenefitRiskCode"],
+                                    ExMlreBenefitCode = exceptionRouteValue["ExMlreBenefitCode"],
+                                    ExAar = exceptionRouteValue["ExAar"],
+                                    ExExceptionType = exceptionRouteValue["ExExceptionType"],
+                                    ExProceedStatus = exceptionRouteValue["ExProceedStatus"],
+                                    Page = Page
+                                }), Shared.Html.GetPagedListRenderOptions())
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRetroRiData ? "show active" : "")" id="retroRiDataTab" role="tabpanel" aria-labelledby="retroRiDataTab-tab">
+                @using (Html.BeginForm("RetroRiData", "PerLifeAggregationDetail", FormMethod.Get, new { id = "PerLifeAggregationDetailRetroRiDataForm" }))
+                {
+                    <div class="form-row mt-5">
+                        <div class="w-100 text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    DOWNLOAD AS
+                                </button>
+                                <div class="dropdown-menu">
+                                    @Html.ActionLink("All", "DownloadRetroRiData", new
+                                    {
+                                        id = Model.Id,
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                    @Html.ActionLink("Filtered", "DownloadRetroRiData", new
+                                    {
+                                        id = Model.Id,
+                                        ReTreatyCode = retroRiDataRouteValue["ReTreatyCode"],
+                                        ReRiskYear = retroRiDataRouteValue["ReRiskYear"],
+                                        ReRiskMonth = retroRiDataRouteValue["ReRiskMonth"],
+                                        ReInsuredGenderCode = retroRiDataRouteValue["ReInsuredGenderCode"],
+                                        ReInsuredDateOfBirth = retroRiDataRouteValue["ReInsuredDateOfBirth"],
+                                        RePolicyNumber = retroRiDataRouteValue["RePolicyNumber"],
+                                        ReReinsEffDatePol = retroRiDataRouteValue["ReReinsEffDatePol"],
+                                        ReAar = retroRiDataRouteValue["ReAar"],
+                                        ReGrossPremium = retroRiDataRouteValue["ReGrossPremium"],
+                                        ReNetPremium = retroRiDataRouteValue["ReNetPremium"],
+                                        RePremiumFrequencyCode = retroRiDataRouteValue["RePremiumFrequencyCode"],
+                                        ReRetroPremFreq = retroRiDataRouteValue["ReRetroPremFreq"],
+                                        ReCedingPlanCode = retroRiDataRouteValue["ReCedingPlanCode"],
+                                        ReCedingBenefitTypeCode = retroRiDataRouteValue["ReCedingBenefitTypeCode"],
+                                        ReCedingBenefitRiskCode = retroRiDataRouteValue["ReCedingBenefitRiskCode"],
+                                        ReMlreBenefitCode = retroRiDataRouteValue["ReMlreBenefitCode"],
+                                        ReRetroBenefitCode = retroRiDataRouteValue["ReRetroBenefitCode"],
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">
+                                        Treaty Code
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Year
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Month
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Gender Code
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Date of Birth
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Number
+                                    </th>
+                                    <th class="w-10">
+                                        Reins Eff Date Pol
+                                    </th>
+                                    <th class="w-10">
+                                        AAR
+                                    </th>
+                                    <th class="w-10">
+                                        Gross Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Net Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Premium Frequency Code
+                                    </th>
+                                    <th class="w-10">
+                                        Retro Premium Frequency Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Plan Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Benefit Type Code
+                                    </th>
+                                    <th class="w-10">
+                                        Ceding Benefit Risk Code
+                                    </th>
+                                    <th class="w-10">
+                                        MLRe Benefit Code
+                                    </th>
+                                    <th class="w-10">
+                                        Retro Benefit Code
+                                    </th>
+                                    <th class="text-center w-5">
+                                        Action
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <th>
+                                        @Html.DropDownList("ReTreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReRiskYear", null, new { @class = "form-control", placeholder = "YYYY" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReRiskMonth", (List<SelectListItem>)ViewBag.DropDownMonths, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReInsuredGenderCode", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReInsuredDateOfBirth", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReInsuredDateOfBirth')" />
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RePolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReReinsEffDatePol", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReReinsEffDatePol')" />
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ReAar", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ReGrossPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ReNetPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RePremiumFrequencyCode", (List<SelectListItem>)ViewBag.DropDownPremiumFrequencyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReRetroPremFreq", (List<SelectListItem>)ViewBag.DropDownPremiumFrequencyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ReCedingPlanCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReCedingBenefitTypeCode", (List<SelectListItem>)ViewBag.DropDownCedingBenefitTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("ReCedingBenefitRiskCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReRetroBenefitCode", (List<SelectListItem>)ViewBag.DropDownRetroBenefitCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("RetroRiData", "PerLifeAggregationDetail", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (RetroRiDataList.Count > 0)
+                                {
+                                    foreach (var item in RetroRiDataList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TreatyCode)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.RiskYear)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.RiskMonth)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredGenderCode)
+                                            </td>
+                                            <td>
+                                                @if (item.InsuredDateOfBirth.HasValue)
+                                                {
+                                                    @item.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PolicyNumber)
+                                            </td>
+                                            <td>
+                                                @if (item.ReinsEffDatePol.HasValue)
+                                                {
+                                                    @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.Aar)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.GrossPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.NetPremium)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PremiumFrequencyCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RetroPremFreq)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingPlanCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingBenefitTypeCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CedingBenefitRiskCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RetroBenefitCode)
+                                            </td>
+                                            <td>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="18" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ViewBag.CurrentPageNumber = RetroRiDataList.PageNumber;
+                    ViewBag.CurrentPageItems = RetroRiDataList.Count;
+                    ViewBag.PageSize = RetroRiDataList.PageSize;
+                    ViewBag.Total = ViewBag.RetroRiDataListTotal;
+
+                    <div class="pagination-footer position-relative">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.Partial("_PageInfo")
+                            </div>
+                            <div class="col-md-8" id="RiDetailPager">
+                                @Html.PagedListPager(RetroRiDataList, Page => Url.Action("RetroRiData", new
+                                {
+                                    id = Model.Id,
+                                    ReTreatyCode = retroRiDataRouteValue["ReTreatyCode"],
+                                    ReRiskYear = retroRiDataRouteValue["ReRiskYear"],
+                                    ReRiskMonth = retroRiDataRouteValue["ReRiskMonth"],
+                                    ReInsuredGenderCode = retroRiDataRouteValue["ReInsuredGenderCode"],
+                                    ReInsuredDateOfBirth = retroRiDataRouteValue["ReInsuredDateOfBirth"],
+                                    RePolicyNumber = retroRiDataRouteValue["RePolicyNumber"],
+                                    ReReinsEffDatePol = retroRiDataRouteValue["ReReinsEffDatePol"],
+                                    ReAar = retroRiDataRouteValue["ReAar"],
+                                    ReGrossPremium = retroRiDataRouteValue["ReGrossPremium"],
+                                    ReNetPremium = retroRiDataRouteValue["ReNetPremium"],
+                                    RePremiumFrequencyCode = retroRiDataRouteValue["RePremiumFrequencyCode"],
+                                    ReRetroPremFreq = retroRiDataRouteValue["ReRetroPremFreq"],
+                                    ReCedingPlanCode = retroRiDataRouteValue["ReCedingPlanCode"],
+                                    ReCedingBenefitTypeCode = retroRiDataRouteValue["ReCedingBenefitTypeCode"],
+                                    ReCedingBenefitRiskCode = retroRiDataRouteValue["ReCedingBenefitRiskCode"],
+                                    ReMlreBenefitCode = retroRiDataRouteValue["ReMlreBenefitCode"],
+                                    ReRetroBenefitCode = retroRiDataRouteValue["ReRetroBenefitCode"],
+                                    Page = Page
+                                }), Shared.Html.GetPagedListRenderOptions())
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRetentionPremium ? "show active" : "")" id="retentionPremiumTab" role="tabpanel" aria-labelledby="retentionPremiumTab-tab">
+                @using (Html.BeginForm("RetentionPremium", "PerLifeAggregationDetail", FormMethod.Get, new { id = "PerLifeAggregationDetailRetentionPremiumForm" }))
+                {
+                    <div class="form-row mt-5">
+                        <div class="w-100 text-right">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    DOWNLOAD AS
+                                </button>
+                                <div class="dropdown-menu">
+                                    @Html.ActionLink("All", "DownloadRetentionPremium", new
+                                    {
+                                        id = Model.Id,
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                    @Html.ActionLink("Filtered", "DownloadRetentionPremium", new
+                                    {
+                                        id = Model.Id,
+                                        RpUniqueKeyPerLife = retroRiDataRouteValue["RpUniqueKeyPerLife"],
+                                        RpPolicyNumber = retroRiDataRouteValue["RpPolicyNumber"],
+                                        RpInsuredGenderCode = retroRiDataRouteValue["RpInsuredGenderCode"],
+                                        RpMlreBenefitCode = retroRiDataRouteValue["RpMlreBenefitCode"],
+                                        RpRetroBenefitCode = retroRiDataRouteValue["RpRetroBenefitCode"],
+                                        RpTerritoryOfIssueCode = retroRiDataRouteValue["RpTerritoryOfIssueCode"],
+                                        RpCurrencyCode = retroRiDataRouteValue["RpCurrencyCode"],
+                                        RpInsuredTobaccoUse = retroRiDataRouteValue["RpInsuredTobaccoUse"],
+                                        RpReinsuranceIssueAge = retroRiDataRouteValue["RpReinsuranceIssueAge"],
+                                        RpReinsEffDatePol = retroRiDataRouteValue["RpReinsEffDatePol"],
+                                        RpUnderwriterRating = retroRiDataRouteValue["RpUnderwriterRating"],
+                                        RpRetroPremFreq = retroRiDataRouteValue["RpRetroPremFreq"],
+                                        RpSumOfNetPremium = retroRiDataRouteValue["RpSumOfNetPremium"],
+                                        RpNetPremium = retroRiDataRouteValue["RpNetPremium"],
+                                        RpSumOfAar = retroRiDataRouteValue["RpSumOfAar"],
+                                        RpAar = retroRiDataRouteValue["RpAar"],
+                                        RpRetentionLimit = retroRiDataRouteValue["RpRetentionLimit"],
+                                        RpDistributedRetentionLimit = retroRiDataRouteValue["RpDistributedRetentionLimit"],
+                                        RpRetroAmount = retroRiDataRouteValue["RpRetroAmount"],
+                                        RpDistributedRetroAmount = retroRiDataRouteValue["RpDistributedRetroAmount"],
+                                        RpAccumulativeRetainAmount = retroRiDataRouteValue["RpAccumulativeRetainAmount"],
+                                        RpErrors = retroRiDataRouteValue["RpErrors"]
+                                    }, new { @class = "dropdown-item", target = "_blank" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="bg-white" colspan="21"></th>
+                                    @if (TotalRetroParty > 0)
+                                    {
+                                        <th class="text-center" colspan="@TotalRetroParty">Retro Gross Premium</th>
+                                        <th class="text-center" colspan="@TotalRetroParty">Retro Net Premium</th>
+                                        <th class="text-center" colspan="@TotalRetroParty">Retro Discount</th>
+                                    }
+                                    <th class="bg-white"></th>
+                                </tr>
+
+                                <tr class="second-row-header">
+                                    <th class="w-10">
+                                        Filter Key
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Number
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Gender Code
+                                    </th>
+                                    <th class="w-10">
+                                        MLRe Benefit Code
+                                    </th>
+                                    <th class="w-10">
+                                        Retro Benefit Code
+                                    </th>
+                                    <th class="w-10">
+                                        Territory of Issue Code
+                                    </th>
+                                    <th class="w-10">
+                                        Currency Code
+                                    </th>
+                                    <th class="w-10">
+                                        Insured Tobacco Use
+                                    </th>
+                                    <th class="w-10">
+                                        Reinsured Issue Age
+                                    </th>
+                                    <th class="w-10">
+                                        Reinsured Effective Date
+                                    </th>
+                                    <th class="w-10">
+                                        Underwriter Rating
+                                    </th>
+                                    <th class="w-10">
+                                        EFC Prem Freq
+                                    </th>
+                                    <th class="w-10">
+                                        Sum of Net Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Net Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Sum of AAR
+                                    </th>
+                                    <th class="w-10">
+                                        AAR
+                                    </th>
+                                    <th class="w-10">
+                                        Retention Limit
+                                    </th>
+                                    <th class="w-10">
+                                        Distributed Retention Limit
+                                    </th>
+                                    <th class="w-10">
+                                        Retro Amount
+                                    </th>
+                                    <th class="w-10">
+                                        Distributed Retro Amount
+                                    </th>
+                                    <th class="w-10">
+                                        Accumulative Retain
+                                    </th>
+                                    @{
+                                        foreach (string party in RetroParties)
+                                        {
+                                            <th class="w-10">
+                                                @string.Format("{0}", party)
+                                            </th>
+                                        }
+                                    }
+                                    @{
+                                        foreach (string party in RetroParties)
+                                        {
+                                            <th class="w-10">
+                                                @string.Format("{0}", party)
+                                            </th>
+                                        }
+                                    }
+                                    @{
+                                        foreach (string party in RetroParties)
+                                        {
+                                            <th class="w-10">
+                                                @string.Format("{0}", party)
+                                            </th>
+                                        }
+                                    }
+                                    <th class="text-center w-10">
+                                        Errors
+                                    </th>
+                                    <th class="text-center w-5">
+                                        Action
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <th>
+                                        @Html.Editor("RpUniqueKeyPerLife", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpPolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpInsuredGenderCode", (List<SelectListItem>)ViewBag.DropDownInsuredGenderCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpRetroBenefitCode", (List<SelectListItem>)ViewBag.DropDownRetroBenefitCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpTerritoryOfIssueCode", (List<SelectListItem>)ViewBag.DropDownTerritoryOfIssueCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpCurrencyCode", (List<SelectListItem>)ViewBag.DropDownCurrencyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpInsuredTobaccoUse", (List<SelectListItem>)ViewBag.DropDownInsuredTobaccoUses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpReinsuranceIssueAge", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", type = "number", min = "0" } })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RpReinsEffDatePol", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RpReinsEffDatePol')" />
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpUnderwriterRating", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RpRetroPremFreq", (List<SelectListItem>)ViewBag.DropDownPremiumFrequencyCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpSumOfNetPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpNetPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpSumOfAar", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpAar", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpRetentionLimit", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpDistributedRetentionLimit", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpRetroAmount", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpDistributedRetroAmount", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    <th>
+                                        @Html.Editor("RpAccumulativeRetainAmount", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    </th>
+                                    @if (TotalRetroParty > 0)
+                                    {
+                                        foreach (var i in Enumerable.Range(1, TotalRetroParty))
+                                        {
+                                            <th>
+
+                                            </th>
+                                        }
+                                    }
+                                    @if (TotalRetroParty > 0)
+                                    {
+                                        foreach (var i in Enumerable.Range(1, TotalRetroParty))
+                                        {
+                                            <th>
+
+                                            </th>
+                                        }
+                                    }
+                                    @if (TotalRetroParty > 0)
+                                    {
+                                        foreach (var i in Enumerable.Range(1, TotalRetroParty))
+                                        {
+                                            <th>
+
+                                            </th>
+                                        }
+                                    }
+                                    <th>
+                                        @Html.DropDownList("RpErrors", (List<SelectListItem>)ViewBag.DropDownYesNoWithSelect, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("RetentionPremium", "PerLifeAggregationDetail", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (RetentionPremiumList.Count > 0)
+                                {
+                                    foreach (var item in RetentionPremiumList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.UniqueKeyPerLife)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.PolicyNumber)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredGenderCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RetroBenefitCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TerritoryOfIssueCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.CurrencyCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.InsuredTobaccoUse)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.ReinsuranceIssueAge)
+                                            </td>
+                                            <td>
+                                                @if (item.ReinsEffDatePol.HasValue)
+                                                {
+                                                    @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.UnderwriterRating)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RetroPremFreq)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.SumOfNetPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.NetPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.SumOfAar)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.Aar)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.RetentionLimit)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.DistributedRetentionLimit)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.RetroAmount)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.DistributedRetroAmount)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.AccumulativeRetainAmount)
+                                            </td>
+                                            @{
+                                                foreach (string party in RetroParties)
+                                                {
+                                                    if (item.PerLifeAggregationMonthlyRetroData != null && item.PerLifeAggregationMonthlyRetroData.Count > 0)
+                                                    {
+                                                        var retroData = item.PerLifeAggregationMonthlyRetroData;
+                                                        if (retroData.Any(w => w.RetroParty == party))
+                                                        {
+                                                            <td class="text-right">@Shared.Util.DoubleToString(retroData.Where(w => w.RetroParty == party).Select(w => w.RetroGrossPremium).FirstOrDefault())</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td class="text-right">-</td>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="text-right">-</td>
+                                                    }
+                                                }
+                                            }
+                                            @{
+                                                foreach (string party in RetroParties)
+                                                {
+                                                    if (item.PerLifeAggregationMonthlyRetroData != null && item.PerLifeAggregationMonthlyRetroData.Count > 0)
+                                                    {
+                                                        var retroData = item.PerLifeAggregationMonthlyRetroData;
+                                                        if (retroData.Any(w => w.RetroParty == party))
+                                                        {
+                                                            <td class="text-right">@Shared.Util.DoubleToString(retroData.Where(w => w.RetroParty == party).Select(w => w.RetroNetPremium).FirstOrDefault())</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td class="text-right">-</td>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="text-right">-</td>
+                                                    }
+                                                }
+                                            }
+                                            @{
+                                                foreach (string party in RetroParties)
+                                                {
+                                                    if (item.PerLifeAggregationMonthlyRetroData != null && item.PerLifeAggregationMonthlyRetroData.Count > 0)
+                                                    {
+                                                        var retroData = item.PerLifeAggregationMonthlyRetroData;
+                                                        if (retroData.Any(w => w.RetroParty == party))
+                                                        {
+                                                            <td class="text-right">@Shared.Util.DoubleToString(retroData.Where(w => w.RetroParty == party).Select(w => w.RetroDiscount).FirstOrDefault())</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td class="text-right">-</td>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="text-right">-</td>
+                                                    }
+                                                }
+                                            }
+                                            <td class="text-center">
+                                                @if (!string.IsNullOrEmpty(item.Errors))
+                                                {
+                                                    <a href="javascript:void(0);" onclick="showError('@item.Errors')" title="Error">
+                                                        <span class="fas fa-exclamation-triangle" />
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="23" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ViewBag.CurrentPageNumber = RetentionPremiumList.PageNumber;
+                    ViewBag.CurrentPageItems = RetentionPremiumList.Count;
+                    ViewBag.PageSize = RetentionPremiumList.PageSize;
+                    ViewBag.Total = ViewBag.RetentionPremiumListTotal;
+
+                    <div class="pagination-footer position-relative">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.Partial("_PageInfo")
+                            </div>
+                            <div class="col-md-8" id="RiDetailPager">
+                                @Html.PagedListPager(RetentionPremiumList, Page => Url.Action("RetentionPremium", new
+                                {
+                                    id = Model.Id,
+                                    RpUniqueKeyPerLife = retroRiDataRouteValue["RpUniqueKeyPerLife"],
+                                    RpPolicyNumber = retroRiDataRouteValue["RpPolicyNumber"],
+                                    RpInsuredGenderCode = retroRiDataRouteValue["RpInsuredGenderCode"],
+                                    RpMlreBenefitCode = retroRiDataRouteValue["RpMlreBenefitCode"],
+                                    RpRetroBenefitCode = retroRiDataRouteValue["RpRetroBenefitCode"],
+                                    RpTerritoryOfIssueCode = retroRiDataRouteValue["RpTerritoryOfIssueCode"],
+                                    RpCurrencyCode = retroRiDataRouteValue["RpCurrencyCode"],
+                                    RpInsuredTobaccoUse = retroRiDataRouteValue["RpInsuredTobaccoUse"],
+                                    RpReinsuranceIssueAge = retroRiDataRouteValue["RpReinsuranceIssueAge"],
+                                    RpReinsEffDatePol = retroRiDataRouteValue["RpReinsEffDatePol"],
+                                    RpUnderwriterRating = retroRiDataRouteValue["RpUnderwriterRating"],
+                                    RpRetroPremFreq = retroRiDataRouteValue["RpRetroPremFreq"],
+                                    RpSumOfNetPremium = retroRiDataRouteValue["RpSumOfNetPremium"],
+                                    RpNetPremium = retroRiDataRouteValue["RpNetPremium"],
+                                    RpSumOfAar = retroRiDataRouteValue["RpSumOfAar"],
+                                    RpAar = retroRiDataRouteValue["RpAar"],
+                                    RpRetentionLimit = retroRiDataRouteValue["RpRetentionLimit"],
+                                    RpDistributedRetentionLimit = retroRiDataRouteValue["RpDistributedRetentionLimit"],
+                                    RpRetroAmount = retroRiDataRouteValue["RpRetroAmount"],
+                                    RpDistributedRetroAmount = retroRiDataRouteValue["RpDistributedRetroAmount"],
+                                    RpAccumulativeRetainAmount = retroRiDataRouteValue["RpAccumulativeRetainAmount"],
+                                    RpErrors = retroRiDataRouteValue["RpErrors"],
+                                    Page = Page
+                                    }), Shared.Html.GetPagedListRenderOptions())
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabSummary ? "show active" : "")" id="summaryTab" role="tabpanel" aria-labelledby="summaryTab-tab">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#excludedRecord" class="active underline-tab">Excluded Record</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#retroRecord">Retro</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="excludedRecord" role="tabpanel" aria-labelledby="excludedRecord-tab">
+                        <div class="form-row mt-3">
+                            <div class="w-100 text-right">
+                                @Html.ActionLink("Download", "DownloadExcludedRecord", new { id = Model.Id, riskQuarter = Model.RiskQuarter }, new { @class = "btn btn-download", target = "_blank" })
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mt-3">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Risk Quarter</th>
+                                        <th class="w-10">Treaty Code</th>
+                                        <th class="w-10">Count</th>
+                                        <th class="w-10">Total AAR</th>
+                                        <th class="w-10">Total Gross Premium</th>
+                                        <th class="w-10">Total Net Premium</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!ExcludedRecords.length">
+                                        <td colspan="6" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ExcludedRecord, index) in ExcludedRecords">
+                                        <td>{{ ExcludedRecord.RiskQuarter }}</td>
+                                        <td>{{ ExcludedRecord.TreatyCode }}</td>
+                                        <td class="text-right">{{ ExcludedRecord.Count }}</td>
+                                        <td class="text-right">{{ ExcludedRecord.TotalAarStr }}</td>
+                                        <td class="text-right">{{ ExcludedRecord.TotalGrossPremiumStr }}</td>
+                                        <td class="text-right">{{ ExcludedRecord.TotalNetPremiumStr }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="retroRecord" role="tabpanel" aria-labelledby="retroRecord-tab">
+                        <div class="form-row mt-3">
+                            <div class="w-100 text-right">
+                                @Html.ActionLink("Download", "DownloadRetroRecord", new { id = Model.Id, riskQuarter = Model.RiskQuarter }, new { @class = "btn btn-download", target = "_blank" })
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mt-3">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10 bg-white"></th>
+                                        <th class="w-10 bg-white"></th>
+                                        <th class="w-40 text-center" colspan="4">RI Record Good to Process</th>
+                                        <th class="w-40 text-center" colspan="4">Retain</th>
+                                        <th class="w-50 text-center" colspan="5">Retro for All Retro Party</th>
+                                    </tr>
+                                    <tr class="second-row-header">
+                                        <th class="w-10">Risk Quarter</th>
+                                        <th class="w-10">Treaty Code</th>
+                                        <th class="w-10">Count</th>
+                                        <th class="w-10">Total AAR</th>
+                                        <th class="w-10">Total Gross Premium</th>
+                                        <th class="w-10">Total Net Premium</th>
+                                        <th class="w-10">Count</th>
+                                        <th class="w-10">Total AAR</th>
+                                        <th class="w-10">Total Gross Premium</th>
+                                        <th class="w-10">Total Net Premium</th>
+                                        <th class="w-10">Count</th>
+                                        <th class="w-10">Total AAR</th>
+                                        <th class="w-10">Total Gross Premium</th>
+                                        <th class="w-10">Total Net Premium</th>
+                                        <th class="w-10">Total Discount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!RetroRecords.length">
+                                        <td colspan="15" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(RetroRecord, index) in RetroRecords">
+                                        <td>{{ RetroRecord.RiskQuarter }}</td>
+                                        <td>{{ RetroRecord.TreatyCode }}</td>
+                                        <td class="text-right">{{ RetroRecord.Count }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalAarStr }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalGrossPremiumStr }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalNetPremiumStr }}</td>
+                                        <td class="text-right">{{ RetroRecord.Count2 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalAarStr2 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalGrossPremiumStr2 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalNetPremiumStr2 }}</td>
+                                        <td class="text-right">{{ RetroRecord.Count3 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalRetroAmountStr3 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalGrossPremiumStr3 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalNetPremiumStr3 }}</td>
+                                        <td class="text-right">{{ RetroRecord.TotalDiscountStr3 }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabTreatySummary ? "show active" : "")" id="treatySummaryTab" role="tabpanel" aria-labelledby="treatySummaryTab-tab">
+                @using (Html.BeginForm("TreatySummary", "PerLifeAggregationDetail", FormMethod.Get, new { id = "PerLifeAggregationDetailTreatySummaryForm" }))
+                {
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">
+                                        Risk Quarter
+                                    </th>
+                                    <th class="w-10">
+                                        Risk Month
+                                    </th>
+                                    <th class="w-10">
+                                        Treaty Code
+                                    </th>
+                                    <th class="w-10">
+                                        Transaction Type Code
+                                    </th>
+                                    <th class="w-10">
+                                        Policy Count
+                                    </th>
+                                    <th class="w-10">
+                                        AAR
+                                    </th>
+                                    <th class="w-10">
+                                        Gross Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Net Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Standard Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Substandard Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Flat Extra Premium
+                                    </th>
+                                    <th class="w-10">
+                                        Standard Discount
+                                    </th>
+                                    <th class="w-10">
+                                        Substandard Discount
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (TreatySummaryList.Count > 0)
+                                {
+                                    foreach (var item in TreatySummaryList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RiskQuarter)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.RiskMonth)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TreatyCode)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.TransactionTypeCode)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.PolicyCount)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.Aar)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.GrossPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.NetPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.StandardPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.SubstandardPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.FlatExtraPremium)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.StandardDiscount)
+                                            </td>
+                                            <td class="text-right">
+                                                @Shared.Util.DoubleToString(item.SubstandardDiscount)
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="13" class="no-data">No available data found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    ViewBag.CurrentPageNumber = TreatySummaryList.PageNumber;
+                    ViewBag.CurrentPageItems = TreatySummaryList.Count;
+                    ViewBag.PageSize = TreatySummaryList.PageSize;
+                    ViewBag.Total = ViewBag.TreatySummaryListTotal;
+
+                    <div class="pagination-footer position-relative">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.Partial("_PageInfo")
+                            </div>
+                            <div class="col-md-8" id="RiDetailPager">
+                                @Html.PagedListPager(TreatySummaryList, Page => Url.Action("TreatySummary", new
+                                {
+                                    id = Model.Id,
+                                    Page = Page
+                                }), Shared.Html.GetPagedListRenderOptions())
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="form-row form-row-btn">
+            <div class="form-group col-md-12 btn-row">
+                @Html.ActionLink("CANCEL", "Edit", "PerLifeAggregation", new { id = Model.PerLifeAggregationId }, new { @class = "btn btn-cancel" })
+                <div class="row m-0 p-0 float-right">
+                    @if (IsEnableValidate)
+                    {
+                        <div class="mr-1">
+                            <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#validateDataModal">VALIDATE DATA</button>
+                        </div>
+                    }
+                    @if (IsEnableProcess)
+                    {
+                        <div class="mr-1">
+                            <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#processDataModal">PROCESS DATA</button>
+                        </div>
+                    }
+                    @if (IsEnableAggregate)
+                    {
+                        <div class="mr-1">
+                            <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#aggregateDataModal">AGGREGATE DATA</button>
+                        </div>
+                    }
+                    @if (IsEnableFinalise)
+                    {
+                        <div class="mr-1">
+                            <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#finaliseModal">FINALISE</button>
+                        </div>
+                    }
+                    @if (Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabException)
+                    {
+                        <div class="mr-1">
+                            <button type="submit" class="btn btn-submit" id="releaseExceptionBtn">RELEASE</button>
+                        </div>
+                        <div class="mr-1">
+                            <button type="submit" class="btn btn-submit" id="putOnHoldExceptionBtn">Put On Hold</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @*----- Modal -----*@
+        <div class="modal fade" id="validateDataModal" tabindex="-1" role="dialog" aria-labelledby="validateDataModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="validateDataModalLabel">Validate Data Confirmation</h5>
+                    </div>
+                    <div class="modal-body">
+                        Do you want to submit current Risk Quarter for Validation? <br />
+                        <span class="font-weight-bold">Please note that current data will be overriden.</span>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                            <button type="submit" onclick="validateData()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="processDataModal" tabindex="-1" role="dialog" aria-labelledby="processDataModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="processDataModalLabel">Process Data Confirmation</h5>
+                    </div>
+                    <div class="modal-body">
+                        Do you want to submit current Risk Quarter for Processing? <br />
+                        <span class="font-weight-bold">Please note that current data will be overriden.</span>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                            <button type="submit" onclick="processData()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="aggregateDataModal" tabindex="-1" role="dialog" aria-labelledby="aggregateDataModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="aggregateDataModalLabel">Aggregate Data Confirmation</h5>
+                    </div>
+                    <div class="modal-body">
+                        Do you want to submit current Risk Quarter for Aggregation? <br />
+                        <span class="font-weight-bold">Please note that current data will be overriden.</span>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                            <button type="submit" onclick="aggregateData()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="finaliseModal" tabindex="-1" role="dialog" aria-labelledby="finaliseModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="finaliseModalLabel">Finalise Confirmation</h5>
+                    </div>
+                    <div class="modal-body">
+                        Do you want to finalise current Risk Quarter? <br />
+                        <span class="font-weight-bold">Please note that this action is not reversible.</span>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                            <button type="submit" onclick="finalised()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="conflictCheckModal" tabindex="-1" role="dialog" aria-labelledby="conflictCheckModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="conflictCheckModalLabel">Conflict Check</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Treaty Code</th>
+                                        <th class="w-10">Insured Name</th>
+                                        <th class="w-10">Insured Date Of Birth</th>
+                                        <th class="w-10">Policy Number</th>
+                                        <th class="w-10">Org Insured Gender Code</th>
+                                        <th class="w-10">Org Territory of Issue Code</th>
+                                        <th class="w-10">Expected Insured Gender Code</th>
+                                        <th class="w-10">Expected Territory of Issue Code</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!PerLifeAggregationDetailDataBos.length">
+                                        <td colspan="8" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(PerLifeAggregationDetailDataBo, index) in PerLifeAggregationDetailDataBos">
+                                        <td>{{ PerLifeAggregationDetailDataBo.TreatyCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.InsuredName }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.InsuredDateOfBirth }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.PolicyNumber }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.InsuredGenderCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.TerritoryOfIssueCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.ExpectedInsuredGenderCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.ExpectedTerritoryOfIssueCode }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="duplicationCheckModal" tabindex="-1" role="dialog" aria-labelledby="duplicationCheckModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="duplicationCheckModalLabel">Duplication Check</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Treaty Code</th>
+                                        <th class="w-10">Insured Name</th>
+                                        <th class="w-10">Insured Gender Code</th>
+                                        <th class="w-10">Insured Date Of Birth</th>
+                                        <th class="w-10">Policy Number</th>
+                                        <th class="w-10">Reinsurance Effective Date Pol</th>
+                                        <th class="w-10">Fund Accounting Type Code</th>
+                                        <th class="w-10">Reins Basis Code</th>
+                                        <th class="w-10">Ceding Plan Code</th>
+                                        <th class="w-10">Ceding Benefit Type Code</th>
+                                        <th class="w-10">Ceding Benefit Risk Code</th>
+                                        <th class="w-10">MLRe Benefit Code</th>
+                                        <th class="w-10">Transaction Type Code</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!PerLifeAggregationDetailDataBos.length">
+                                        <td colspan="13" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(PerLifeAggregationDetailDataBo, index) in PerLifeAggregationDetailDataBos">
+                                        <td>{{ PerLifeAggregationDetailDataBo.TreatyCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.InsuredName }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.InsuredGenderCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.InsuredDateOfBirth }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.ReinsEffDatePol }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.FundsAccountingTypeCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.ReinsBasisCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.CedingPlanCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.CedingBenefitTypeCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.CedingBenefitRiskCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.MlreBenefitCode }}</td>
+                                        <td>{{ PerLifeAggregationDetailDataBo.TransactionTypeCode }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="errorModalTitle">Errors</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body py-4">
+                        <ul id="dataError"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        var ModelId = '@Model.Id';
+
+        // Status
+        var StatusSubmitForValidation = '@BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusSubmitForValidation';
+        var StatusSubmitForProcessing = '@BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusSubmitForProcessing';
+        var StatusSubmitForAggregation = '@BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusSubmitForAggregation';
+        var StatusFinalised = '@BusinessObject.Retrocession.PerLifeAggregationDetailBo.StatusFinalised';
+
+        // Active Tab
+        var ActiveTabRiData = '@BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabRiData';
+        var ActiveTabException = '@BusinessObject.Retrocession.PerLifeAggregationDetailBo.ActiveTabException';
+
+        // Exception
+        var SavedExceptionIds = '@ViewBag.SelectedExceptionIds';
+
+        // ExceptionType
+        var ExceptionTypeConflictCheck = '@BusinessObject.Retrocession.PerLifeAggregationDetailDataBo.ExceptionTypeConflictCheck';
+        var ExceptionTypeDuplicationCheck = '@BusinessObject.Retrocession.PerLifeAggregationDetailDataBo.ExceptionTypeDuplicationCheck';
+
+        // Url
+        var ReleaseExceptionUrl = '@Url.Action("ReleaseException")';
+        var PutOnHoldExceptionUrl = '@Url.Action("PutOnHoldException")';
+        var ConflictCheckLookup = '@Url.Action("ConflictCheckLookup")';
+        var DuplicationCheckLookup = '@Url.Action("DuplicationCheckLookup")';
+
+        // List
+        var ExcludedRecords = @Html.Raw(Json.Encode(ViewBag.ExcludedRecords));
+        var RetroRecords = @Html.Raw(Json.Encode(ViewBag.RetroRecords));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            // Search RI Data
+            $('#SearchInsuredDateOfBirth').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            // Filter RI Data
+            $('#RiInsuredDateOfBirth, #RiRiskPeriodStartDate, #RiRiskPeriodEndDate, #RiEffectiveDate, #RiPolicyExpiryDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            // Filter RI Data
+            $('#ExIssueDatePol, #ExReinsEffDataPol, #ExInsuredDateOfBirth').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            // Filter Retro RI Data
+            $('#ReRiskYear').datepicker({
+                format: 'yyyy',
+                viewMode: "years",
+                minViewMode: "years",
+                autoclose: true
+            })
+
+            // Filter Retro RI Data
+            $('#RpReinsEffDatePol').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            // Exception
+            if (SavedExceptionIds != '') {
+                var selectedAll = true;
+                var selected = SavedExceptionIds.split(",");
+
+                $('input[name=SelectException]').each(function () {
+                    var id = $(this).attr('id');
+                    if (typeof id != 'undefined') {
+                        if (selected.includes(id)) {
+                            $(this).prop('checked', true);
+                        } else {
+                            selectedAll = false;
+                        }
+                    }
+                });
+
+                if (selectedAll) {
+                    $('input[name=SelectAllException]').prop('checked', true);
+                }
+            }
+        });
+
+        function searchRiData(val) {
+            resetRiFilter();
+            $('#PerLifeAggregationDetailEditForm').submit();
+        }
+
+        function clearRiData(val) {
+            resetRiFilter();
+            $('#PerLifeAggregationDetailEditForm').submit();
+        }
+
+        function filterRiData(val) {
+            $('#PerLifeAggregationDetailEditForm').submit();
+        }
+
+        function resetRiFilter() {
+            // clear Ri Data filter param
+            $('#RiTreatyCode').val(null);
+            $('#RiCedingTreatyCode').val(null);
+            $('#RiInsuredName').val(null);
+            $('#RiInsuredGenderCode').val(null);
+            $('#RiInsuredDateOfBirth').val(null);
+            $('#RiPolicyNumber').val(null);
+            $('#RiCurrencyCode').val(null);
+            $('#RiTerritoryOfIssueCode').val(null);
+            $('#RiCedingPlanCode').val(null);
+            $('#RiCedingBenefitRiskCode').val(null);
+            $('#RiCedingBenefitTypeCode').val(null);
+            $('#RiStandardPremium').val(null);
+            $('#RiSubstandardPremium').val(null);
+            $('#RiStandardDiscount').val(null);
+            $('#RiSubstandardDiscount').val(null);
+            $('#RiFlatExtraPremium').val(null);
+            $('#RiFlatExtraAmount').val(null);
+            $('#RiBrokerageFee').val(null);
+            $('#RiRiskPeriodStartDate').val(null);
+            $('#RiRiskPeriodEndDate').val(null);
+            $('#RiTransactionTypeCode').val(null);
+            $('#RiEffectiveDate').val(null);
+            $('#RiPolicyTerm').val(null);
+            $('#RiPolicyExpiryDate').val(null);
+        }
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function validateData() {
+            $('#Status').val(StatusSubmitForValidation);
+            $('#SubmitEditForm').submit();
+        }
+
+        function processData() {
+            $('#Status').val(StatusSubmitForProcessing);
+            $('#SubmitEditForm').submit();
+        }
+
+        function aggregateData() {
+            $('#Status').val(StatusSubmitForAggregation);
+            $('#SubmitEditForm').submit();
+        }
+
+        function finalised() {
+            $('#Status').val(StatusFinalised);
+            $('#SubmitEditForm').submit();
+        }
+
+        function selectAllException() {
+            $('input[name=SelectException]').prop('checked', $('input[name=SelectAllException]').prop('checked'));
+        }
+
+        function formatExceptionIds() {
+            var selected = [];
+            if (SavedExceptionIds != '') {
+                selected = SavedExceptionIds.split(",");
+            }
+
+            $('input[name=SelectException]').each(function () {
+                var id = $(this).attr('id');
+                if (typeof id != 'undefined') {
+                    var checked = $(this).prop('checked');
+
+                    if (selected.includes(id)) {
+                        if (!checked)
+                            selected.splice(selected.indexOf(id), 1);
+                    } else {
+                        if (checked)
+                            selected.push(id);
+                    }
+                }
+            });
+            var selectedIds = selected.join(',');
+
+            $('#SelectedExceptionIds').val(selectedIds);
+        }
+
+        function showError(errors) {
+            var errorList = JSON.parse(errors);
+
+            var list = $('#dataError');
+            list.empty();
+            errorList.forEach(function (error) {
+                $("<li>" + error + "</li>").appendTo(list);
+            });
+
+            $('#errorModal').modal('show');
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                PerLifeAggregationDetailDataBos: [],
+                ExcludedRecords: ExcludedRecords ? ExcludedRecords : [],
+                RetroRecords: RetroRecords ? RetroRecords : [],
+            },
+            methods: {
+                openExceptionTypeModal: function (id, exceptionType) {
+                    if (exceptionType != ExceptionTypeConflictCheck && exceptionType != ExceptionTypeDuplicationCheck)
+                        return;
+
+                    // Conflict Check
+                    if (exceptionType == ExceptionTypeConflictCheck) {
+
+                        var perLifeAggregationDetailDataBos;
+
+                        $.ajax({
+                            url: ConflictCheckLookup,
+                            type: "POST",
+                            data: { perLifeAggregationDetailDataId: id },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                perLifeAggregationDetailDataBos = data.PerLifeAggregationDetailDataBos;
+                            }
+                        });
+
+                        this.PerLifeAggregationDetailDataBos = perLifeAggregationDetailDataBos;
+                        $("#conflictCheckModal").modal()
+                    }
+
+                    // Duplication Check
+                    if (exceptionType == ExceptionTypeDuplicationCheck) {
+
+                        var perLifeAggregationDetailDataBos;
+
+                        $.ajax({
+                            url: DuplicationCheckLookup,
+                            type: "POST",
+                            data: { perLifeAggregationDetailDataId: id },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                perLifeAggregationDetailDataBos = data.PerLifeAggregationDetailDataBos;
+                            }
+                        });
+
+                        this.PerLifeAggregationDetailDataBos = perLifeAggregationDetailDataBos;
+                        $("#duplicationCheckModal").modal()
+                    }
+                }
+            },
+            created: function () {
+
+            },
+            updated() {
+
+            }
+        })
+
+        $('a[href^="/PerLifeAggregationDetail/Exception/' + ModelId + '?"]').on("click", function () {
+            formatExceptionIds();
+            this.href += "&SelectedExceptionIds=" + $('#SelectedExceptionIds').val();
+        });
+
+        $('#releaseExceptionBtn').on("click", function () {
+            $('#SubmitEditForm').attr("action", ReleaseExceptionUrl);
+            formatExceptionIds();
+            $('#SubmitEditForm').submit();
+        });
+
+        $('#putOnHoldExceptionBtn').on("click", function () {
+            $('#SubmitEditForm').attr("action", PutOnHoldExceptionUrl);
+            formatExceptionIds();
+            $('#SubmitEditForm').submit();
+        });
+    </script>
+}

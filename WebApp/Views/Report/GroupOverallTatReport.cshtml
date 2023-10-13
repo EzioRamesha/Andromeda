@@ -1,0 +1,152 @@
+﻿@{
+    ViewBag.Title = "Group Overall TAT Report";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Draft Status Overview (by Business Origin)</h4>
+            </div>
+
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <div class="col-form-label">
+                            Request Received Year
+                        </div>
+                        <div class="input-w-icon">
+                            <select class="form-control" id="RequestReceivedYear">
+                                <option value="2010">2010</option>
+                                <option value="2011">2011</option>
+                                <option value="2012">2012</option>
+                                <option value="2013">2013</option>
+                                <option value="2014">2014</option>
+                                <option value="2015">2015</option>
+                                <option value="2016">2016</option>
+                                <option value="2017">2017</option>
+                                <option value="2018">2018</option>
+                                <option value="2019">2019</option>
+                                <option value="2020">2020</option>
+                                <option value="2021">2021</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">No of Days</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Cedant</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Internal</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>0</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays0Cedant }}</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays0Internal }}</td>
+                                </tr>
+                                <tr>
+                                    <td>1</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays1Cedant }}</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays1Internal }}</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays2Cedant }}</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays2Internal }}</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays3Cedant }}</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays3Internal }}</td>
+                                </tr>
+                                <tr>
+                                    <td>>3</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays4Cedant }}</td>
+                                    <td>{{ GroupOverallTatReport.NoOfDays4Internal }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                GroupOverallTatReport: "",
+                IsGenerated: false,
+            },
+            methods: {
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+
+                    var errorList = [];
+                    var groupOverallTatReport = this.GroupOverallTatReport;
+
+                    $.ajax({
+                        url: "@(Url.Action("GroupOverAllTatReport", "Report"))",
+                        type: "POST",
+                        data: {
+                            reqRecYear: $("#RequestReceivedYear").val(),
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            groupOverallTatReport = data.bo;
+                            error = data.error;
+                        }
+                    });
+
+                    if (error != null) {
+                        errorList.push(error);
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    this.GroupOverallTatReport = groupOverallTatReport;
+                    this.IsGenerated = true;
+                }
+            }
+        })
+</script>    
+}

@@ -1,0 +1,237 @@
+﻿@model WebApp.Models.RetroRegisterBatchViewModel
+
+<div class="form-row mt-4">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#quarterReport" class="active underline-tab">Quarterly Report</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#sunglFile">SUNGL Files</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarkHistory">Remark</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#documentTab">Document</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="quarterReport" role="tabpanel" aria-labelledby="quarterReport-tab">
+
+                <div class="text-right mb-2">
+                    <button type="button" class="btn btn-add-sub" style="width: auto;" v-on:click="resetModalData()" data-toggle="modal" data-target="#newRetroModal" :disabled="@Model.Status != @BusinessObject.RetroRegisterBatchBo.StatusPending">ADD NEW</button>
+                </div>
+                <input type="hidden" v-model="RetroDataDetailMaxIndex" name="retroDataDetailsMaxIndex" />
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="display:none"></th>
+                                <th class="w-40">Ceding Company</th>
+                                <th class="w-30">Treaty ID</th>
+                                <th class="w-15">SOA Quarter</th>
+                                <th class="w-10">Status</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!RetroDataDetails || !RetroDataDetails.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(detail, index) in RetroDataDetails">
+                                <td style="display:none">
+                                    <input type="hidden" v-model="detail.Id" :name="'directRetroDetailsId[' + index + ']'" />
+                                </td>
+                                <td>{{ detail.CedantBo ? detail.CedantBo.Name : null }}</td>
+                                <td>{{ detail.TreatyCodeBo ? detail.TreatyCodeBo.Code : null }}</td>
+                                <td>{{ detail.SoaQuarter }}</td>
+                                <td class="va-middle"><span class="status-badge">{{ DetailStatusList[detail.RetroStatus] }}</span></td>
+                                <td>
+                                    <a href="javascript:void(0);" v-on:click="deleteRetroDataDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="sunglFile" role="tabpanel" aria-labelledby="sunglFile-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-80">Output</th>
+                                <th class="w-20">File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!SunglFiles || !SunglFiles.length">
+                                <td colspan="2" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(file, index) in SunglFiles">
+                                <td>{{ file.FileName }}</td>
+                                <td><a v-bind:href="urlDownloadLink(index)" title="Download"><span class="fas fa-download" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="remarkHistory" role="tabpanel" aria-labelledby="remarkHistory-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showFollowUp", true }, { "showPermission", true }, { "showDocuments", true }, { "dropdownRemarkStatus", ViewBag.StatusItems } })
+            </div>
+
+            <div class="tab-pane fade" id="documentTab" role="tabpanel" aria-labelledby="document-tab">
+                @Html.Partial("_Document", new ViewDataDictionary { { "showPermission", true }, { "hideDetail", true }, { "hideAddButton", true } })
+            </div>
+
+            <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-30">Status</th>
+                                <th class="w-30">Update Date & time</th>
+                                <th class="w-30">Updated By</th>
+                                <th class="w-10">Log File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!StatusHistories || !StatusHistories.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(statusHistory, index) in StatusHistories">
+                                <td class="va-middle"><span class="status-badge">{{ BatchStatus[statusHistory.Status] }}</span></td>
+                                <td>{{ statusHistory.CreatedAtStr }}</td>
+                                <td>{{ statusHistory.CreatedByName }}</td>
+                                <td>
+                                    <span v-for="log in logFile(index)">
+                                        <a v-bind:href="urlLogDownloadLink(index)" title="Download Log File">
+                                            <span class="fas fa-download" />
+                                        </a>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newRetroModal" tabindex="-1" role="dialog" aria-labelledby="newRetroModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="RetroDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in RetroDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="cedantId" class="col-form-label">Ceding Company</label>
+                            <select v-model="newRetroData.cedantId" id="cedantId" class="form-control selectpicker" ref="select" data-container="body" onchange="getTreatyCodeByCedant(this.value)">
+                                <option v-for="cedant in DropDownCedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            <label for="treatyId" class="col-form-label">Treaty Code</label>
+                            <select v-model="newRetroData.treatyCodeId" id="treatyCodeId" class="form-control selectpicker" ref="select" data-container="body">
+                                <option v-for="treaty in DropDownTreatys" :value="treaty.Value">{{ treaty.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="soaQuarter" class="col-form-label">SOA Quarter</label>
+                            <input type="text" v-model="newRetroData.soaQuarter" v-on:click="openQuarterPicker('soaQuarter')" id="soaQuarter" class="form-control" placeholder="YYYY MM" autocomplete="off" />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+
+                    <div class="table-responsive mb-4" v-if="newRetroDataDetail != null">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-25">Ceding Company</th>
+                                    <th class="w-20">Treaty ID</th>
+                                    <th class="w-10">SOA Data Batch ID</th>
+                                    <th class="w-10">SOA Quarter</th>
+                                    <th class="w-10">Status</th>
+                                    <th class="w-10">Action &nbsp; <input type="checkbox" @@click='checkAll()' v-model='isCheckAll' /></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!newRetroDataDetail || !newRetroDataDetail.length">
+                                    <td colspan="5" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(newdetail, index) in newRetroDataDetail">
+                                    <td>{{ newdetail.CedantBo ? newdetail.CedantBo.Name : null }}</td>
+                                    <td>{{ newdetail.TreatyCodeBo ? newdetail.TreatyCodeBo.Code : null }}</td>
+                                    <td>{{ newdetail.SoaDataBatchId }}</td>
+                                    <td>{{ newdetail.SoaQuarter }}</td>
+                                    <td class="va-middle"><span class="status-badge">{{ DetailStatusList[newdetail.RetroStatus] }}</span></td>
+                                    <td><input type="checkbox" v-model="selected" :value="newdetail.Id" @@change='updateCheckall()' :disabled="!newRetroDataDetail || !newRetroDataDetail.length" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit" v-on:click="searchRetroData()" style="width: auto;">SEARCH</button>
+                <button type="button" class="btn btn-submit" v-on:click="addRetroData()" :disabled="!newRetroDataDetail || !newRetroDataDetail.length">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    // Others
+    var ModelId = @Model.Id;
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var QuarterDateFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var DateFormat = "@Shared.Util.GetDateFormatMomentJs()";
+
+    // URL
+    var RetroDataUrl = '@Url.Action("GetRetroData", "RetroRegister")';
+    var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var SaveTempFileUrl = "@(Url.Action("Upload", "Document"))";
+    var DeleteTempFileUrl = "@(Url.Action("Remove", "Document"))";
+    var UploadFileUrl = "@(Url.Action("ProcessFileUpload", "RetroRegister"))";
+    var DownloadFileUrl = "@(Url.Action("FileDownload", "RetroRegister"))";
+    var TreatyCodeByCedantUrl = "@(Url.Action("GetTreatyCodeByCedant", "RetroRegister"))";
+    var DownloadStatusFileUrl = '@Url.Action("StatusFileDownload", "RetroRegister")?id=@Model.Id' + "&statusHistoryId=";
+
+    // List
+    var RetroDataDetailsList = @Html.Raw(Json.Encode(ViewBag.DirectRetroDetails));
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.Remarks));
+    var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistoryBos));
+    var SunglFileList = @Html.Raw(Json.Encode(ViewBag.SunglFiles));
+    var DetailStatusList = @Html.Raw(Json.Encode(ViewBag.DetailStatusList));
+    var BatchStatusList = @Html.Raw(Json.Encode(ViewBag.StatusHistoryStatusList));
+    var StatusFiles = @Html.Raw(Json.Encode(ViewBag.StatusFiles));
+
+    var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+    var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+    var DocumentTypeItems = @Html.Raw(Json.Encode(ViewBag.DropDownDocumentTypes));
+    var DropDownTreatys = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+    // Status
+    var StatusPending = @BusinessObject.RetroRegisterBatchBo.StatusPending;
+    var StatusSubmitForProcessing = @BusinessObject.RetroRegisterBatchBo.StatusSubmitForProcessing;
+    var StatusProcessing = @BusinessObject.RetroRegisterBatchBo.StatusProcessing;
+    var StatusSuccess = @BusinessObject.RetroRegisterBatchBo.StatusSuccess;
+    var StatusSubmitForGenerate = @BusinessObject.RetroRegisterBatchBo.StatusSubmitForGenerate;
+    var StatusGenerating = @BusinessObject.RetroRegisterBatchBo.StatusGenerating;
+    var StatusPendingName = "@BusinessObject.RetroRegisterBatchBo.GetStatusName(BusinessObject.RetroRegisterBatchBo.StatusPending)";
+</script>

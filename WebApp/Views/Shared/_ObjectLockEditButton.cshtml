@@ -1,0 +1,37 @@
+﻿<div class="text-right">
+    <button id="editModeBtn" type="button" class="btn btn-submit prevent-disable my-2 edit-mode-btn" onclick="enterEditMode()">EDIT</button>
+</div>
+
+<div class="modal fade" id="objectLockErrorModal" tabindex="-1" role="dialog" aria-labelledby="objectLockErrorModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="align-items: normal;">
+            <div class="modal-header">
+                <h5 class="modal-title">Error</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <span id="objectLockErrorMessage"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-submit prevent-disable">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var CanEnterEditMode = @(ViewBag.CanEnterEditMode != null ? ViewBag.CanEnterEditMode.ToString().ToLower() : "false");
+    var IsEditMode = @(ViewBag.IsEditMode != null ? ViewBag.IsEditMode.ToString().ToLower() : "false");
+    var IsOtherUserEditing = @(ViewBag.IsOtherUserEditing != null ? ViewBag.IsOtherUserEditing.ToString().ToLower() : "false");
+    var LockedErrorMessage = "@(ViewBag.LockedErrorMessage != null ? ViewBag.LockedErrorMessage : "")";
+
+    // Create Edit Mode Url
+    var IsCalledFromWorkflow = @(ViewBag.IsCalledFromWorkflow != null ? ViewBag.IsCalledFromWorkflow.ToString().ToLower() : "false");
+    var IsQuotationWorkflow = @(ViewBag.IsQuotationWorkflow != null ? ViewBag.IsQuotationWorkflow.ToString().ToLower() : "false");
+    var VersionId = @(ViewBag.VersionId != null ? ViewBag.VersionId : 0);
+    var EditModeUrl = "@Url.Action("Edit")";
+    var ReleaseObjectLockUrl = "@Url.Action("ReleaseObjectLock", "ObjectLock")";
+</script>
+

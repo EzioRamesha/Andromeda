@@ -1,0 +1,134 @@
+﻿@using Shared.Forms.Helpers
+@model WebApp.Models.TreatyPricingClaimApprovalLimitViewModel
+
+@{
+    var disableVersionSelect = ViewBag.IsHideSideBar != null ? bool.Parse(ViewBag.IsHideSideBar.ToString().ToLower()) : false;
+}
+
+<div class="form-row mt-4">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs mt-4">
+            <li class="nav-item"><a data-toggle="tab" href="#version" class="active underline-tab">Version</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#product">Product</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarks">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelog">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="version" role="tabpanel" aria-labelledby="version-tab">
+                <div class="form-row">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Version Details", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Version", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            @if (ViewBag.IsHideSideBar is null || !ViewBag.IsHideSideBar)
+                            {
+                                @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker" })
+                            }
+                            else
+                            {
+                                @Html.HiddenFor(model => model.CurrentVersion)
+                                @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker", @disabled = true })
+
+                            }
+                            <div class="input-group-prepend">
+                                <button type="button" class="input-group-text" data-toggle="modal" onclick="resetCreateVersionError()" data-target="#newVersionModal" disabled="@disableVersionSelect">CREATE NEW VERSION</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row mt-4">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Claim Approval Limit", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.EffectiveAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBoxFor(model => model.EffectiveAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"onclick", @"openDatePicker('EffectiveAtStr')" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('EffectiveAtStr')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.EffectiveAtStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Amount, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control text-right", @placeholder = "0.00", maxlength = @ViewBag.AmountMaxLength } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.AdditionalRemarks, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.AdditionalRemarks, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.AdditionalRemarks, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+                @Html.Partial("_ProductList")
+            </div>
+
+            <div class="tab-pane fade" id="remarks" role="tabpanel" aria-labelledby="remarks-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showDocuments", true }, { "showStatus", false }, { "showVersion", true }, { "showSubject", true }, { "dropdownVersions", ViewBag.DropDownVersions } })
+            </div>
+
+            <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+                @Html.Partial("_Changelog")
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newVersionModal" tabindex="-1" role="dialog" aria-labelledby="newVersionModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Version</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="createVersionError" style="display:none;"></div>
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Person In-Charge</label>
+                        <input type="text" readonly class="form-control" id="userName" value="@ViewBag.PersonInChargeName">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Previous Version</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="duplicatePreviousVersion" name="duplicatePreviousVersion" type="checkbox" />
+                                <label class="custom-control-label" for="duplicatePreviousVersion">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" onclick="createVersion()" class="btn btn-submit">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>

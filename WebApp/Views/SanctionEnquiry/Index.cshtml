@@ -1,0 +1,215 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.SanctionViewModel>
+
+@{
+    ViewBag.Title = "Sanction Enquiry";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm("Index", "SanctionEnquiry", FormMethod.Get))
+        {
+            @Html.AntiForgeryToken()
+            <input name="IsSearch" type="hidden" value="1" />
+            <input name="ReturnResult" type="hidden" value="@ViewBag.ReturnResult" />
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Category", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownList("Category", (List<SelectListItem>)ViewBag.DropDownCategories, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", value = routeValue["Category"] })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("ID Number", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBox("IdNumber", null, new { @class = "form-control", placeholder = "Type Here", value = routeValue["IdNumber"] })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Date of Birth", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.TextBox("DateOfBirth", null, new { id = "DateOfBirth", @class = "form-control", placeholder = "DD MM YYYY", value = routeValue["DateOfBirth"], @onclick = "openDatePicker(this.id)" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('DateOfBirth')" />
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.Label("Insured Name", htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBox("InsuredName", null, new { @class = "form-control", placeholder = "Type Here", value = routeValue["InsuredName"] })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <button type="submit" class="btn btn-submit float-right">SEARCH</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        @Html.Label("Search Result", htmlAttributes: new { @class = "col-form-label" })
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-5">Source</th>
+                                <th class="w-10">Publication Information</th>
+                                <th class="w-5">Category</th>
+                                <th class="w-5">Ref No</th>
+                                <th class="w-15">Name</th>
+                                <th class="w-15">Identity</th>
+                                <th class="w-10"> Date of Birth</th>
+                                <th class="w-10">Year of Birth</th>
+                                <th class="w-10">Country</th>
+                                <th class="w-15">Address</th>
+                                <th class="w-25">Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count > 0)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.SourceName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PublicationInformation)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Category)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.RefNumber)
+                                        </td>
+                                        <td>
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var sanctionName in item.SanctionNames)
+                                                    {
+                                                        <li>@Html.Raw(sanctionName.Name)</li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td class="text-right">
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var SanctionIdentity in item.SanctionIdentities)
+                                                    {
+                                                        <li>@Html.Raw(SanctionIdentity.IdType + ": " + SanctionIdentity.IdNumber)</li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var SanctionBirthDate in item.SanctionBirthDates)
+                                                    {
+                                                        if (SanctionBirthDate.DateOfBirth.HasValue)
+                                                        {
+                                                            <li>@Html.Raw(SanctionBirthDate.DateOfBirth.Value.ToString(Shared.Util.GetDateFormat()))</li>
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var SanctionBirthDate in item.SanctionBirthDates)
+                                                    {
+                                                        if (SanctionBirthDate.YearOfBirth.HasValue)
+                                                        {
+                                                            <li>@Html.Raw(SanctionBirthDate.YearOfBirth)</li>
+                                                        }
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var SanctionCountry in item.SanctionCountries)
+                                                    {
+                                                        <li>@Html.Raw(SanctionCountry.Country)</li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var SanctionAddress in item.SanctionAddresses)
+                                                    {
+                                                        <li>@Html.Raw(SanctionAddress.Address)</li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <ul class="p-inline-20">
+                                                @{
+                                                    foreach (var SanctionComment in item.SanctionComments)
+                                                    {
+                                                        <li>@Html.Raw(SanctionComment.Comment)</li>
+                                                    }
+                                                }
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="11" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <div class="pagination-footer btn-row">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                   {
+                       Category = routeValue["Category"],
+                       InsuredName = routeValue["InsuredName"],
+                       IdNumber = routeValue["IdNumber"],
+                       DateOfBirth = routeValue["DateOfBirth"],
+                       IsSearch = 1,
+                       Page,
+                   }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

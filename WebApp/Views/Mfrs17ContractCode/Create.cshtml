@@ -1,0 +1,162 @@
+﻿@model WebApp.Models.Mfrs17ContractCodeViewModel
+
+@{
+    ViewBag.Title = "MFRS17 Contract Code";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id);
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedingCompanyId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedingCompanyId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.CedingCompanyId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ModifiedContractCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.ModifiedContractCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                        @Html.ValidationMessageFor(model => model.ModifiedContractCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="text-right">
+                            <button type="button" v-on:click="addNewDetail" class="btn btn-add-sub mt-4">ADD NEW</button>
+                        </div>
+                        <input type="hidden" v-model="Mfrs17ContractCodeDetailMaxIndex" name="mfrs17ContractCodeDetailMaxIndex" />
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">No</th>
+                                        <th style="display:none"></th>
+                                        <th><a style="cursor:pointer" v-on:click="sortDetail()">MFRS17 Contract Code <span class="sub-label">(Max Length: @ViewBag.MaxLength)</span> <i v-if="sortAsc && !sortDesc" class="fas fa-sort-down"></i> <i v-if="!sortAsc && sortDesc" class="fas fa-sort-up"></i> <i v-if="!sortAsc && !sortDesc" class="fas fa-sort sub-label"></i></a></th>
+                                        <th class="text-center">Action</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!Details.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(detail, index) in Details">
+                                        <td class="text-center">{{index+1}}</td>
+                                        <td style="display:none">
+                                            <input type="hidden" :name="'id[' + index + ']'" class="form-control" :value="detail.Id">
+                                        </td>
+                                        <td><input v-model="detail.ContractCode" class="form-control" :name="'code[' + index + ']'" placeholder="Type here" maxlength="@ViewBag.MaxLength" /></td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-on:click="removeDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                        </td>
+
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-btn">
+                        <div class="form-group col-md-12 btn-row">
+                            @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                            <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var Mfrs17ContractCodeDetailBos = @Html.Raw(Json.Encode(ViewBag.Mfrs17ContractCodeDetailBos));
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Details: Mfrs17ContractCodeDetailBos,
+                SortIndex: 1,
+                Mfrs17ContractCodeDetailMaxIndex: 0,
+                sortAsc: false,
+                sortDesc: false,
+            },
+            methods: {
+                addNewDetail: function () {
+                    this.Details.push({ SortIndex: this.SortIndex + 1 });
+                    this.Mfrs17ContractCodeDetailMaxIndex += 1;
+                    this.SortIndex++;
+                },
+                removeDetail: function (index) {
+                    var item = this.Details[index];
+                    var Mfrs17ContractCodeDetails = this.Details;
+                    var updatedMfrs17ContractCodeDetailIndex = this.Mfrs17ContractCodeDetailMaxIndex;
+                    if (item != null && item.Id != null && item.Id != 0) {
+                        Mfrs17ContractCodeDetails.splice(index, 1);
+                        updatedMfrs17ContractCodeDetailIndex -= 1;
+                        this.Mfrs17ContractCodeDetailMaxIndex = updatedMfrs17ContractCodeDetailIndex;
+                    }
+                    else {
+                        this.Details.splice(index, 1);
+                        this.Mfrs17ContractCodeDetailMaxIndex -= 1;
+                        this.SortIndex--;
+                    }
+                },
+                autoExpandTextarea: function (id) {
+                    var tArea = $('#' + id);
+                    this.textAreaWidth = tArea.width();
+                    this.textAreaHeight = tArea.height();
+                    tArea.autoResize();
+                    tArea.trigger('keyup');
+
+                    tArea.on('keypress', function (evt) {
+                        var evt = (evt) ? evt : ((event) ? event : null);
+                        if (evt.keyCode == 13)
+                            return false;
+                    });
+                },
+                autoCollapseTextarea: function (id) {
+                    var tArea = $('#' + id);
+                    tArea.height(this.textAreaHeight);
+                },
+                sortDetail: function () {
+                    if ((!this.sortAsc && !this.sortDesc) || (!this.sortAsc && this.sortDesc)) {
+                        this.sortAsc = true;
+                        this.sortDesc = false;
+                        this.Details.sort((a, b) => a.Code.toLowerCase().localeCompare(b.Code.toLowerCase()));
+                    } else {
+                        this.sortAsc = false;
+                        this.sortDesc = true;
+                        this.Details.sort((a, b) => a.Code.toLowerCase().localeCompare(b.Code.toLowerCase())).reverse();
+                    }
+                }
+            },
+            created: function () {
+                this.Mfrs17ContractCodeDetailMaxIndex = (this.Details) ? this.Details.length - 1 : -1;
+            },
+        });
+</script>
+}

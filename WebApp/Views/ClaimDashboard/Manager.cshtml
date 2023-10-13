@@ -1,0 +1,814 @@
+﻿@{
+    ViewBag.Title = "Operational Dashboard";
+
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+
+        <div class="card">
+            <div class="card-header">
+                <h4>My Assigned Case &bull; <span>@ViewBag.TotalIndividualAssignedCase Cases</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div>
+                    <div>
+                        <span class="col-form-label font-weight-bold">RI Data Claim &bull;</span>
+                        <span class="col-form-label">@ViewBag.TotalIndividualRiDataClaims Cases</span>
+                    </div>
+                    <div v-if="!IndividualAssignedRiDataClaims.length">
+                        <div class="col-md-2 col-sm-3 py-2">
+                            <div class="turnaround-wrapper inactive">
+                                <span class="col-form-label font-weight-bold">No Case Assigned</span>
+                                <br />
+                                <br />
+                                <br />
+                                <span class="col-form-label font-weight-bold">0 </span>
+                                <span class="col-form-label">Case(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row m-0">
+                        <div v-for="(RiDataClaim, index) in IndividualAssignedRiDataClaims" class="col-md-2 col-sm-3 py-2">
+                            <div class="turnaround-wrapper" v-on:click="claimRegisterIndexLink(index)">
+                                <span class="col-form-label text-sm-left">Claim Status</span>
+                                <br />
+                                <span class="col-form-label font-weight-bold">{{RiDataClaim.StatusName}}</span>
+                                <br />
+                                <br />
+                                <span class="col-form-label font-weight-bold">{{RiDataClaim.NoOfCase}} </span>
+                                <span class="col-form-label">Case(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div>
+                        <span class="col-form-label font-weight-bold">Referral Claim &bull;</span>
+                        <span class="col-form-label">@ViewBag.TotalIndividualReferralClaims Cases</span>
+                    </div>
+                    <div v-if="!IndividualAssignedReferralClaims.length">
+                        <div class="col-md-2 col-sm-3 py-2">
+                            <div class="turnaround-wrapper inactive">
+                                <span class="col-form-label font-weight-bold">No Case Assigned</span>
+                                <br />
+                                <br />
+                                <br />
+                                <span class="col-form-label font-weight-bold">0 </span>
+                                <span class="col-form-label">Case(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row m-0">
+                        <div v-for="(ReferralClaim, index) in IndividualAssignedReferralClaims" class="col-md-2 col-sm-3 py-2">
+                            <div class="turnaround-wrapper" v-on:click="referralClaimIndexLink(index)">
+                                <span class="col-form-label text-sm-left">Status</span>
+                                <br />
+                                <span class="col-form-label font-weight-bold">{{ReferralClaim.StatusName}}</span>
+                                <br />
+                                <br />
+                                <span class="col-form-label font-weight-bold">{{ReferralClaim.NoOfCase}} </span>
+                                <span class="col-form-label">Case(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex">
+            <div class="flex-fill w-50 pr-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Turnaround Time</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div class="row m-0">
+                            <div class="col-md-4 col-sm-6 py-2">
+                                <div class="dashboard-clickable-wrapper" onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat1Day}))';">
+                                    <span class="col-form-label">No of Day(s)</span>
+                                    <br />
+                                    <span class="col-form-label font-weight-bold">1</span>
+                                    <br />
+                                    <br />
+                                    <span class="col-form-label font-weight-bold">@ViewBag.Tat1Day </span>
+                                    <span class="col-form-label">Case(s)</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6 py-2">
+                                <div class="dashboard-clickable-wrapper" onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTat2Day}))';">
+                                    <span class="col-form-label">No of Day(s)</span>
+                                    <br />
+                                    <span class="col-form-label font-weight-bold">2</span>
+                                    <br />
+                                    <br />
+                                    <span class="col-form-label font-weight-bold">@ViewBag.Tat2Day </span>
+                                    <span class="col-form-label">Case(s)</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-sm-6 py-2">
+                                <div class="dashboard-clickable-wrapper" onclick="location.href = '@(Url.Action("Index", "ReferralClaim", new { TurnAroundTime = BusinessObject.ReferralClaimBo.FilterTatMoreThan2Day}))';">
+                                    <span class="col-form-label">No of Day(s)</span>
+                                    <br />
+                                    <span class="col-form-label font-weight-bold">>2</span>
+                                    <br />
+                                    <br />
+                                    <span class="col-form-label font-weight-bold">@ViewBag.TatMoreThan2Day </span>
+                                    <span class="col-form-label">Case(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Claims Operational Dashboard</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div>
+                            <span class="col-form-label font-weight-bold">RI Data Claim</span>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("Claim Transaction Type", htmlAttributes: new { @class = "col-form-label" })
+                            <select v-model="ClaimTransactionType" class="form-control selectpicker" ref="select" :name="ClaimTransactionType" data-container="body" v-on:change="refreshOdRiDataClaim()">
+                                <option v-for="claimTransactionType in ClaimTransactionTypes" :value="claimTransactionType.Value">{{ claimTransactionType.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="my-3">
+                            <table class="table table-hover" style="table-layout: fixed;">
+                                <thead>
+                                    <tr>
+                                        <th class="w-35">Status</th>
+                                        <th class="w-15">No of Case(s)</th>
+                                        <th class="w-15">Overdue Case(s)</th>
+                                        <th class="w-15">Max Days</th>
+                                        <th class="w-20">Unassigned Case</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!OdRiDataClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(RiDataClaim, index) in OdRiDataClaims">
+                                        <td>{{ RiDataClaim.StatusName }}</td>
+                                        <td class="text-right">{{ RiDataClaim.NoOfCase }}</td>
+                                        <td class="text-right">{{ RiDataClaim.OverdueCase }}</td>
+                                        <td class="text-right">{{ RiDataClaim.MaxDay }}</td>
+                                        <td class="text-right">{{ RiDataClaim.UnassignedCase }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3 mb-1">
+                            <span class="col-form-label font-weight-bold">Referral Claim</span>
+                        </div>
+                        <div class="mt-2">
+                            <table class="table table-hover" style="table-layout: fixed;">
+                                <thead>
+                                    <tr>
+                                        <th class="w-35">Status</th>
+                                        <th class="w-15">No of Case(s)</th>
+                                        <th class="w-15">Overdue Case(s)</th>
+                                        <th class="w-15">Max Days</th>
+                                        <th class="w-20">Unassigned Case</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!OdReferralDataClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in OdReferralDataClaims">
+                                        <td>{{ ReferralClaim.StatusName }}</td>
+                                        <td class="text-right">{{ ReferralClaim.NoOfCase }}</td>
+                                        <td class="text-right">{{ ReferralClaim.OverdueCase }}</td>
+                                        <td class="text-right">{{ ReferralClaim.MaxDay }}</td>
+                                        <td class="text-right">{{ ReferralClaim.UnassignedCase }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Sanction Summary</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <table class="table table-hover" style="table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center w-40">Potential Match</th>
+                                    <th class="text-center w-30">Exact Match</th>
+                                    <th class="text-center w-30">Whitelist</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">{{Summary?.PotentialCount}}</td>
+                                    <td class="text-center">{{Summary?.ExactMatchCount}}</td>
+                                    <td class="text-center">{{Summary?.WhitelistCount}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Potential Matched Cases (Unprocessed Data)</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <table class="table table-hover" style="table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th class="w-30">Source</th>
+                                    <th class="text-right w-20">RI Data</th>
+                                    <th class="text-right w-20">ClaimRegister</th>
+                                    <th class="text-right w-20">Referral Claim</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!PotentialMatchedCases.length">
+                                    <td colspan="4" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(potentialMatchedCase, index) in PotentialMatchedCases">
+                                    <td>{{ potentialMatchedCase.SourceBo?.Name }}</td>
+                                    <td class="text-right">{{ potentialMatchedCase.RiDataCount }}</td>
+                                    <td class="text-right">{{ potentialMatchedCase.ClaimRegisterCount }}</td>
+                                    <td class="text-right">{{ potentialMatchedCase.ReferralClaimCount }}</td>
+                                </tr>
+                                <tr v-if="PotentialMatchedCases.length">
+                                    <td class="font-weight-bold">Total</td>
+                                    <td class="text-right">{{TotalPotentialMatch?.RiDataCount}}</td>
+                                    <td class="text-right">{{TotalPotentialMatch?.ClaimRegisterCount}}</td>
+                                    <td class="text-right">{{TotalPotentialMatch?.ReferralClaimCount}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-fill w-50 pl-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Outstanding Claim Cases (Top 100)</h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <table class="table table-hover tableBodyScroll">
+                            <thead>
+                                <tr>
+                                    <th class="w-30 bg-white"></th>
+                                    <th class="w-15 bg-white"></th>
+                                    <th class="w-15 bg-white"></th>
+                                    <th class="w-40 text-center" colspan="2">No of Case(s)</th>
+                                </tr>
+                                <tr class="second-row-header">
+                                    <th class="w-30">Target Date to Issue Invoice</th>
+                                    <th class="w-15">Treaty Code</th>
+                                    <th class="w-15">SOA Quarter</th>
+                                    <th class="w-20">Total Cases</th>
+                                    <th class="w-20">Pending Approval</th>
+                                </tr>
+                            </thead>
+                            <tbody style="max-height: 310px !important;">
+                                <tr v-if="!OutstandingClaimCases.length">
+                                    <td colspan="5" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(OutstandingClaimCase, index) in OutstandingClaimCases">
+                                    <td class="w-30">{{OutstandingClaimCase.TargetDateToIssueInvoiceStr}}</td>
+                                    <td class="w-15">{{OutstandingClaimCase.TreatyCode}}</td>
+                                    <td class="w-15">{{OutstandingClaimCase.SoaQuarter}}</td>
+                                    <td class="w-20 text-right">{{OutstandingClaimCase.NoOfCase}}</td>
+                                    <td class="w-20 text-right">{{OutstandingClaimCase.PendingCase}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Referral Claim Pending Registration &bull; <span>@ViewBag.TotalPendingRegistrationReferralClaims Cases</span></h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div>
+                            <span class="col-form-label font-weight-bold">5 Days (Top 20 cases) &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalPending5DaysReferralClaims Cases</span>
+                        </div>
+                        <div class="table-responsive mt-3 mb-1" style="overflow-y: auto; max-height:205px;">
+                            <table class="table table-hover sticky-top-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-30">Referral ID</th>
+                                        <th class="w-30">Assured Name</th>
+                                        <th class="w-30">Person In-Charge</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!Pending5DaysReferralClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in Pending5DaysReferralClaims">
+                                        <td>{{ReferralClaim.ReferralId}}</td>
+                                        <td>{{ReferralClaim.InsuredName}}</td>
+                                        <td>{{ReferralClaim.PersonInChargeBo?.UserName}}</td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-bind:href="pending5DaysReferralClaimLink(index)" title="Edit Referral Claim"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <span class="col-form-label font-weight-bold">6 Days (Top 20 cases) &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalPending6DaysReferralClaims Cases</span>
+                        </div>
+                        <div class="table-responsive mt-3 mb-1" style="overflow-y: auto; max-height:205px;">
+                            <table class="table table-hover sticky-top-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-30">Referral ID</th>
+                                        <th class="w-30">Assured Name</th>
+                                        <th class="w-30">Person In-Charge</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!Pending6DaysReferralClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in Pending6DaysReferralClaims">
+                                        <td>{{ReferralClaim.ReferralId}}</td>
+                                        <td>{{ReferralClaim.InsuredName}}</td>
+                                        <td>{{ReferralClaim.PersonInChargeBo?.UserName}}</td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-bind:href="pending6DaysReferralClaimLink(index)" title="Edit Referral Claim"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <span class="col-form-label font-weight-bold">7 Days (Top 20 cases) &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalPending7DaysReferralClaims Cases</span>
+                        </div>
+                        <div class="table-responsive mt-3 mb-1" style="overflow-y: auto; max-height:205px;">
+                            <table class="table table-hover sticky-top-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-30">Referral ID</th>
+                                        <th class="w-30">Assured Name</th>
+                                        <th class="w-30">Person In-Charge</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!Pending7DaysReferralClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in Pending7DaysReferralClaims">
+                                        <td>{{ReferralClaim.ReferralId}}</td>
+                                        <td>{{ReferralClaim.InsuredName}}</td>
+                                        <td>{{ReferralClaim.PersonInChargeBo?.UserName}}</td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-bind:href="pending7DaysReferralClaimLink(index)" title="Edit Referral Claim"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <span class="col-form-label font-weight-bold">&ge;7 Days (Top 20 cases) &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalPending7DaysOwReferralClaims Cases</span>
+                        </div>
+                        <div class="table-responsive mt-3 mb-1" style="overflow-y: auto; max-height:205px;">
+                            <table class="table table-hover sticky-top-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-30">Referral ID</th>
+                                        <th class="w-30">Assured Name</th>
+                                        <th class="w-30">Person In-Charge</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!Pending7DaysOwReferralClaims.length">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in Pending7DaysOwReferralClaims">
+                                        <td>{{ReferralClaim.ReferralId}}</td>
+                                        <td>{{ReferralClaim.InsuredName}}</td>
+                                        <td>{{ReferralClaim.PersonInChargeBo?.UserName}}</td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-bind:href="pending7DaysOwReferralClaimLink(index)" title="Edit Referral Claim"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Assigned Case Overview &bull; <span>@ViewBag.TotalAssignedCaseOverviews Cases</span></h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div>
+                            <span class="col-form-label font-weight-bold">RI Data Claim &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalRiAssignedCaseOverviews Cases</span>
+                        </div>
+                        <div class="my-3">
+                            <table class="table table-hover tableBodyScroll">
+                                <thead>
+                                    <tr>
+                                        <th class="w-65">User</th>
+                                        <th class="w-20">No of Case(s)</th>
+                                        <th class="w-15 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="max-height: 160px !important;">
+                                    <tr v-if="!RiAssignedCaseOverviews.length">
+                                        <td colspan="3" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(RiDataClaim, index) in RiAssignedCaseOverviews">
+                                        <td class="w-65">{{ RiDataClaim.PicClaimBo?.UserName }}</td>
+                                        <td class="w-20 text-right">{{ RiDataClaim.NoOfCase }}</td>
+                                        <td class="w-15 text-center">
+                                            <a href="javascript:void(0);" v-on:click="openRiAssignedCaseOverviewModal(index)"><span class="fas fa-eye" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <span class="col-form-label font-weight-bold">Referral Claim &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalReferralAssignedCaseOverviews Cases</span>
+                        </div>
+                        <div class="mt-3 mb-1">
+                            <table class="table table-hover tableBodyScroll">
+                                <thead>
+                                    <tr>
+                                        <th class="w-65">User</th>
+                                        <th class="w-20">No of Case(s)</th>
+                                        <th class="w-15 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="max-height: 160px !important;">
+                                    <tr v-if="!ReferralAssignedCaseOverviews.length">
+                                        <td colspan="3" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in ReferralAssignedCaseOverviews">
+                                        <td class="w-65">{{ ReferralClaim.PersonInChargeBo?.UserName }}</td>
+                                        <td class="w-20 text-right">{{ ReferralClaim.NoOfCase }}</td>
+                                        <td class="w-15 text-center">
+                                            <a href="javascript:void(0);" v-on:click="openReferralAssignedCaseOverviewModal(index)"><span class="fas fa-eye" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Pending Follow Up &bull; <span>@ViewBag.TotalPendingFollowUp Cases</span></h4>
+                    </div>
+                    <div class="card-body card-body-dashboard">
+                        <div>
+                            <span class="col-form-label font-weight-bold">RI Data Claim &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalPfuRiDataClaims Cases</span>
+                        </div>
+                        <div class="table-responsive my-4 pr-1" style="overflow-y: auto; max-height:205px;">
+                            <table class="table table-hover sticky-top-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-15">Claim ID</th>
+                                        <th class="w-20">Assured Name</th>
+                                        <th class="w-20">Person In-Charge</th>
+                                        <th class="w-20">Follow Up With</th>
+                                        <th class="w-15">Follow Up Date</th>
+                                        <th class="w-40">Remark</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!PfuRiDataClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(RiDataClaim, index) in PfuRiDataClaims">
+                                        <td>{{RiDataClaim.ClaimId}}</td>
+                                        <td>{{RiDataClaim.InsuredName}}</td>
+                                        <td>{{RiDataClaim.PicClaimBo?.UserName}}</td>
+                                        <td>{{RiDataClaim.FollowUpWith}}</td>
+                                        <td>{{RiDataClaim.FollowUpDateStr}}</td>
+                                        <td>{{RiDataClaim.Remark}}</td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-bind:href="claimRegisterLink(index)" title="Edit Claim Register"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <span class="col-form-label font-weight-bold">Referral Claim &bull;</span>
+                            <span class="col-form-label">@ViewBag.TotalPfuReferralClaims Cases</span>
+                        </div>
+                        <div class="table-responsive mt-3 mb-2 pr-1" style="overflow-y: auto; max-height:205px;">
+                            <table class="table table-hover sticky-top-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-15">Referral ID</th>
+                                        <th class="w-20">Assured Name</th>
+                                        <th class="w-20">Person In-Charge</th>
+                                        <th class="w-20">Follow Up With</th>
+                                        <th class="w-15">Follow Up Date</th>
+                                        <th class="w-40">Remark</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!PfuReferralDataClaims.length">
+                                        <td colspan="5" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(ReferralClaim, index) in PfuReferralDataClaims">
+                                        <td>{{ReferralClaim.ReferralId}}</td>
+                                        <td>{{ReferralClaim.InsuredName}}</td>
+                                        <td>{{ReferralClaim.PersonInChargeBo?.UserName}}</td>
+                                        <td>{{ReferralClaim.FollowUpWith}}</td>
+                                        <td>{{ReferralClaim.FollowUpDateStr}}</td>
+                                        <td>{{ReferralClaim.Remark}}</td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-bind:href="referralClaimLink(index)" title="Edit Referral Claim"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="assignedCaseOverviewDetailModal" tabindex="-1" role="dialog" aria-labelledby="assignedCaseOverviewDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignedCaseOverviewDetailModalLabel">Assigned Case Overview</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <span class="col-form-label font-weight-bold">{{AssignedCaseOverviewModal.Title}}</span>
+                    <div class="form-group">
+                        <label class="col-form-label">User Name</label>
+                        <input class="form-control" v-model="AssignedCaseOverviewModal.UserName" readonly />
+                    </div>
+                    <div class="mt-4">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-70">Status</th>
+                                    <th class="w-30">No of Case(s)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!AssignedCaseOverviewDetails.length">
+                                    <td colspan="2" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(Detail, index) in AssignedCaseOverviewDetails">
+                                    <td>{{ Detail.StatusName }}</td>
+                                    <td class="text-right">{{ Detail.NoOfCase }}</td>
+                                </tr>
+                                <tr v-if="AssignedCaseOverviewDetails.length">
+                                    <td class="font-weight-bold">Total Cases</td>
+                                    <td class="text-right">{{ AssignedCaseOverviewModal.TotalCase }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-right form-row-btn">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var IndividualAssignedRiDataClaims = @Html.Raw(serializer.Serialize(ViewBag.IndividualAssignedRiDataClaims));
+        var IndividualAssignedReferralClaims = @Html.Raw(serializer.Serialize(ViewBag.IndividualAssignedReferralClaims));
+        var RiAssignedCaseOverviews = @Html.Raw(serializer.Serialize(ViewBag.RiAssignedCaseOverviews));
+        var ReferralAssignedCaseOverviews = @Html.Raw(serializer.Serialize(ViewBag.ReferralAssignedCaseOverviews));
+        var OdRiDataClaims = @Html.Raw(serializer.Serialize(ViewBag.OdRiDataClaims));
+        var OdReferralDataClaims = @Html.Raw(serializer.Serialize(ViewBag.OdReferralDataClaims));
+        var ClaimTransactionTypes = @Html.Raw(serializer.Serialize(ViewBag.DropDownClaimTransactionTypes));
+        var PfuRiDataClaims = @Html.Raw(serializer.Serialize(ViewBag.PfuRiDataClaims));
+        var PfuReferralDataClaims = @Html.Raw(serializer.Serialize(ViewBag.PfuReferralClaims));
+        // Sanction
+        var Summary = @Html.Raw(serializer.Serialize(ViewBag.Summary));
+        var PotentialMatchedCases = @Html.Raw(serializer.Serialize(ViewBag.PotentialMatchedCases));
+        var TotalPotentialMatch = @Html.Raw(serializer.Serialize(ViewBag.TotalPotentialMatch));
+        var ClaimRegisterUrl = '@Url.Action("Edit", "ClaimRegisterClaim")?id=';
+        var ReferralClaimUrl = '@Url.Action("Edit", "ReferralClaim")?id=';
+        var ClaimRegisterIndexUrl = '@Url.Action("Index", "ClaimRegisterClaim")?PicClaimId='+@ViewBag.AuthUserId+"&ClaimStatus=";
+        var ReferralClaimIndexUrl = '@Url.Action("Index", "ReferralClaim")?PersonInChargeId=' +@ViewBag.AuthUserId+"&Status=";
+        var Pending5DaysReferralClaims = @Html.Raw(serializer.Serialize(ViewBag.Pending5DaysReferralClaims));
+        var Pending6DaysReferralClaims = @Html.Raw(serializer.Serialize(ViewBag.Pending6DaysReferralClaims));
+        var Pending7DaysReferralClaims = @Html.Raw(serializer.Serialize(ViewBag.Pending7DaysReferralClaims));
+        var Pending7DaysOwReferralClaims = @Html.Raw(serializer.Serialize(ViewBag.Pending7DaysOwReferralClaims));
+        // Outstanding Claim Case
+        var OutstandingClaimCases = @Html.Raw(serializer.Serialize(ViewBag.OutstandingClaimCases));
+
+        var StatusApprovalByLimit = '@ViewBag.StatusApprovalByLimit';
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                IndividualAssignedRiDataClaims: IndividualAssignedRiDataClaims ? IndividualAssignedRiDataClaims : [],
+                IndividualAssignedReferralClaims: IndividualAssignedReferralClaims ? IndividualAssignedReferralClaims : [],
+                RiAssignedCaseOverviews: RiAssignedCaseOverviews ? RiAssignedCaseOverviews : [],
+                ReferralAssignedCaseOverviews: ReferralAssignedCaseOverviews ? ReferralAssignedCaseOverviews : [],
+                AssignedCaseOverviewModal: {
+                    Title: "",
+                    UserName: "",
+                    TotalCase: ""
+                },
+                AssignedCaseOverviewDetails: [],
+                OdRiDataClaims: OdRiDataClaims ? OdRiDataClaims : [],
+                OdReferralDataClaims: OdReferralDataClaims ? OdReferralDataClaims : [],
+                ClaimTransactionType: "",
+                PfuRiDataClaims: PfuRiDataClaims ? PfuRiDataClaims : [],
+                PfuReferralDataClaims: PfuReferralDataClaims ? PfuReferralDataClaims : [],
+                // Sanction
+                Summary: Summary ? Summary : null,
+                PotentialMatchedCases: PotentialMatchedCases ? PotentialMatchedCases : [],
+                TotalPotentialMatch: TotalPotentialMatch ? TotalPotentialMatch : null,
+                Pending5DaysReferralClaims: Pending5DaysReferralClaims ? Pending5DaysReferralClaims : [],
+                Pending6DaysReferralClaims: Pending6DaysReferralClaims ? Pending6DaysReferralClaims : [],
+                Pending7DaysReferralClaims: Pending7DaysReferralClaims ? Pending7DaysReferralClaims : [],
+                Pending7DaysOwReferralClaims: Pending7DaysOwReferralClaims ? Pending7DaysOwReferralClaims : [],
+                // Outstanding Claim Case
+                OutstandingClaimCases: OutstandingClaimCases ? OutstandingClaimCases : [],
+            },
+            methods: {
+                openRiAssignedCaseOverviewModal: function (index) {
+                    this.AssignedCaseOverviewModal.Title = "RI Data Claim";
+                    this.AssignedCaseOverviewModal.UserName = this.RiAssignedCaseOverviews[index].PicClaimBo.UserName;
+                    this.AssignedCaseOverviewModal.TotalCase = this.RiAssignedCaseOverviews[index].NoOfCase;
+
+                    var isError = true;
+                    var assignedCaseOverviewDetails = this.AssignedCaseOverviewDetails;
+                    $.ajax({
+                        url: "@(Url.Action("GetRiAssignedCaseDetail", "ClaimDashboard"))",
+                        type: "POST",
+                        data: {
+                            picClaimId: this.RiAssignedCaseOverviews[index].PicClaimId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            assignedCaseOverviewDetails = data.riAssignedCaseDetails;
+                            isError = false;
+                        }
+                    });
+                    this.AssignedCaseOverviewDetails = assignedCaseOverviewDetails;
+                    if (!isError)
+                        $("#assignedCaseOverviewDetailModal").modal()
+                    else
+                        alert("Error encountered during retrieving data")
+                },
+                openReferralAssignedCaseOverviewModal: function (index) {
+                    this.AssignedCaseOverviewModal.Title = "Referral Claim";
+                    this.AssignedCaseOverviewModal.UserName = this.ReferralAssignedCaseOverviews[index].PersonInChargeBo.UserName;
+                    this.AssignedCaseOverviewModal.TotalCase = this.ReferralAssignedCaseOverviews[index].NoOfCase;
+
+                    var isError = true;
+                    var assignedCaseOverviewDetails = this.AssignedCaseOverviewDetails;
+                    $.ajax({
+                        url: "@(Url.Action("GetReferralAssignedCaseDetail", "ClaimDashboard"))",
+                        type: "POST",
+                        data: {
+                            personInChargeId: this.ReferralAssignedCaseOverviews[index].PersonInChargeId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            assignedCaseOverviewDetails = data.referralAssignedCaseDetails;
+                            isError = false;
+                        }
+                    });
+                    this.AssignedCaseOverviewDetails = assignedCaseOverviewDetails;
+                    if (!isError)
+                        $("#assignedCaseOverviewDetailModal").modal()
+                    else
+                        alert("Error encountered during retrieving data")
+                },
+                refreshOdRiDataClaim: function () {
+                    var odRiDataClaims = this.OdRiDataClaims;
+                    $.ajax({
+                        url: "@(Url.Action("RefreshOdRiDataClaim", "ClaimDashboard"))",
+                        type: "POST",
+                        data: {
+                            claimTransactionType: this.ClaimTransactionType,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            odRiDataClaims = data.odRiDataClaims;
+                        }
+                    });
+                    this.OdRiDataClaims = odRiDataClaims;
+                },
+                claimRegisterLink: function (index) {
+                    var item = this.PfuRiDataClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ClaimRegisterUrl + item.Id;
+                        return url
+                    }
+                },
+                referralClaimLink: function (index) {
+                    var item = this.PfuReferralDataClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ReferralClaimUrl + item.Id;
+                        return url
+                    }
+                },
+                claimRegisterIndexLink: function (index) {
+                    var item = this.IndividualAssignedRiDataClaims[index];
+                    if (item != null) {
+                        var url = ClaimRegisterIndexUrl + item.ClaimStatus;
+                        if (item.ClaimStatus == StatusApprovalByLimit) {
+                            url = url + "&BatchSelection=" + true;
+                        }
+                        window.location.href = url;
+                    }
+                },
+                referralClaimIndexLink: function (index) {
+                    var item = this.IndividualAssignedReferralClaims[index];
+                    if (item != null) {
+                        var url = ReferralClaimIndexUrl + item.Status;
+                        window.location.href = url;
+                    }
+                },
+                pending5DaysReferralClaimLink: function (index) {
+                    var item = this.Pending5DaysReferralClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ReferralClaimUrl + item.Id;
+                        return url
+                    }
+                },
+                pending6DaysReferralClaimLink: function (index) {
+                    var item = this.Pending6DaysReferralClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ReferralClaimUrl + item.Id;
+                        return url
+                    }
+                },
+                pending7DaysReferralClaimLink: function (index) {
+                    var item = this.Pending7DaysReferralClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ReferralClaimUrl + item.Id;
+                        return url
+                    }
+                },
+                pending7DaysOwReferralClaimLink: function (index) {
+                    var item = this.Pending7DaysOwReferralClaims[index];
+                    if (item != null && item.Id != '') {
+                        var url = ReferralClaimUrl + item.Id;
+                        return url
+                    }
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+</script>
+}

@@ -1,0 +1,584 @@
+﻿@model WebApp.Models.TreatyPricingPerLifeRetroViewModel
+
+<div class="form-row mt-4">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#version" class="active underline-tab">Version</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#product">Product</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarks">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelog">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="version" role="tabpanel" aria-labelledby="version-tab">
+
+                <div class="form-horizontal">
+                    @Html.HiddenFor(model => Model.CurrentVersionObjectId)
+                    @Html.HiddenFor(model => Model.ProfitCommissionDetail)
+                    @Html.HiddenFor(model => Model.TierProfitCommission)
+                    @Html.HiddenFor(model => Model.Benefits)
+                    <div class="form-row">
+                        <div class="form-group col-md-12" style="padding-bottom: 0;">
+                            <span class="font-weight-bold">@Html.Label("Version Details", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.Version, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="input-group">
+                                        @if (ViewBag.IsHideSideBar is null || !ViewBag.IsHideSideBar)
+                                        {
+                                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            <div class="input-group-prepend">
+                                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal">CREATE NEW VERSION</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            @Html.HiddenFor(model => model.CurrentVersion)
+                                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker", @disabled = true })
+                                            <div class="input-group-prepend">
+                                                <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal" disabled>CREATE NEW VERSION</button>
+                                            </div>
+                                        }
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.Version, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                                    @Html.HiddenFor(model => model.PersonInChargeId)
+                                    @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12">
+
+                            <ul class="nav nav-tabs">
+                                <li class="nav-item"><a data-toggle="tab" href="#arrangement" class="active underline-tab">Arrangement</a></li>
+                                <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#benefit">Benefit</a></li>
+                            </ul>
+
+                            <div class="tab-content underline-tab-content">
+                                <div class="tab-pane fade show active" id="arrangement" role="tabpanel" aria-labelledby="arrangement-tab">
+
+                                    <div class="form-horizontal">
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6 mid-line-1">
+                                                @Html.LabelFor(model => model.RetrocessionaireRetroPartyId, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.DropDownListFor(model => model.RetrocessionaireRetroPartyId, (List<SelectListItem>)ViewBag.DropDownRetrocessionaires, htmlAttributes: new { @class = "form-control selectpicker" })
+                                                @Html.ValidationMessageFor(model => model.RetrocessionaireRetroPartyId, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group col-md-6 mid-line-2">
+                                                @Html.LabelFor(model => model.RefundofUnearnedPremium, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.TextBoxFor(model => model.RefundofUnearnedPremium, new { @class = "form-control", placeholder = "Type here" })
+                                                @Html.ValidationMessageFor(model => model.RefundofUnearnedPremium, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6 mid-line-1">
+                                                @Html.LabelFor(model => model.TerminationPeriod, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.TextBoxFor(model => model.TerminationPeriod, new { @class = "form-control", placeholder = "Type here" })
+                                                @Html.ValidationMessageFor(model => model.TerminationPeriod, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group col-md-6 mid-line-2">
+                                                @Html.LabelFor(model => model.ResidenceCountry, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.TextBoxFor(model => model.ResidenceCountry, new { @class = "form-control", placeholder = "Type here" })
+                                                @Html.ValidationMessageFor(model => model.ResidenceCountry, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6 mid-line-1">
+                                                @Html.LabelFor(model => model.PaymentRetrocessionairePremiumPickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.DropDownListFor(model => model.PaymentRetrocessionairePremiumPickListDetailId, (List<SelectListItem>)ViewBag.DropDownPaymentRetrocessionairePremium, htmlAttributes: new { @class = "form-control selectpicker" })
+                                                @Html.ValidationMessageFor(model => model.PaymentRetrocessionairePremiumPickListDetailId, "", new { @class = "text-danger" })
+                                            </div>
+                                            <div class="form-group col-md-6 mid-line-2">
+                                                @Html.LabelFor(model => model.EffectiveDate, htmlAttributes: new { @class = "col-form-label" })
+                                                <div class="input-w-icon">
+                                                    @Html.TextBoxFor(model => model.EffectiveDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" } })
+                                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('EffectiveDateStr')" />
+                                                </div>
+                                                @Html.ValidationMessageFor(model => model.EffectiveDateStr, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="form-row mt-4">
+                                            <div class="form-group col-md-12" style="padding-bottom: 0;">
+                                                <span class="font-weight-bold">@Html.Label("Jumbo Limit", htmlAttributes: new { @class = "col-form-label" })</span>
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-6 mid-line-1">
+                                                        @Html.LabelFor(model => model.JumboLimit, htmlAttributes: new { @class = "col-form-label" })
+                                                        <div class="form-row">
+                                                            <div class="col-md-4">
+                                                                @Html.DropDownListFor(model => model.JumboLimitCurrencyCodePickListDetailId, (List<SelectListItem>)ViewBag.DropDownCurrencyCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                                            </div>
+                                                            <div class="col-md-8">
+                                                                @Html.EditorFor(model => model.JumboLimitStr, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00" } })
+                                                            </div>
+                                                        </div>
+                                                        @Html.ValidationMessageFor(model => model.JumboLimitStr, "", new { @class = "text-danger" })
+                                                    </div>
+                                                    <div class="form-group col-md-6 mid-line-2">
+                                                        @Html.LabelFor(model => model.Remarks, htmlAttributes: new { @class = "col-form-label" })
+                                                        @Html.TextAreaFor(model => model.Remarks, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                                                        @Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-row mt-4">
+                                            <div class="form-group col-md-12" style="padding-bottom: 0;">
+                                                <span class="font-weight-bold">@Html.Label("Profit Commission", htmlAttributes: new { @class = "col-form-label" })</span>
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-12">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th class="w-5">No</th>
+                                                                        <th class="w-5">Item</th>
+                                                                        <th class="w-25">Component</th>
+                                                                        <th class="w-25">Component Description</th>
+                                                                        <th class="w-20">Enabled</th>
+                                                                        <th class="w-10">Net/Gross</th>
+                                                                        <th class="w-10">Value</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr v-for="(profitCommissionDetailRow, index) in ProfitCommissionDetailRows">
+                                                                        <td>
+                                                                            <input v-model="profitCommissionDetailRow.Id" type="hidden" class="form-control">
+                                                                            <input v-model="profitCommissionDetailRow.RowIndex" type="hidden" class="form-control">
+                                                                            <input v-model="profitCommissionDetailRow.IsComponentEditable" type="hidden" class="form-control">
+                                                                            <input v-model="profitCommissionDetailRow.IsComponentDescriptionEditable" type="hidden" class="form-control">
+                                                                            <input v-model="profitCommissionDetailRow.IsDropDown" type="hidden" class="form-control">
+                                                                            <input v-model="profitCommissionDetailRow.IsNetGrossRequired" type="hidden" class="form-control">
+                                                                            {{profitCommissionDetailRow.SortIndex}}
+                                                                        </td>
+                                                                        <td>
+                                                                            <input v-model="profitCommissionDetailRow.Item" type="hidden" class="form-control">
+                                                                            {{ItemList[profitCommissionDetailRow.Item]}}
+                                                                        </td>
+                                                                        <td v-if="!profitCommissionDetailRow.IsComponentEditable">
+                                                                            <input v-model="profitCommissionDetailRow.Componenet" type="hidden" class="form-control">
+                                                                            {{profitCommissionDetailRow.Component}}
+                                                                        </td>
+                                                                        <td v-if="profitCommissionDetailRow.IsComponentEditable">
+                                                                            <textarea v-model="profitCommissionDetailRow.Component" class="form-control" style="resize: none" :disabled="Disable" rows="2" v-on:change="updateProfitCommissionDetail()" placeholder="Type here"></textarea>
+                                                                        </td>
+                                                                        <td v-if="!profitCommissionDetailRow.IsComponentDescriptionEditable">
+                                                                            <input v-model="profitCommissionDetailRow.ComponenetDescription" type="hidden" class="form-control">
+                                                                            {{profitCommissionDetailRow.ComponentDescription}}
+                                                                        </td>
+                                                                        <td v-if="profitCommissionDetailRow.IsComponentDescriptionEditable">
+                                                                            <textarea v-model="profitCommissionDetailRow.ComponentDescription" class="form-control" style="resize: none" :disabled="Disable" rows="2" v-on:change="updateProfitCommissionDetail()" placeholder="Type here"></textarea>
+                                                                        </td>
+                                                                        <td v-if="!profitCommissionDetailRow.IsDropDown">
+                                                                            <input v-model="profitCommissionDetailRow.DropDownValue" type="hidden" class="form-control">
+                                                                            <div class="row m-0 p-0">
+                                                                                <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                                                                <div class="custom-control custom-switch pl-1">
+                                                                                    <input type="checkbox" class="custom-control-input" v-model="profitCommissionDetailRow.IsEnabled" :id="'IsEnabledSwitch' + index" :disabled="Disable" v-on:change="updateProfitCommissionDetail()" onchange="changeIsEnabled(this.id)">
+                                                                                    <label class="custom-control-label" :for="'IsEnabledSwitch' + index">Yes</label>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td v-if="profitCommissionDetailRow.IsDropDown">
+                                                                            <input v-model="profitCommissionDetailRow.IsEnabled" type="hidden" class="form-control">
+                                                                            <select v-model="profitCommissionDetailRow.DropDownValue" v-on:change="updateProfitCommissionDetail()" onchange="changeDropDown(this.value)" class="form-control" id="DropDownSelect" :disabled="Disable" data-container="body">
+                                                                                <option v-for="(dropDownDropDown, dropDownDropDownId) in DropDownDropDowns" :value="dropDownDropDown.Value">
+                                                                                    {{ dropDownDropDown.Text }}
+                                                                                </option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td v-if="!profitCommissionDetailRow.IsNetGrossRequired">
+                                                                            <input v-model="profitCommissionDetailRow.IsNetGross" type="hidden" class="form-control">
+                                                                        </td>
+                                                                        <td v-if="profitCommissionDetailRow.IsNetGrossRequired">
+                                                                            <div class="row m-0 p-0">
+                                                                                <div class="mr-2"> <p style="color: #004BA2;">Net</p> </div>
+                                                                                <div class="custom-control custom-switch pl-1">
+                                                                                    <input type="checkbox" class="custom-control-input" v-model="profitCommissionDetailRow.IsNetGross" :id="'IsNetGrossSwitch' + index" :disabled="Disable" v-on:change="updateProfitCommissionDetail()">
+                                                                                    <label class="custom-control-label" :for="'IsNetGrossSwitch' + index">Gross</label>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input v-model="profitCommissionDetailRow.Value" class="form-control" placeholder="Type here" :disabled="Disable" :id="'Value' + index" v-on:change="updateProfitCommissionDetail()">
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-row mt-4">
+                                            <div class="form-group col-md-6 mid-line-1">
+                                                @Html.LabelFor(model => model.ProfitSharing, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.DropDownListFor(model => model.ProfitSharing, (List<SelectListItem>)ViewBag.DropDownProfitSharings, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "changeProfitSharing(this.value)" })
+                                                @Html.ValidationMessageFor(model => model.ProfitSharing, "", new { @class = "text-danger" })
+                                            </div>
+
+                                            <div class="form-group col-md-6 mid-line-2">
+                                                @Html.LabelFor(model => model.ProfitDescription, htmlAttributes: new { @class = "col-form-label" })
+                                                @Html.TextAreaFor(model => model.ProfitDescription, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.ProfitDescriptionMaxLength })
+                                                @Html.ValidationMessageFor(model => model.ProfitDescription, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6 mid-line-1" id="NetProfitPercentageDiv">
+                                                @Html.LabelFor(model => model.NetProfitPercentageStr, htmlAttributes: new { @class = "col-form-label" })
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <div class="input-group-text">%</div>
+                                                    </div>
+                                                    @Html.EditorFor(model => model.NetProfitPercentageStr, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                                </div>
+                                                @Html.ValidationMessageFor(model => model.NetProfitPercentageStr, "", new { @class = "text-danger" })
+                                            </div>
+
+                                            <div class="form-group col-12 mid-line-1" id="TierProfitCommissionDiv">
+                                                @Html.LabelFor(model => model.TierProfitCommission, htmlAttributes: new { @class = "col-form-label" })
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                            <tr v-for="(tierProfitCommissionRow, index) in TierProfitCommissionRows" v-if="!index">
+                                                                <th class="w-50">
+                                                                    <input v-model="tierProfitCommissionRow.Id" type="hidden" class="form-control">
+                                                                    <input v-model="tierProfitCommissionRow.Col1" class="form-control" :disabled="Disable" v-on:change="updateTierProfitCommission(index)">
+                                                                </th>
+                                                                <th class="w-50">
+                                                                    <input v-model="tierProfitCommissionRow.Col2" class="form-control" :disabled="Disable" v-on:change="updateTierProfitCommission(index)">
+                                                                </th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr v-for="(tierProfitCommissionRow, index) in TierProfitCommissionRows" v-if="index">
+                                                                <td>
+                                                                    <input v-model="tierProfitCommissionRow.Id" type="hidden" class="form-control">
+                                                                    <input v-model="tierProfitCommissionRow.Col1" class="form-control" :disabled="Disable" v-on:change="updateTierProfitCommission(index)">
+                                                                </td>
+                                                                <td>
+                                                                    <input v-model="tierProfitCommissionRow.Col2" class="form-control" :disabled="Disable" v-on:change="updateTierProfitCommission(index)">
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                @Html.ValidationMessageFor(model => model.TierProfitCommission, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="tab-pane fade" id="benefit" role="tabpanel" aria-labelledby="benefit-tab">
+
+                                    <div class="form-group col-md-12">
+                                        <div class="text-right">
+                                            <button type="button" v-on:click="resetBenefitModal" data-toggle="modal" data-target="#benefitModal" class="btn btn-add-sub" :disabled="Disable">ADD BENEFIT</button>
+                                        </div>
+
+                                        <div class="mt-4">
+
+                                            <ul class="list-group list-group-flush">
+
+                                                <li class="list-group-item px-0 accordion-item" v-for="(benefit, index) in Benefits">
+                                                    <div class="row accordion-header">
+                                                        <div class="col-md-6">{{ benefit.BenefitCode }}</div>
+                                                        <div class="col-md-6 text-right">
+                                                            <a class="accordion-link" href="javascript:void(0);" v-on:click="cloneBenefit(index)" title="Duplicate Benefit"><span class="fas fa-clone" /></a>
+                                                            <a class="btn collapsed accordion-link" data-toggle="collapse" v-bind:href="'#collapseExample' + index + ''" role="button" aria-expanded="true" :aria-controls="'collapseExample' + index + ''">
+                                                                <span class="mr-3"></span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="collapse" :id="'collapseExample' + index + ''">
+                                                        <div class="accordion-body mt-2">
+                                                            <input type="hidden" :name="'verBenefitId[' + index + ']'" class="form-control" :value="benefit.Id">
+                                                            <input type="hidden" :name="'benefitId[' + index + ']'" class="form-control" :value="benefit.BenefitId">
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("Benefit Code", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input type="text" class="form-control" v-model="benefit.BenefitCode" readonly>
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    @Html.Label("Benefit Name", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input type="text" class="form-control" v-model="benefit.BenefitName" readonly>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("Retrocession Type of Arrangement", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <select v-model="benefit.ArrangementRetrocessionnaireTypePickListDetailId" :name="'arrangementRetrocessionnaireType[' + index + ']'" class="form-control selectpicker" ref="select">
+                                                                        <option v-for="(dropDownArrangementRetrocessionnaireType, index) in DropDownArrangementRetrocessionnaireType" :value="dropDownArrangementRetrocessionnaireType.Value">{{ dropDownArrangementRetrocessionnaireType.Text }}</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    @Html.Label("Total Mortality", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.TotalMortality" class="form-control" :name="'totalMortality[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("MLRe's Retention", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.MlreRetention" class="form-control" :name="'mlreRetention[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    @Html.Label("Retrocessionaire's Share", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <div class="input-group mb-2">
+                                                                        <div class="input-group-prepend">
+                                                                            <div class="input-group-text">%</div>
+                                                                        </div>
+                                                                        <input v-model="benefit.RetrocessionnaireShare" class="form-control" :name="'retrocessionaireShare[' + index + ']'" placeholder="0.00" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("Age Basis (Age Definition)", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <select v-model="benefit.AgeBasisPickListDetailId" :name="'ageBasis[' + index + ']'" class="form-control selectpicker" ref="select">
+                                                                        <option v-for="(dropDownAgeBasis, index) in DropDownAgeBasis" :value="dropDownAgeBasis.Value">{{ dropDownAgeBasis.Text }}</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            @Html.Label("Minimum Issue Age", htmlAttributes: new { @class = "col-form-label" })
+                                                                            <input v-model="benefit.MinIssueAge" type="number" class="form-control" :name="'minIssueAge[' + index + ']'" placeholder="Type here" />
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            @Html.Label("Maximum Issue Age", htmlAttributes: new { @class = "col-form-label" })
+                                                                            <input v-model="benefit.MaxIssueAge" type="number" class="form-control" :name="'maxIssueAge[' + index + ']'" placeholder="Type here" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("Maximum Expiry Age", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.MaxExpiryAge" type="text" class="form-control" :name="'maxExpiryAge[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    @Html.Label("Retrocessionaire Discount", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.RetrocessionaireDiscount" class="form-control" :name="'retrocessionaireDiscount[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("Rate Table Percentage", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.RateTablePercentage" class="form-control" :name="'rateTablePercentage[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    @Html.Label("Claim Approval Limit", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.ClaimApprovalLimit" class="form-control" :name="'claimApproveLimit[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-row">
+                                                                <div class="form-group col-md-6 mid-line-1">
+                                                                    @Html.Label("Auto Binding Limits", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <input v-model="benefit.AutoBindingLimit" class="form-control" :name="'autoBindLimit[' + index + ']'" placeholder="Type here" />
+                                                                </div>
+                                                                <div class="form-group col-md-6 mid-line-2">
+                                                                    @Html.Label("Profit Commission", htmlAttributes: new { @class = "col-form-label" })
+                                                                    <div class="row m-0 p-0">
+                                                                        <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                                                        <div class="custom-control custom-switch pl-2">
+                                                                            <input class="custom-control-input" :id="'isProfitCom_' + index" :name="'isProfitCom[' + index + ']'" type="checkbox" v-model="benefit.IsProfitCommission" />
+                                                                            <label class="custom-control-label" :for="'isProfitCom_' + index">Yes</label>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+
+                                            </ul>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+                
+                @Html.Partial("_LinkTreatyPricingProductModal", new ViewDataDictionary { { "DropDownTreatyPricingCedants", ViewBag.DropDownTreatyPricingCedants }, { "DropDownProductTypes", ViewBag.DropDownProductTypes }, 
+                    { "controllerName", "TreatyPricingProductPerLifeRetro" }, { "listName", "PerLifeRetroProducts" } })
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Ceding Company</th>
+                                <th class="w-20">Product ID</th>
+                                <th class="w-30">Product Name</th>
+                                <th class="w-25">Warning</th>
+                                <th class="text-center w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!PerLifeRetroProducts || !PerLifeRetroProducts.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PerLifeRetroProduct, index) in PerLifeRetroProducts">
+                                <td>{{ PerLifeRetroProduct.TreatyPricingProductBo?.TreatyPricingCedantBo?.Code }}</td>
+                                <td>
+                                    <input type="hidden" :name="'verBenefitId[' + index + ']'" class="form-control" :value="PerLifeRetroProduct.TreatyPricingPerLifeRetroId">
+                                    <input type="hidden" :name="'benefitId[' + index + ']'" class="form-control" :value="PerLifeRetroProduct.TreatyPricingProductId">
+                                    {{ PerLifeRetroProduct.TreatyPricingProductBo?.Code }}
+                                </td>
+                                <td>{{ PerLifeRetroProduct.TreatyPricingProductBo?.Name }}</td>
+                                <td>{{ PerLifeRetroProduct.Warning }}</td>
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" :onclick="'unlinkProduct(' + index + ')'"><span class="fas fa-trash-alt" /></a>
+                                    <a href="javascript:void(0);" :onclick="'editProduct(' + index + ')'" class="ml-1">
+                                        <span class="fas fa-pencil-alt" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="remarks" role="tabpanel" aria-labelledby="remarks-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showDocuments", true }, { "showStatus", false }, { "showVersion", true }, { "showSubject", true }, { "dropdownVersions", ViewBag.DropDownVersions } })
+            </div>
+
+            <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+                @Html.Partial("_Changelog")
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newVersionModal" tabindex="-1" role="dialog" aria-labelledby="newVersionModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Version</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Person In-Charge (Business Development)</label>
+                        <input type="text" readonly class="form-control" id="userName" value="@ViewBag.AuthUserName">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Previous Version</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="duplicatePreviousVersion" name="duplicatePreviousVersion" type="checkbox" />
+                                <label class="custom-control-label" for="duplicatePreviousVersion">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" onclick="createVersion()" class="btn btn-submit" data-dismiss="modal">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="benefitModal" tabindex="-1" role="dialog" aria-labelledby="benefitModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Benefit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="BenefitDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in BenefitDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Benefit Code</label>
+                        <select v-model="BenefitModal.BenefitId" id="BenefitId" class="form-control selectpicker" ref="select">
+                            <option v-for="benefitCode in BenefitCodes" :value="benefitCode.Id">{{ benefitCode.Code }}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Existing Benefit</label>
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                <input class="custom-control-input" id="isDuplicateExisting" name="isDuplicateExisting" type="checkbox" v-model="BenefitModal.IsDuplicateExisting" v-on:change="resetBenefitDuplicate()" />
+                                <label class="custom-control-label" for="isDuplicateExisting">Yes</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Existing Benefit Code</label>
+                        <select v-model="BenefitModal.DuplicateBenefitId" id="DuplicateBenefitId" class="form-control selectpicker" ref="select">
+                            <option v-for="benefitCode in ExistingBenefitCodes" :value="benefitCode.Id">{{ benefitCode.Code }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" v-on:click="addBenefit()" class="btn btn-submit">CREATE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    //Url
+    var CreateVersionUrl = "@(Url.Action("CreateVersion", "TreatyPricingPerLifeRetro"))";
+    var GetVersionDetailUrl = "@(Url.Action("GetVersionDetails"))";
+    var ProductsUrl = '@Url.Action("GetProductData")';
+
+    //List
+    var DropDownBenefits = @Html.Raw(Json.Encode(ViewBag.DropDownBenefits));
+    var DropDownAgeBasis = @Html.Raw(Json.Encode(ViewBag.DropDownAgeBasis));
+    var DropDownArrangementRetrocessionnaireType  = @Html.Raw(Json.Encode(ViewBag.DropDownArrangementRetrocessionnaireType));
+    var ItemList = @Html.Raw(Json.Encode(ViewBag.ItemList));
+    var DropDownDropDowns = @Html.Raw(Json.Encode(ViewBag.DropDownDropDowns));
+    var Benefits = @Html.Raw(Json.Encode(ViewBag.BenefitBos));
+
+    var PerLifeRetroProducts = @Html.Raw(Json.Encode(ViewBag.PerLifeRetroProducts));
+    var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+    var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+    var Changelogs = @Html.Raw(Json.Encode(ViewBag.ObjectVersionChangelogs));
+
+    //Other
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var ProfitSharingFlat = '@BusinessObject.TreatyPricing.TreatyPricingPerLifeRetroVersionBo.ProfitSharingFlat';
+    var ProfitSharingTier = '@BusinessObject.TreatyPricing.TreatyPricingPerLifeRetroVersionBo.ProfitSharingTier';
+    var DropDownString = '@BusinessObject.TreatyPricing.TreatyPricingPerLifeRetroVersionDetailBo.DropDownString';
+</script>
+

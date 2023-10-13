@@ -1,0 +1,198 @@
+﻿@model WebApp.Models.PerLifeDuplicationCheckViewModel
+
+@{
+    ViewBag.Title = "Per Life Duplication Check";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ConfigurationCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.ConfigurationCode, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", maxlength = @ViewBag.ConfigurationCodeMaxLength } })
+                        @Html.ValidationMessageFor(model => model.ConfigurationCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Inclusion, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.EditorFor(model => model.Inclusion, new { htmlAttributes = new { @class = "custom-control-input" } })
+                                <label class="custom-control-label" for="Inclusion">Yes</label>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Inclusion, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ReinsuranceEffectiveStartDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.ReinsuranceEffectiveStartDateStr, new { htmlAttributes = new { id = "ReinsuranceEffectiveStartDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsuranceEffectiveStartDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ReinsuranceEffectiveStartDateStr, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReinsuranceEffectiveEndDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.ReinsuranceEffectiveEndDateStr, new { htmlAttributes = new { id = "ReinsuranceEffectiveEndDate", @class = "form-control", placeholder = "DD MM YYYY" } })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsuranceEffectiveEndDate')" />
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ReinsuranceEffectiveEndDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.TreatyCode, new { id = "TreatyCodeTokenField", @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                        @Html.ValidationMessageFor(model => model.TreatyCode, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EnableReinsuranceBasisCodeCheck, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch pl-2">
+                                @Html.EditorFor(model => model.EnableReinsuranceBasisCodeCheck, new { htmlAttributes = new { @class = "custom-control-input" } })
+                                <label class="custom-control-label" for="EnableReinsuranceBasisCodeCheck">Yes</label>
+                            </div>
+                            @Html.ValidationMessageFor(model => model.EnableReinsuranceBasisCodeCheck, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+
+    <script>
+
+    var TreatyCodes = @Html.Raw(Json.Encode(ViewBag.TreatyCodes));
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#ReinsuranceEffectiveStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReinsuranceEffectiveEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+    }
+
+    var tokenfieldReady = {
+        treatyCode: false,
+    };
+
+    var treatyCodeCount = 0;
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('#TreatyCodeTokenField').tokenfield('disable');
+                $('button').prop("disabled", true);
+            }
+
+            $('#TreatyCodeTokenField')
+
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (treatyCodeCount != 0) {
+                        $.each(existingTokens, function (index, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+
+            .on('tokenfield:createdtoken', function (e) {
+                var valid = TreatyCodes.includes(e.attrs.value)
+                if (!valid) {
+                    $(e.relatedTarget).addClass('invalid');
+                }
+                treatyCodeCount += 1;
+                $('#TreatyCodeTokenField-tokenfield').removeAttr('placeholder');
+            })
+
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = TreatyCodes.includes(e.attrs.value)
+                    if (valid) {
+                        e.preventDefault();
+                    }
+                })
+
+                .on('tokenfield:removedtoken', function (e) {
+                    treatyCodeCount -= 1;
+                    if (treatyCodeCount == 0) {
+                        $("#TreatyCodeTokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                })
+
+                .on('tokenfield:initialize', function (e) {
+                    tokenfieldReady.TreatyCode = true;
+                    var isReady = true;
+                    Object.keys(tokenfieldReady).forEach(function (key) {
+                        if (tokenfieldReady[key] == false) {
+                            isReady = false;
+                        }
+                    });
+                    if (isReady && loadingDiv != null) {
+                        loadingDiv.addClass('hide-loading-spinner');
+                    }
+                })
+
+                .tokenfield({
+                    autocomplete: {
+                        source: TreatyCodes,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+        });
+    </script>
+}

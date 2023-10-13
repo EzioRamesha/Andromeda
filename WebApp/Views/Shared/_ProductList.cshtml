@@ -1,0 +1,42 @@
+﻿<div class="table-responsive">
+    <table class="table table-hover mt-3" v-cloak>
+        <thead>
+            <tr>
+                <th class="w-20">Product ID</th>
+                <th class="w-30">Product Name</th>
+                <th class="w-45">Description</th>
+                <th class="w-5 text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-if="!Products.length">
+                <td colspan="4" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(Product, index) in Products">
+                <td>{{ Product.Code }}</td>
+                <td>{{ Product.Name }}</td>
+                <td>{{ Product.Description }}</td>
+                <td class="text-center">
+                    <a href="javascript:void(0);" :onclick="'editProduct(' + index + ')'">
+                        <span class="fas fa-pencil-alt" />
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    var EditProductUrl = "@(Url.Action("Edit", "TreatyPricingProduct"))";
+    function editProduct(index) {
+        var product = app.Products[index];
+
+        if (product == null)
+            return;
+
+        window.open(
+            EditProductUrl + '/' + product.Id,
+            '_blank'
+        );
+    }
+</script>

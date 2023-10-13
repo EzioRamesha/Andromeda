@@ -1,0 +1,54 @@
+﻿@model WebApp.Models.TreatyPricingRateTableGroupViewModel
+
+@{ 
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@*<!DOCTYPE html>*@
+
+<div>
+    <table class="table table-hover mt-3 tableBodyScroll" v-cloak>
+        <thead>
+            <tr>
+                <th class="w-15">Rate Table ID</th>
+                <th class="w-15">Rate Table Name</th>
+                <th class="w-20">Benefit Code</th>
+                <th class="w-35">Description</th>
+                <th class="w-10">Status</th>
+                <th class="w-5 text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody style="max-height: 310px !important;">
+            <tr v-if="!TreatyPricingRateTables.length">
+                <td colspan="5" class="no-data">No available data found.</td>
+            </tr>
+            <tr v-for="(TreatyPricingRateTable, index) in TreatyPricingRateTables">
+                <td class="w-15">{{ TreatyPricingRateTable.Code }}</td>
+                <td class="w-15">{{ TreatyPricingRateTable.Name }}</td>
+                <td class="w-20">{{ TreatyPricingRateTable.BenefitBo?.Code }}</td>
+                <td class="w-35">{{ TreatyPricingRateTable.Description }}</td>
+                <td class="w-10">{{ TreatyPricingRateTable.StatusName }}</td>
+                <td class="w-5 text-center">
+                    <a v-bind:href="editRateTableLink(index)" title="Edit Rate Table">
+                        <span class="fas fa-pencil-alt" />
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Model
+    var RateTableGroupModel = @Html.Raw(Json.Encode(Model));
+
+    // Url
+    var EditRateTableUrl = "@Url.Action("Edit", "TreatyPricingRateTable")?Id=";
+
+    //List
+    var TreatyPricingRateTables = @Html.Raw(serializer.Serialize(ViewBag.TreatyPricingRateTables));
+
+    // Others
+    var AuthUserName = "@ViewBag.AuthUserName";
+</script>

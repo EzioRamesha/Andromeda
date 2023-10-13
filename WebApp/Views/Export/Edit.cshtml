@@ -1,0 +1,174 @@
+﻿@model WebApp.Models.ExportViewModel
+
+@{
+    ViewBag.Title = "Export";
+    ViewBag.Action = "View";
+    ViewBag.ListPageUrl = Url.Action("Dashboard", "Home");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.ExportBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.ExportBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TypeName, htmlAttributes: new { @class = "col-form-label" })
+
+                        <div class="input-group mb-0">
+                            @if (Model.Type == BusinessObject.ExportBo.TypeRiData)
+                            {
+                                <div class="input-group-prepend">
+                                    <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Edit", "RiData", new { Id = Model.ObjectId })" target="_blank"><i class="fas fa-search"></i></a>
+                                </div>
+                            }
+                            @if (Model.Type == BusinessObject.ExportBo.TypePerLifeAggregationRiData ||
+                                Model.Type == BusinessObject.ExportBo.TypePerLifeAggregationException ||
+                                Model.Type == BusinessObject.ExportBo.TypePerLifeAggregationRetroRiData ||
+                                Model.Type == BusinessObject.ExportBo.TypePerLifeAggregationRetentionPremium
+                            )
+                            {
+                                <div class="input-group-prepend">
+                                    <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Edit", "PerLifeAggregationDetail", new { Id = Model.ObjectId })" target="_blank"><i class="fas fa-search"></i></a>
+                                </div>
+                            }
+                            @Html.EditorFor(model => model.TypeName, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                        </div>
+
+                        @Html.ValidationMessageFor(model => model.TypeName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Total, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Total, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Total, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.GenerateStartAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.GenerateStartAtStr, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.GenerateStartAt, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Processed, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Processed, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Processed, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.GenerateEndAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.GenerateEndAtStr, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.GenerateEndAt, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CreatedAt, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CreatedAtStr, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.CreatedAt, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            double percent = 0;
+            if (Model.Status == BusinessObject.ExportBo.StatusCompleted && (Model.Processed == 0 && Model.Total == 0))
+            {
+                percent = 100;
+            }
+            else
+            {
+                percent = (double)Model.Processed / Model.Total * 100;
+            }
+            var percentStr = string.Format("{0:0}", percent);
+            <div class="mt-4">
+                <span class="font-weight-bold"><label class="col-form-label" for="Progress">Progress</label></span>
+                <div class="progress" style="height: 25px">
+                    <div class="progress-bar" style="width:@percentStr%">@percentStr %</div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <span class="font-weight-bold">@Html.LabelFor(model => model.Parameters, htmlAttributes: new { @class = "col-form-label" })</span>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="w-50">
+                                Label
+                            </th>
+                            <th class="w-50">
+                                Value
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ParameterDic)
+                        {
+                            if (item.Key == "Id")
+                            {
+                                continue;
+                            }
+                            var v = BusinessObject.ExportBo.GetValue(item.Key, item.Value);
+
+                            <tr>
+                                <td>@item.Key</td>
+                                <td>@Html.Editor(item.Key, new { htmlAttributes = new { @class = "form-control", @Value = v, @readonly = "readonly" } })</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Dashboard", "Home", null, new { @class = "btn btn-cancel" })
+                    @Html.ActionLink("DELETE", "Delete", new { Model.Id }, new { @class = "btn btn-del" })
+                    @if (Model.ExportBo.Status == BusinessObject.ExportBo.StatusGenerating)
+                    {
+                        <input type="submit" href="#" formaction="@(Url.Action("Suspend"))" value="Suspend" class="btn btn-del float-right ml-1" />
+                    }
+                    @if (Model.ExportBo.Status == BusinessObject.ExportBo.StatusCompleted || Model.ExportBo.Status == BusinessObject.ExportBo.StatusSuspended || Model.ExportBo.Status == BusinessObject.ExportBo.StatusCancelled)
+                    {
+                        <input type="submit" href="#" formaction="@(Url.Action("SubmitForProcessing"))" value="Submit For Processing" class="btn btn-submit float-right ml-1" />
+                    }
+                    @if (Model.ExportBo.IsFileExists())
+                    {
+                        @Html.ActionLink("DOWNLOAD", "Download", new { Model.Id }, new { @id = "btnDownload", @class = "btn btn-submit float-right" })
+                    }
+                    @if (Model.ExportBo.Status == BusinessObject.ExportBo.StatusPending)
+                    {
+                        <input type="submit" href="#" formaction="@(Url.Action("Cancelled"))" value="Cancel" class="btn btn-del float-right ml-1" />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var autoDownload = @(ViewBag.AutoDownload != null ? ViewBag.AutoDownload.ToString().ToLower() : "false");
+            var btnDownload = $('#btnDownload');
+            if (btnDownload && autoDownload && typeof btnDownload.attr('href') !== 'undefined') {
+                window.location.href = btnDownload.attr('href');
+            }
+        });
+    </script>
+}

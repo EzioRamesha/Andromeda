@@ -1,0 +1,61 @@
+﻿<div class="modal fade" id="ckEditorModal" tabindex="-1" role="dialog" aria-labelledby="ckEditorModal" aria-hidden="true">
+    <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editorTitle"></h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form">
+                    <div id="editor">
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto prevent-disable" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                <button type="button" id="saveEditorBtn" onclick="saveEditor()" class="btn btn-submit" data-dismiss="modal">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var editorFieldId;
+    var myEditor;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        ClassicEditor
+            .create(document.querySelector('#editor'), { initialData: $(''), removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload', 'MediaEmbed'] })
+            .then(editor => { myEditor = editor; })
+            .catch(error => { console.log(error) });
+    });
+
+    function openEditor(title, id) {
+        $('#editorTitle').html(title);
+        editorFieldId = '#' + id;
+        myEditor.setData(decodeURIComponent($(editorFieldId).val()));
+
+        if (disableVersion) {
+            myEditor.isReadOnly = true;
+            $("#saveEditorBtn").prop('disabled', true);
+        } else {
+            myEditor.isReadOnly = false;
+            $("#saveEditorBtn").prop('disabled', false);
+        }
+
+        $('#ckEditorModal').modal('show');
+    }
+
+    function saveEditor() {
+        var raw = myEditor.getData();
+        var encoded = encodeURIComponent(raw);
+
+        $(editorFieldId).val(encoded);
+        if (typeof setCkEditorInput != 'undefined') {
+            setCkEditorInput(editorFieldId);
+        }
+    }
+</script>

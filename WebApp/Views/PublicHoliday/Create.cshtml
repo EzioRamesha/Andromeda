@@ -1,0 +1,96 @@
+﻿@model WebApp.Models.PublicHolidayViewModel
+
+@{
+    ViewBag.Title = "Public Holiday";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.YearStr, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.YearStr, new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY", autocomplete = "off" } })
+                        @Html.ValidationMessageFor(model => model.YearStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="text-right">
+                            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-4">ADD NEW</button>
+                        </div>
+                        <input type="hidden" v-model="SortIndex" name="SortIndex" />
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th style="display:none"></th>
+                                        <th class="w-35">Start Date</th>
+                                        <th class="w-60">Description</th>
+                                        <th class="text-center w-5">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!PublicHolidayDetails.length">
+                                        <td colspan="3" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(publicHolidayDetail, index) in PublicHolidayDetails">
+                                        <td style="display:none">
+                                            <input type="hidden" :name="'publicHolidayDetailId[' + index + ']'" class="form-control" :value="publicHolidayDetail.Id">
+                                        </td>
+                                        <td>
+                                            <input v-model.lazy="publicHolidayDetail.PublicHolidayDateStr" class="form-control" :name="'publicHolidayDate[' + index + ']'" v-on:click="openDatePicker('PublicHolidayDetail_PublicHolidayDateStr_' + index)" :id="'PublicHolidayDetail_PublicHolidayDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" />
+                                        </td>
+                                        <td>
+                                            <textarea rows="1" v-on:focus="autoExpandTextarea('description' + index)" v-on:blur="autoCollapseTextarea('description' + index)" v-model.lazy="publicHolidayDetail.Description" class="form-control textarea-auto-expand" :id="'description' + index" :name="'description[' + index + ']'" placeholder="Type here"></textarea>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="javascript:void(0);" v-on:click="removePublicHolidayDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var PublicHolidayModel = @Html.Raw(Json.Encode(Model));
+        var PublicHolidayDetails = @Html.Raw(Json.Encode(ViewBag.PublicHolidayDetailBos));
+    </script>
+    @Scripts.Render("~/Scripts/models/PublicHoliday.js")
+}

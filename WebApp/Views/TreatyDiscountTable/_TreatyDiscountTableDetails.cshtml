@@ -1,0 +1,96 @@
+﻿@model WebApp.Models.TreatyDiscountTableViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="TreatyDiscountTableDetailMaxIndex" name="treatyDiscountTableDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center w-5">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-20">Ceding Plan Code</th>
+                        <th class="w-20">MLRe Benefit Code</th>
+                        <th v-if="Type == TypeDirectRetro" class="w-20">Age From</th>
+                        <th v-if="Type == TypePerLife" class="w-20">AAR From</th>
+                        <th v-if="Type == TypeDirectRetro" class="w-20">Age To</th>
+                        <th v-if="Type == TypePerLife" class="w-20">AAR To</th>
+                        <th class="w-20">Discount</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!TreatyDiscountTableDetails.length">
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in TreatyDiscountTableDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'treatyDiscountTableDetailId[' + index + ']'" class="form-control" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input v-model="detail.CedingPlanCode" :name="'cedingPlanCode[' + index + ']'" :id="'cedingPlanCode' + index + 'TokenField'" class="form-control" disabled=@disabled :value="detail.CedingPlanCode">
+                        </td>
+                        <td>
+                            <input v-model="detail.BenefitCode" :name="'benefitCode[' + index + ']'" :id="'benefitCode' + index + 'TokenField'" class="form-control" disabled=@disabled :value="detail.BenefitCode">
+                        </td>
+                        @*<td>
+                                <select v-model="detail.BenefitCode" class="form-control selectpicker" ref="select" :id="'benefitCode[' + index + ']'" :name="'benefitId[' + index + ']'" data-container="body" disabled=@disabled>
+                                    <option v-for="benefit in Benefits" disabled="@disabled" :value="benefit.Value">{{ benefit.Text }}</option>
+                                </select>
+                            </td>*@
+                        <td v-if="Type == TypeDirectRetro">
+                            <input type="number" v-model="detail.AgeFromStr" :name="'ageFromStr[' + index + ']'" :disable="Type == TypePerLife" class="form-control" disabled=@disabled :value="detail.AgeFromStr">
+                        </td>
+                        <td v-if="Type == TypeDirectRetro">
+                            <input type="number" v-model="detail.AgeToStr" :name="'ageToStr[' + index + ']'" class="form-control" :disable="Type == TypePerLife" disabled=@disabled :value="detail.AgeToStr">
+                        </td>
+                        <td v-if="Type == TypePerLife">
+                            <input v-model="detail.AARFromStr" :name="'aarFromStr[' + index + ']'" class="form-control" :disable="Type == TypeDirectRetro" disabled=@disabled :value="detail.AARFromStr">
+                        </td>
+                        <td v-if="Type == TypePerLife">
+                            <input v-model="detail.AARToStr" :name="'aarToStr[' + index + ']'" class="form-control" :disable="Type == TypeDirectRetro" disabled=@disabled :value="detail.AARToStr">
+                        </td>
+                        <td>
+                            <input v-model="detail.DiscountStr" :name="'discountStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.DiscountStr">
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeTreatyDiscountTableDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var TreatyDiscountTableModel = @Html.Raw(Json.Encode(Model));
+    var TreatyDiscountTableDetails = @Html.Raw(Json.Encode(ViewBag.TreatyDiscountTableDetailBos));
+    var Benefits = @Html.Raw(Json.Encode(ViewBag.DropDownBenefits));
+    var BenefitCodes = @Html.Raw(Json.Encode(ViewBag.BenefitCodes));
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+
+    // Type
+    var TypeDirectRetro = "@BusinessObject.TreatyDiscountTableBo.TypeDirectRetro";
+    var TypePerLife = "@BusinessObject.TreatyDiscountTableBo.TypePerLife";
+
+</script>

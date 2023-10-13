@@ -1,0 +1,1210 @@
+﻿@using PagedList.Mvc
+@model WebApp.Models.PerLifeAggregationViewModel
+
+@{
+    ViewBag.Title = "Per Life Aggregation";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    var IsEnableSubmitForProcessing = ViewBag.IsEnableSubmitForProcessing != null ? ViewBag.IsEnableSubmitForProcessing : false;
+    var IsEnableFinalise = ViewBag.IsEnableFinalise != null ? ViewBag.IsEnableFinalise : false;
+    var IsEnableProcessRiskQuarter = ViewBag.IsEnableProcessRiskQuarter != null ? ViewBag.IsEnableProcessRiskQuarter : false;
+    var IsEnableDelete = ViewBag.IsEnableDelete != null ? ViewBag.IsEnableDelete : false;
+
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailViewModel> DetailList = ViewBag.DetailList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailViewModel>;
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    // Excluded Summary
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailTreatyViewModel> ExcludedSummaryList = ViewBag.ExcludedSummaryList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailTreatyViewModel>;
+
+    // Excluded Detail
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel> ExcludedDetailList = ViewBag.ExcludedDetailList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailDataViewModel>;
+    var excludedDetailRouteValue = (RouteValueDictionary)ViewBag.ExcludedDetailRouteValue;
+
+    // Retro Summary
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailTreatyViewModel> RetroSummaryList = ViewBag.RetroSummaryList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationDetailTreatyViewModel>;
+
+    // Retro Detail
+    PagedList.IPagedList<WebApp.Models.PerLifeAggregationMonthlyDataViewModel> RetroDetailList = ViewBag.RetroDetailList as PagedList.IPagedList<WebApp.Models.PerLifeAggregationMonthlyDataViewModel>;
+    var retroDetailRouteValue = (RouteValueDictionary)ViewBag.RetroDetailRouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.Retrocession.PerLifeAggregationBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.Retrocession.PerLifeAggregationBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm("Edit", "PerLifeAggregation", FormMethod.Post, new { id = "PerLifeAggregationForm" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                @Html.HiddenFor(model => model.Id)
+                @Html.HiddenFor(model => model.Status)
+                @Html.HiddenFor(model => model.ActiveTab)
+                @Html.HiddenFor(model => model.SelectedIds)
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.FundsAccountingTypePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.FundsAccountingTypePickListDetailId, (List<SelectListItem>)ViewBag.DropDownParentFundsAccountingTypeCodes, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                        @Html.HiddenFor(model => model.FundsAccountingTypePickListDetailId)
+                        @Html.ValidationMessageFor(model => model.FundsAccountingTypePickListDetailId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.SoaQuarter, new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY MM", autocomplete = "off", @readonly = true } })
+                        @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CutOffId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CutOffId, (List<SelectListItem>)ViewBag.DropDownCutOffs, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                        @Html.HiddenFor(model => model.CutOffId)
+                        @Html.ValidationMessageFor(model => model.CutOffId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ProcessingDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-w-icon">
+                            @Html.EditorFor(model => model.ProcessingDateStr, new { htmlAttributes = new { id = "ProcessingDate", @class = "form-control", placeholder = "DD MM YYYY", @readonly = true } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.ProcessingDateStr, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                        @Html.HiddenFor(model => model.PersonInChargeId)
+                        @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Errors, htmlAttributes: new { @class = "col-form-label" })
+                        <textarea class="form-control" rows="3" readonly style="resize: none;">@(Model.Errors)</textarea>
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 float-right">
+                        <div class="row m-0 p-0 float-right">
+                            @if (IsEnableSubmitForProcessing)
+                            {
+                                <div class="mr-1">
+                                    <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#submitForProcessingModal">SUBMIT FOR PROCESSING</button>
+                                </div>
+                            }
+
+                            @if (IsEnableFinalise)
+                            {
+                                <div class="mr-1">
+                                    <button class="btn btn-submit" type="button" data-toggle="modal" data-target="#finaliseModal">FINALISE</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @*----- Modal -----*@
+                <div class="modal fade" id="submitForProcessingModal" tabindex="-1" role="dialog" aria-labelledby="submitForProcessingModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="submitForProcessingModalLabel">Submit For Processing Confirmation</h5>
+                            </div>
+                            <div class="modal-body">
+                                Do you want to submit current Per Life Aggregation for Processing? <br />
+                                <span class="font-weight-bold">Please note that current data will be overriden.</span>
+                                <div class="text-right form-row-btn">
+                                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                    <button type="submit" onclick="submitForProcessing()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="finaliseModal" tabindex="-1" role="dialog" aria-labelledby="finaliseModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="finaliseModalLabel">Finalise Confirmation</h5>
+                            </div>
+                            <div class="modal-body">
+                                Do you want to finalise current Per Life Aggregation? <br />
+                                <span class="font-weight-bold">Please note that this action is not reversible.</span>
+                                <div class="text-right form-row-btn">
+                                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                    <button type="submit" onclick="finalised()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <ul class="nav nav-tabs mt-5">
+            <li class="nav-item"><a href="@Url.Action("Edit", "PerLifeAggregation", new { id = Model.Id })" class="@(Model.ActiveTab == null || Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabRetroProcessing ? "active" : "") underline-tab">Retro Processing</a></li>
+            <li class="nav-item"><a href="@Url.Action("ExcludedRecord", "PerLifeAggregation", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabExcludedRecord || Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabRetroRecord ? "active" : "") underline-tab">Retro Summary</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory" onclick="updateActiveTab()">Status History</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(Model.ActiveTab == null || Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabRetroProcessing ? "show active" : "")" id="retroProcessingTab" role="tabpanel" aria-labelledby="retroProcessingTab-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-30">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortRiskQuarter;
+                                        @Shared.Html.Sorter(ViewBag, "Risk Quarter", "RiskQuarter", @Url.Action("Edit", routeValue))
+                                    }
+                                </th>
+                                <th class="w-30">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortStatus;
+                                        @Shared.Html.Sorter(ViewBag, "Status", "Status", @Url.Action("Edit", routeValue))
+                                    }
+                                </th>
+                                <th class="w-30">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortProcessingDate;
+                                        @Shared.Html.Sorter(ViewBag, "Processing Date", "ProcessingDate", @Url.Action("Edit", routeValue))
+                                    }
+                                </th>
+                                <th class="text-center w-5">
+                                    Action
+                                </th>
+                                <th class="text-center w-5">
+                                    @Html.CheckBox("SelectAllDetail", new { @onclick = "selectAllDetail()" })
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (DetailList.Count > 0)
+                            {
+                                foreach (var item in DetailList)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.RiskQuarter)
+                                        </td>
+                                        <td class="va-middle">
+                                            <span class="@BusinessObject.Retrocession.PerLifeAggregationDetailBo.GetStatusClass(item.Status)">
+                                                @BusinessObject.Retrocession.PerLifeAggregationDetailBo.GetStatusName(item.Status)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (item.ProcessingDate != null)
+                                            {
+                                                @item.ProcessingDate.Value.ToString(Shared.Util.GetDateTimeFormat());
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("Edit", "PerLifeAggregationDetail", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-pencil-alt"></span></a>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="actionCheckbox" name="selectDetail">
+                                                @if (IsEnableProcessRiskQuarter)
+                                                {
+                                                    @Html.CheckBox("SelectDetail", new { id = item.Id })
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @{
+                    ViewBag.CurrentPageNumber = DetailList.PageNumber;
+                    ViewBag.CurrentPageItems = DetailList.Count;
+                    ViewBag.PageSize = DetailList.PageSize;
+                    ViewBag.Total = ViewBag.DetailTotal;
+                }
+                <div class="pagination-footer position-relative">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8" id="DetailPager">
+                            @Html.PagedListPager(DetailList, Page => Url.Action("Edit", new
+                            {
+                                id = Model.Id,
+                                SortOrder = ViewBag.SortOrder,
+                                Page,
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabExcludedRecord || Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabRetroRecord ? "show active" : "")" id="retroSummaryTab" role="tabpanel" aria-labelledby="retroSummaryTab-tab">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a href="@Url.Action("ExcludedRecord", "PerLifeAggregation", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabExcludedRecord ? "active" : "") underline-tab">Excluded Record</a></li>
+                    <li class="nav-item"><a href="@Url.Action("RetroRecord", "PerLifeAggregation", new { id = Model.Id })" class="@(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabRetroRecord ? "active" : "") underline-tab">Retro</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabExcludedRecord ? "show active" : "")" id="excludedRecordTab" role="tabpanel" aria-labelledby="excludedRecordTab-tab">
+                        @using (Html.BeginForm("ExcludedRecord", "PerLifeAggregation", FormMethod.Get, new { id = "PerLifeAggregationExcludedRecordForm" }))
+                        {
+                            <div class="form-row mt-2">
+                                <div class="w-100 text-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            DOWNLOAD AS
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @Html.ActionLink("All", "DownloadExcludedRecord", new
+                                            {
+                                                type = 1,
+                                                id = Model.Id,
+                                            }, new { @class = "dropdown-item", target = "_blank" })
+                                            @Html.ActionLink("Filtered", "DownloadExcludedRecord", new
+                                            {
+                                                type = 2,
+                                                id = Model.Id,
+                                                ExTreatyCode = excludedDetailRouteValue["ExTreatyCode"],
+                                                ExPolicyNumber = excludedDetailRouteValue["ExPolicyNumber"],
+                                                ExPolicyStatusCode = excludedDetailRouteValue["ExPolicyStatusCode"],
+                                                ExAar = excludedDetailRouteValue["ExAar"],
+                                                ExNetPremium = excludedDetailRouteValue["ExNetPremium"],
+                                                ExPremiumFrequencyCode = excludedDetailRouteValue["ExPremiumFrequencyCode"],
+                                                ExRiskPeriodMonth = excludedDetailRouteValue["ExRiskPeriodMonth"],
+                                                ExRiskPeriodYear = excludedDetailRouteValue["ExRiskPeriodYear"],
+                                                ExLastUpdatedDate = excludedDetailRouteValue["ExLastUpdatedDate"],
+                                                ExRiskPeriodStartDate = excludedDetailRouteValue["ExRiskPeriodStartDate"],
+                                                ExRiskPeriodEndDate = excludedDetailRouteValue["ExRiskPeriodEndDate"],
+                                                ExMlreBenefitCode = excludedDetailRouteValue["ExMlreBenefitCode"],
+                                                ExExceptionType = excludedDetailRouteValue["ExExceptionType"],
+                                            }, new { @class = "dropdown-item", target = "_blank" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10">
+                                                Risk Quarter
+                                            </th>
+                                            <th class="w-10">
+                                                Treaty Code
+                                            </th>
+                                            <th class="w-10">
+                                                Count
+                                            </th>
+                                            <th class="w-10">
+                                                Total AAR
+                                            </th>
+                                            <th class="w-10">
+                                                Total Gross Premium
+                                            </th>
+                                            <th class="w-10">
+                                                Total Net Premium
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (ExcludedSummaryList.Count > 0)
+                                        {
+                                            foreach (var item in ExcludedSummaryList)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.RiskQuarter)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.TreatyCode)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.Count)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalAar)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalGrossPremium)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalNetPremium)
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="no-data">No available data found.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            ViewBag.CurrentPageNumber = ExcludedSummaryList.PageNumber;
+                            ViewBag.CurrentPageItems = ExcludedSummaryList.Count;
+                            ViewBag.PageSize = ExcludedSummaryList.PageSize;
+                            ViewBag.Total = ViewBag.ExcludedSummaryTotal;
+
+                            <div class="pagination-footer position-relative">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @Html.Partial("_PageInfo")
+                                    </div>
+                                    <div class="col-md-8">
+                                        @Html.PagedListPager(ExcludedSummaryList, SummaryPage => Url.Action("ExcludedRecord", new
+                                        {
+                                            id = Model.Id,
+                                            SummaryPage = SummaryPage
+                                        }), Shared.Html.GetPagedListRenderOptions())
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-5">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10">
+                                                Treaty Code
+                                            </th>
+                                            <th class="w-10">
+                                                Policy Number
+                                            </th>
+                                            <th class="w-10">
+                                                Policy Status
+                                            </th>
+                                            <th class="w-10">
+                                                AAR
+                                            </th>
+                                            <th class="w-10">
+                                                Prem
+                                            </th>
+                                            <th class="w-10">
+                                                Frequency Mode
+                                            </th>
+                                            <th class="w-10">
+                                                Risk Month
+                                            </th>
+                                            <th class="w-10">
+                                                Risk Year
+                                            </th>
+                                            <th class="w-10">
+                                                Last Updated Date
+                                            </th>
+                                            <th class="w-10">
+                                                Risk Start Date
+                                            </th>
+                                            <th class="w-10">
+                                                Risk End Date
+                                            </th>
+                                            <th class="w-10">
+                                                MLRe Benefit Code
+                                            </th>
+                                            <th class="w-10">
+                                                Exception Type
+                                            </th>
+                                            <th class="text-center w-5">
+                                                Action
+                                            </th>
+                                        </tr>
+
+                                        <tr>
+                                            <th>
+                                                @Html.DropDownList("ExTreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ExPolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ExPolicyStatusCode", (List<SelectListItem>)ViewBag.DropDownPolicyStatusCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ExAar", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ExNetPremium", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ExPremiumFrequencyCode", (List<SelectListItem>)ViewBag.DropDownPremiumFrequencyCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ExRiskPeriodMonth", (List<SelectListItem>)ViewBag.DropDownMonths, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ExRiskPeriodYear", new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY" } })
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ExLastUpdatedDate", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExLastUpdatedDate')" />
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ExRiskPeriodStartDate", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExRiskPeriodStartDate')" />
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ExRiskPeriodEndDate", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExRiskPeriodEndDate')" />
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ExMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ExExceptionType", (List<SelectListItem>)ViewBag.DropDownExceptionTypes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th class="text-center align-middle">
+                                                <div class="btn-row-action">
+                                                    <a href="@Url.Action("ExcludedRecord", "PerLifeAggregation", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                        <span class="fas fa-backspace" />
+                                                    </a>
+                                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                                </div>
+                                            </th>
+                                            <th>
+
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (ExcludedDetailList.Count > 0)
+                                        {
+                                            foreach (var item in ExcludedDetailList)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.TreatyCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.PolicyNumber)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.PolicyStatusCode)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.Aar)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.NetPremium)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.PremiumFrequencyCode)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.RiskPeriodMonth)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.RiskPeriodYear)
+                                                    </td>
+                                                    <td>
+                                                        @item.LastUpdatedDate.ToString(Shared.Util.GetDateFormat())
+                                                    </td>
+                                                    <td>
+                                                        @if (item.RiskPeriodStartDate.HasValue)
+                                                        {
+                                                            @item.RiskPeriodStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (item.RiskPeriodEndDate.HasValue)
+                                                        {
+                                                            @item.RiskPeriodEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                        }
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @BusinessObject.Retrocession.PerLifeAggregationDetailDataBo.GetExceptionTypeName(item.ExceptionType)
+                                                    </td>
+                                                    <td>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="14" class="no-data">No available data found.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            ViewBag.CurrentPageNumber = ExcludedDetailList.PageNumber;
+                            ViewBag.CurrentPageItems = ExcludedDetailList.Count;
+                            ViewBag.PageSize = ExcludedDetailList.PageSize;
+                            ViewBag.Total = ViewBag.ExcludedDetailTotal;
+
+                            <div class="pagination-footer position-relative">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @Html.Partial("_PageInfo")
+                                    </div>
+                                    <div class="col-md-8">
+                                        @Html.PagedListPager(ExcludedDetailList, Page => Url.Action("ExcludedRecord", new
+                                        {
+                                            id = Model.Id,
+                                            ExTreatyCode = excludedDetailRouteValue["ExTreatyCode"],
+                                            ExPolicyNumber = excludedDetailRouteValue["ExPolicyNumber"],
+                                            ExPolicyStatusCode = excludedDetailRouteValue["ExPolicyStatusCode"],
+                                            ExAar = excludedDetailRouteValue["ExAar"],
+                                            ExNetPremium = excludedDetailRouteValue["ExNetPremium"],
+                                            ExPremiumFrequencyCode = excludedDetailRouteValue["ExPremiumFrequencyCode"],
+                                            ExRiskPeriodMonth = excludedDetailRouteValue["ExRiskPeriodMonth"],
+                                            ExRiskPeriodYear = excludedDetailRouteValue["ExRiskPeriodYear"],
+                                            ExLastUpdatedDate = excludedDetailRouteValue["ExLastUpdatedDate"],
+                                            ExRiskPeriodStartDate = excludedDetailRouteValue["ExRiskPeriodStartDate"],
+                                            ExRiskPeriodEndDate = excludedDetailRouteValue["ExRiskPeriodEndDate"],
+                                            ExMlreBenefitCode = excludedDetailRouteValue["ExMlreBenefitCode"],
+                                            ExExceptionType = excludedDetailRouteValue["ExExceptionType"],
+                                            Page = Page
+                                        }), Shared.Html.GetPagedListRenderOptions())
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="tab-pane fade @(Model.ActiveTab == BusinessObject.Retrocession.PerLifeAggregationBo.ActiveTabRetroRecord ? "show active" : "")" id="retroRecordTab" role="tabpanel" aria-labelledby="retroRecordTab-tab">
+                        @using (Html.BeginForm("RetroRecord", "PerLifeAggregation", FormMethod.Get, new { id = "PerLifeAggregationRetroRecordForm" }))
+                        {
+                            <div class="form-row mt-2">
+                                <div class="w-100 text-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            DOWNLOAD AS
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            @Html.ActionLink("All", "DownloadRetroRecord", new
+                                            {
+                                                type = 1,
+                                                id = Model.Id,
+                                            }, new { @class = "dropdown-item", target = "_blank" })
+                                            @Html.ActionLink("Filtered", "DownloadRetroRecord", new
+                                            {
+                                                type = 2,
+                                                id = Model.Id,
+                                                ReTreatyCode = retroDetailRouteValue["ReTreatyCode"],
+                                                ReReinsBasisCode = excludedDetailRouteValue["ReReinsBasisCode"],
+                                                ReFundsAccountingTypeCode = excludedDetailRouteValue["ReFundsAccountingTypeCode"],
+                                                RePremiumFrequencyCode = excludedDetailRouteValue["RePremiumFrequencyCode"],
+                                                ReReportPeriodMonth = excludedDetailRouteValue["ReReportPeriodMonth"],
+                                                ReReportPeriodYear = excludedDetailRouteValue["ReReportPeriodYear"],
+                                                ReTransactionTypeCode = excludedDetailRouteValue["ReTransactionTypeCode"],
+                                                RePolicyNumber = excludedDetailRouteValue["RePolicyNumber"],
+                                                ReIssueDatePol = excludedDetailRouteValue["ReIssueDatePol"],
+                                                ReIssueDateBen = excludedDetailRouteValue["ReIssueDateBen"],
+                                                ReReinsEffDatePol = excludedDetailRouteValue["ReReinsEffDatePol"],
+                                                ReReinsEffDateBen = excludedDetailRouteValue["ReReinsEffDateBen"],
+                                                ReCedingPlanCode = excludedDetailRouteValue["ReCedingPlanCode"],
+                                                ReCedingBenefitTypeCode = excludedDetailRouteValue["ReCedingBenefitTypeCode"],
+                                                ReCedingBenefitRiskCode = excludedDetailRouteValue["ReCedingBenefitRiskCode"],
+                                                ReMlreBenefitCode = excludedDetailRouteValue["ReMlreBenefitCode"],
+                                            }, new { @class = "dropdown-item", target = "_blank" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10 bg-white"></th>
+                                            <th class="w-10 bg-white"></th>
+                                            <th class="w-40 text-center" colspan="4">RI Record Good to Process</th>
+                                            <th class="w-40 text-center" colspan="4">Retain</th>
+                                            <th class="w-50 text-center" colspan="5">Retro for All Retro Party</th>
+                                        </tr>
+                                        <tr class="second-row-header">
+                                            <th class="w-10">Risk Quarter</th>
+                                            <th class="w-10">Treaty Code</th>
+                                            <th class="w-10">Count</th>
+                                            <th class="w-10">Total AAR</th>
+                                            <th class="w-10">Total Gross Premium</th>
+                                            <th class="w-10">Total Net Premium</th>
+                                            <th class="w-10">Count</th>
+                                            <th class="w-10">Total AAR</th>
+                                            <th class="w-10">Total Gross Premium</th>
+                                            <th class="w-10">Total Net Premium</th>
+                                            <th class="w-10">Count</th>
+                                            <th class="w-10">Total Retro Amount</th>
+                                            <th class="w-10">Total Gross Premium</th>
+                                            <th class="w-10">Total Net Premium</th>
+                                            <th class="w-10">Total Discount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (RetroSummaryList.Count > 0)
+                                        {
+                                            foreach (var item in RetroSummaryList)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.RiskQuarter)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.TreatyCode)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.Count)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalAar)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalGrossPremium)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalNetPremium)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.Count2)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalAar2)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalGrossPremium2)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalNetPremium2)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.Count3)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalRetroAmount3)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalGrossPremium3)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalNetPremium3)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Shared.Util.DoubleToString(item.TotalDiscount3)
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="15" class="no-data">No available data found.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            ViewBag.CurrentPageNumber = RetroSummaryList.PageNumber;
+                            ViewBag.CurrentPageItems = RetroSummaryList.Count;
+                            ViewBag.PageSize = RetroSummaryList.PageSize;
+                            ViewBag.Total = ViewBag.RetroSummaryTotal;
+
+                            <div class="pagination-footer position-relative">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @Html.Partial("_PageInfo")
+                                    </div>
+                                    <div class="col-md-8">
+                                        @Html.PagedListPager(RetroSummaryList, SummaryPage => Url.Action("RetroRecord", new
+                                        {
+                                            id = Model.Id,
+                                            SummaryPage = SummaryPage
+                                        }), Shared.Html.GetPagedListRenderOptions())
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mt-5">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10">
+                                                Treaty Code
+                                            </th>
+                                            <th class="w-10">
+                                                Reins Basis Code
+                                            </th>
+                                            <th class="w-10">
+                                                Funds Accounting Type Code
+                                            </th>
+                                            <th class="w-10">
+                                                Premium Frequency Code
+                                            </th>
+                                            <th class="w-10">
+                                                Report Period Month
+                                            </th>
+                                            <th class="w-10">
+                                                Report Period Year
+                                            </th>
+                                            <th class="w-10">
+                                                Transaction Type Code
+                                            </th>
+                                            <th class="w-10">
+                                                Policy Number
+                                            </th>
+                                            <th class="w-10">
+                                                Issue Date Pol
+                                            </th>
+                                            <th class="w-10">
+                                                Issue Date Ben
+                                            </th>
+                                            <th class="w-10">
+                                                Reins Eff Date Pol
+                                            </th>
+                                            <th class="w-10">
+                                                Reins Eff Date Ben
+                                            </th>
+                                            <th class="w-10">
+                                                Ceding Plan Code
+                                            </th>
+                                            <th class="w-10">
+                                                Ceding Benefit Type Code
+                                            </th>
+                                            <th class="w-10">
+                                                Ceding Benefit Risk Code
+                                            </th>
+                                            <th class="w-10">
+                                                MLRe Benefit Code
+                                            </th>
+                                            <th>
+
+                                            </th>
+                                        </tr>
+
+                                        <tr>
+                                            <th>
+                                                @Html.DropDownList("ReTreatyCode", (List<SelectListItem>)ViewBag.DropDownTreatyCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ReReinsBasisCode", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ReFundsAccountingTypeCode", (List<SelectListItem>)ViewBag.DropDownFundsAccountingTypeCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("RePremiumFrequencyCode", (List<SelectListItem>)ViewBag.DropDownPremiumFrequencyCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ReReportPeriodMonth", (List<SelectListItem>)ViewBag.DropDownMonths, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ReReportPeriodYear", new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY" } })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ReTransactionTypeCode", (List<SelectListItem>)ViewBag.DropDownTransactionTypeCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("RePolicyNumber", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ReIssueDatePol", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReIssueDatePol')" />
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ReIssueDateBen", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReIssueDateBen')" />
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ReReinsEffDatePol", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReReinsEffDatePol')" />
+                                            </th>
+                                            <th>
+                                                @Html.TextBox("ReReinsEffDateBen", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReReinsEffDateBen')" />
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ReCedingPlanCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ReCedingBenefitTypeCode", (List<SelectListItem>)ViewBag.DropDownCedingBenefitTypeCodes, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th>
+                                                @Html.Editor("ReCedingBenefitRiskCode", new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                            </th>
+                                            <th>
+                                                @Html.DropDownList("ReMlreBenefitCode", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker" })
+                                            </th>
+                                            <th class="text-center align-middle">
+                                                <div class="btn-row-action">
+                                                    <a href="@Url.Action("RetroRecord", "PerLifeAggregation", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                        <span class="fas fa-backspace" />
+                                                    </a>
+                                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (RetroDetailList.Count > 0)
+                                        {
+                                            foreach (var item in RetroDetailList)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.TreatyCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.ReinsBasisCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.FundsAccountingTypeCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.PremiumFrequencyCode)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.ReportPeriodMonth)
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @Html.DisplayFor(modelItem => item.ReportPeriodYear)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.TransactionTypeCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.PolicyNumber)
+                                                    </td>
+                                                    <td>
+                                                        @if (item.IssueDatePol.HasValue)
+                                                        {
+                                                            @item.IssueDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (item.IssueDateBen.HasValue)
+                                                        {
+                                                            @item.IssueDateBen.Value.ToString(Shared.Util.GetDateFormat())
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (item.ReinsEffDatePol.HasValue)
+                                                        {
+                                                            @item.ReinsEffDatePol.Value.ToString(Shared.Util.GetDateFormat())
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (item.ReinsEffDateBen.HasValue)
+                                                        {
+                                                            @item.ReinsEffDateBen.Value.ToString(Shared.Util.GetDateFormat())
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.CedingPlanCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.CedingBenefitTypeCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.CedingBenefitRiskCode)
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(modelItem => item.MlreBenefitCode)
+                                                    </td>
+                                                    <td>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="17" class="no-data">No available data found.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            ViewBag.CurrentPageNumber = RetroDetailList.PageNumber;
+                            ViewBag.CurrentPageItems = RetroDetailList.Count;
+                            ViewBag.PageSize = RetroDetailList.PageSize;
+                            ViewBag.Total = ViewBag.RetroDetailTotal;
+
+                            <div class="pagination-footer position-relative">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @Html.Partial("_PageInfo")
+                                    </div>
+                                    <div class="col-md-8">
+                                        @Html.PagedListPager(RetroDetailList, Page => Url.Action("RetroRecord", new
+                                        {
+                                            id = Model.Id,
+                                            ReTreatyCode = excludedDetailRouteValue["ReTreatyCode"],
+                                            ReReinsBasisCode = excludedDetailRouteValue["ReReinsBasisCode"],
+                                            ReFundsAccountingTypeCode = excludedDetailRouteValue["ReFundsAccountingTypeCode"],
+                                            RePremiumFrequencyCode = excludedDetailRouteValue["RePremiumFrequencyCode"],
+                                            ReReportPeriodMonth = excludedDetailRouteValue["ReReportPeriodMonth"],
+                                            ReReportPeriodYear = excludedDetailRouteValue["ReReportPeriodYear"],
+                                            ReTransactionTypeCode = excludedDetailRouteValue["ReTransactionTypeCode"],
+                                            RePolicyNumber = excludedDetailRouteValue["RePolicyNumber"],
+                                            ReIssueDatePol = excludedDetailRouteValue["ReIssueDatePol"],
+                                            ReIssueDateBen = excludedDetailRouteValue["ReIssueDateBen"],
+                                            ReReinsEffDatePol = excludedDetailRouteValue["ReReinsEffDatePol"],
+                                            ReReinsEffDateBen = excludedDetailRouteValue["ReReinsEffDateBen"],
+                                            ReCedingPlanCode = excludedDetailRouteValue["ReCedingPlanCode"],
+                                            ReCedingBenefitTypeCode = excludedDetailRouteValue["ReCedingBenefitTypeCode"],
+                                            ReCedingBenefitRiskCode = excludedDetailRouteValue["ReCedingBenefitRiskCode"],
+                                            ReMlreBenefitCode = excludedDetailRouteValue["ReMlreBenefitCode"],
+                                            Page = Page
+                                        }), Shared.Html.GetPagedListRenderOptions())
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+            <div class="table-responsive">
+                <table class="table table-hover my-3">
+                    <thead>
+                        <tr>
+                            <th class="w-30">Status</th>
+                            <th class="w-35">Update Date & time</th>
+                            <th class="w-35">Updated By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="!StatusHistories.length">
+                            <td colspan="3" class="no-data">No available data found.</td>
+                        </tr>
+                        <tr v-for="(statusHistory, index) in StatusHistories">
+                            <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                            <td>{{ statusHistory.CreatedAtStr }}</td>
+                            <td>{{ statusHistory.CreatedByName }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="form-row form-row-btn">
+            <div class="form-group col-md-12 btn-row">
+                @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                @if (IsEnableDelete)
+                {
+                    @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                }
+                <div class="row m-0 p-0 float-right">
+                    @if (IsEnableProcessRiskQuarter)
+                    {
+                        <div class="mr-1">
+                            <button type="submit" class="btn btn-submit" id="processQuarterBtn">
+                                PROCESS QUARTER
+                            </button>
+                        </div>
+                        <div class="mr-1">
+                            <button type="submit" class="btn btn-submit" id="finaliseQuarterBtn">
+                                FINALISE QUARTER
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        var PerLifeAggregationModel = @Html.Raw(Json.Encode(Model));
+        var StatusSubmitForProcessing = '@BusinessObject.Retrocession.PerLifeAggregationBo.StatusSubmitForProcessing';
+        var StatusFinalised = '@BusinessObject.Retrocession.PerLifeAggregationBo.StatusFinalised';
+        var IsEnableSubmitForProcessing = '@ViewBag.IsEnableSubmitForProcessing';
+        var IsEnableDelete = '@ViewBag.IsEnableDelete';
+        var SavedSelectedIds = '@ViewBag.SelectedIds';
+        var ProcessQuarterUrl = '@Url.Action("ProcessRiskQuarter")';
+        var FinaliseQuarterUrl = '@Url.Action("FinaliseRiskQuarter")';
+        var ModelId = '@Model.Id';
+        
+        var StatusHistories = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+                $('textarea').prop("disabled", true);
+            }
+
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $('button').prop("disabled", true);
+            } else {
+                $("[name='__RequestVerificationToken']").prop("disabled", false);
+            }
+
+            if (SavedSelectedIds != '') {
+                var selectedAll = true;
+                var selected = SavedSelectedIds.split(",");
+
+                $('input[name=SelectDetail]').each(function () {
+                    var id = $(this).attr('id');
+                    if (typeof id != 'undefined') {
+                        if (selected.includes(id)) {
+                            $(this).prop('checked', true);
+                        } else {
+                            selectedAll = false;
+                        }
+                    }
+
+                });
+
+                if (selectedAll) {
+                    $('input[name=SelectAllDetail]').prop('checked', true);
+                }
+            }
+
+            $('#processQuarterBtn').on("click", function () {
+                $('#PerLifeAggregationForm').attr("action", ProcessQuarterUrl);
+                formatIds();
+                $('#PerLifeAggregationForm').submit();
+            });
+
+            $('#finaliseQuarterBtn').on("click", function () {
+                $('#PerLifeAggregationForm').attr("action", FinaliseQuarterUrl);
+                formatIds();
+                $('#PerLifeAggregationForm').submit();
+            });
+
+
+            $('a[href^="/PerLifeAggregation/Edit/' + ModelId + '?"]').on("click", function () {
+                formatIds();
+                this.href += "&SelectedIds=" + $('#SelectedIds').val();
+            });
+
+            // Filter Excluded Record
+            $('#ExLastUpdatedDate, #ExRiskPeriodStartDate, #ExRiskPeriodEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            $('#ExRiskPeriodYear').datepicker({
+                format: 'yyyy',
+                viewMode: "years",
+                minViewMode: "years",
+                autoclose: true
+            })
+
+            // Filter Retro Record
+            $('#ReIssueDatePol, #ReIssueDateBen, #ReReinsEffDatePol, #ReReinsEffDateBen').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true,
+            });
+
+            $('#ReReportPeriodYear').datepicker({
+                format: 'yyyy',
+                viewMode: "years",
+                minViewMode: "years",
+                autoclose: true
+            })
+        });
+
+        function selectAllDetail() {
+            $('input[name=SelectDetail]').prop('checked', $('input[name=SelectAllDetail]').prop('checked'));
+        }
+
+        function formatIds() {
+            var selected = [];
+            if (SavedSelectedIds != '') {
+                selected = SavedSelectedIds.split(",");
+            }
+
+            $('input[name=SelectDetail]').each(function () {
+                var id = $(this).attr('id');
+                if (typeof id != 'undefined') {
+                    var checked = $(this).prop('checked');
+
+                    if (selected.includes(id)) {
+                        if (!checked)
+                            selected.splice(selected.indexOf(id), 1);
+                    } else {
+                        if (checked)
+                            selected.push(id);
+                    }
+                }
+            });
+            var selectedIds = selected.join(',');
+
+            $('#SelectedIds').val(selectedIds);
+        }
+
+        function submitForProcessing() {
+            $('#Status').val(StatusSubmitForProcessing);
+            $('#PerLifeAggregationForm').submit();
+        }
+
+        function finalised() {
+            $('#Status').val(StatusFinalised);
+            $('#PerLifeAggregationForm').submit();
+        }
+
+        function updateActiveTab() {
+            $('#retroProcessingTab').removeClass('active');
+            $('#retroSummaryTab').removeClass('active');
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                StatusHistories: StatusHistories,
+            },
+            methods: {
+
+            },
+            created: function () {
+
+            },
+        });
+    </script>
+}
+
+

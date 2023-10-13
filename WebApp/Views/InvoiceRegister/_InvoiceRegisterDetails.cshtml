@@ -1,0 +1,705 @@
+﻿@model WebApp.Models.InvoiceRegisterBatchViewModel
+
+<div class="form-row mt-4">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#soaData" class="active underline-tab">SOA Data</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#compiledSummary">Compiled Summary</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#sunglFile">SUNGL Files</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarkHistory">Remark</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#documentTab">Document</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="soaData" role="tabpanel" aria-labelledby="soaData-tab">
+
+                <div class="text-right mb-2">
+                    <button type="button" class="btn btn-add-sub" style="width: auto;" v-on:click="resetModalData()" data-toggle="modal" data-target="#newSoaDataModal" :disabled="@Model.Status != @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusPending">ADD NEW</button>
+                </div>
+                <input type="hidden" v-model="SoaDataDetailMaxIndex" name="soaDataDetailsMaxIndex" />
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="display:none"></th>
+                                <th class="w-30">Ceding Company</th>
+                                <th class="w-20">Upload Date</th>
+                                <th class="w-25">Treaty ID</th>
+                                <th class="w-10">SOA Quarter</th>
+                                <th class="w-10">Status</th>
+                                <th class="w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!SoaDataDetails || !SoaDataDetails.length">
+                                <td colspan="7" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(detail, index) in SoaDataDetails">
+                                <td style="display:none">
+                                    <input type="hidden" v-model="detail.Id" :name="'soaDataDetailsId[' + index + ']'" />
+                                </td>
+                                <td>{{ detail.CedantBo ? detail.CedantBo.Name : null }}</td>
+                                <td>{{ setDateFormat(detail.CreatedAt) }}</td>
+                                <td>{{ detail.TreatyBo ? detail.TreatyBo.TreatyIdCode : null }}</td>
+                                <td>{{ detail.Quarter }}</td>
+                                <td class="va-middle"><span class="status-badge">{{ DetailStatusList[detail.Status] }}</span></td>
+                                <td>
+                                    <a href="javascript:void(0);" v-on:click="deleteSoaDataDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="compiledSummary" role="tabpanel" aria-labelledby="compiledSummary-tab">
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            @Html.Label("Type", htmlAttributes: new { @class = "col-form-label" })
+                            <select v-model="ReportingTypeId" class="form-control selectpicker" ref="select" :id="'ReportingTypeId'" :name="'ReportingTypeId'" data-container="body" v-on:change="changeReportingType()">
+                                <option v-for="type in ReportingTypes" :value="type.Value">{{ type.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">&nbsp;</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            @Html.Label("WM/CNWM/DNWM/OM/CNOM/DNOM", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                            <div class="table-responsive">
+                                <table class="table table-hover table-soa">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-20 text-header">MYR CURRENCY</th>
+                                            <th colspan="12" v-if="ReportingTypeId == ReportingTypeIFRS17">&nbsp;</th>
+                                            <th colspan="10" v-if="ReportingTypeId == ReportingTypeIFRS4">&nbsp;</th>
+                                            <th class="text-center text-header">SRT</th>
+                                            <th colspan="3">&nbsp;</th>
+                                            <th colspan="2" class="text-center text-header">Co/DM</th>
+                                            <th colspan="2" class="text-center text-header">Co</th>
+                                            <th colspan="4" class="text-center text-header">DM</th>
+                                            <th class="text-center text-header">Others</th>
+                                            <th colspan="2" class="text-center text-header">Cedant's Invoice</th>
+                                            <th>&nbsp;</th>
+                                            <th colspan="2" class="text-center text-header">For OM Business</th>
+                                            <th colspan="2" class="text-center text-header">NB</th>
+                                            <th colspan="2" class="text-center text-header">RN</th>
+                                            <th colspan="2" class="text-center text-header">ALT/SURRENDER</th>
+                                            <th>&nbsp;</th>
+                                            <th colspan="5" class="text-center text-header">RBC</th>
+                                            <th colspan="9" class="text-center text-header">For CNWM, DNWM, CNOM, DNOM</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="w-10">INVOICE TYPE</th>
+                                            <th class="w-10">STT RECEIVED DATE</th>
+                                            <th class="w-10">RISK QTR</th>
+                                            <th class="w-10">TREATY CODE</th>
+                                            <th class="w-10" v-if="ReportingTypeId == ReportingTypeIFRS17">CONTRACT CODE</th>
+                                            <th class="w-10" v-if="ReportingTypeId == ReportingTypeIFRS17">ANNUAL COHORT</th>
+                                            <th class="w-10">ACCOUNT FOR</th>
+                                            <th class="w-10">NB PREMIUM</th>
+                                            <th class="w-10">RN PREMIUM</th>
+                                            <th class="w-10">ALT PREMIUM</th>
+                                            <th class="w-10">NB DISCOUNT</th>
+                                            <th class="w-10">RN DISCOUNT</th>
+                                            <th class="w-10">ALT DISCOUNT</th>
+                                            <th class="w-10">RISK PREMIUM</th>
+                                            <th class="w-10">CLAIM</th>
+                                            <th class="w-10">PROFIT COMM</th>
+                                            <th class="w-10">LEVY</th>
+                                            <th class="w-10">SURR VALUE</th>
+                                            <th class="w-10">GST</th>
+                                            <th class="w-10">MODCO RESERVE INCOME </th>
+                                            <th class="w-10">RI DEPOSIT </th>
+                                            <th class="w-10">NO CLAIM BONUS</th>
+                                            <th class="w-10">DATABASE COMMISSION </th>
+                                            <th class="w-10">ADMINISTRATION CONTRIBUTION </th>
+                                            <th class="w-20">SHARE OF RI COMMISSION FROM COMPULSORY CESSION </th>
+                                            <th class="w-10">RECAPTURE FEE</th>
+                                            <th class="w-10">CREDIT CARD CHARGES</th>
+                                            <th class="w-10">BROKERAGE FEE</th>
+                                            <th class="w-10">NET TOTAL AMOUNT</th>
+                                            <th class="w-10">CURRENCY CODE</th>
+                                            <th class="w-10">CURRENCY RATE</th>
+                                            <th class="w-10">NB CESSION</th>
+                                            <th class="w-10">NB SAR</th>
+                                            <th class="w-10">RN CESSION</th>
+                                            <th class="w-10">RN SAR</th>
+                                            <th class="w-10">ALT CESSION</th>
+                                            <th class="w-10">ALT SAR</th>
+                                            <th class="w-10">PREPARED BY</th>
+                                            <th class="w-10">DTH</th>
+                                            <th class="w-10">TPD</th>
+                                            <th class="w-10">CI</th>
+                                            <th class="w-10">PA</th>
+                                            <th class="w-10">HS</th>
+                                            <th class="w-10">SOA QTR</th>
+                                            <th class="w-20">REASON ADJUSTMENT 1</th>
+                                            <th class="w-20">REASON OF ADJUSTMENT 2</th>
+                                            <th class="w-10">INVOICE NO 1</th>
+                                            <th class="w-10">INVOCE DATE 1</th>
+                                            <th class="w-10">AMOUNT 1</th>
+                                            <th class="w-10">INVOICE NO 2</th>
+                                            <th class="w-10">INVOICE DATE 2</th>
+                                            <th class="w-10">AMOUNT 2</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!WMCompiledSummaryMYRs || !WMCompiledSummaryMYRs.length">
+                                            <td colspan="52" v-if="ReportingTypeId == ReportingTypeIFRS17" class="no-data">No available data found.</td>
+                                            <td colspan="50" v-if="ReportingTypeId == ReportingTypeIFRS4" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(wm, index) in WMCompiledSummaryMYRs">
+                                            <td>{{ InvoiceTypes[wm.InvoiceType] }}</td>
+                                            <td>{{ wm.StatementReceivedDateStr }}</td>
+                                            <td>{{ wm.RiskQuarter }}</td>
+                                            <td>{{ wm.TreatyCode }}</td>
+                                            <td v-if="ReportingTypeId == ReportingTypeIFRS17">{{ wm.ContractCode }}</td>
+                                            <td v-if="ReportingTypeId == ReportingTypeIFRS17">{{ wm.AnnualCohort }}</td>
+                                            <td>{{ wm.AccountDescription }}</td>
+                                            <td>{{ wm.NbPremiumStr }}</td>
+                                            <td>{{ wm.RnPremiumStr }}</td>
+                                            <td>{{ wm.AltPremiumStr }}</td>
+                                            <td>{{ wm.NbDiscountStr }}</td>
+                                            <td>{{ wm.RnDiscountStr }}</td>
+                                            <td>{{ wm.AltDiscountStr }}</td>
+                                            <td>{{ wm.RiskPremiumStr }}</td>
+                                            <td>{{ wm.ClaimStr }}</td>
+                                            <td>{{ wm.ProfitCommStr }}</td>
+                                            <td>{{ wm.LevyStr }}</td>
+                                            <td>{{ wm.SurrenderValueStr }}</td>
+                                            <td>{{ wm.GstStr }}</td>
+                                            <td>{{ wm.ModcoReserveIncomeStr }}</td>
+                                            <td>{{ wm.RiDepositStr }}</td>
+                                            <td>{{ wm.NoClaimBonusStr }}</td>
+                                            <td>{{ wm.DatabaseCommissionStr }}</td>
+                                            <td>{{ wm.AdministrationContributionStr }}</td>
+                                            <td>{{ wm.ShareOfRiCommissionFromCompulsoryCessionStr }}</td>
+                                            <td>{{ wm.RecaptureFeeStr }}</td>
+                                            <td>{{ wm.CreditCardChargesStr }}</td>
+                                            <td>{{ wm.BrokerageFeeStr }}</td>
+                                            <td>{{ wm.NetTotalAmountStr }}</td>
+                                            <td>{{ wm.CurrencyCode }}</td>
+                                            <td>{{ wm.CurrencyRateStr }}</td>
+                                            <td>{{ wm.NbCession }}</td>
+                                            <td>{{ wm.NbSarStr }}</td>
+                                            <td>{{ wm.RnCession }}</td>
+                                            <td>{{ wm.RnSarStr }}</td>
+                                            <td>{{ wm.AltCession }}</td>
+                                            <td>{{ wm.AltSarStr }}</td>
+                                            <td>{{ wm.CreatedByBo.FullName }}</td>
+                                            <td>{{ wm.DTHStr }}</td>
+                                            <td>{{ wm.TPDStr }}</td>
+                                            <td>{{ wm.CIStr }}</td>
+                                            <td>{{ wm.PAStr }}</td>
+                                            <td>{{ wm.HSStr }}</td>
+                                            <td>{{ wm.SoaQuarter }}</td>
+                                            <td>{{ wm.ReasonOfAdjustment1 }}</td>
+                                            <td>{{ wm.ReasonOfAdjustment2 }}</td>
+                                            <td>{{ wm.InvoiceNumber1 }}</td>
+                                            <td>{{ wm.InvoiceDate1Str }}</td>
+                                            <td>{{ wm.Amount1Str}}</td>
+                                            <td>{{ wm.InvoiceNumber2 }}</td>
+                                            <td>{{ wm.InvoiceDate2Str }}</td>
+                                            <td>{{ wm.Amount2Str }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-soa">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-20 text-header">ORIGINAL CURRENCY</th>
+                                            <th colspan="12" v-if="ReportingTypeId == ReportingTypeIFRS17">&nbsp;</th>
+                                            <th colspan="10" v-if="ReportingTypeId == ReportingTypeIFRS4">&nbsp;</th>
+                                            <th class="text-center text-header">SRT</th>
+                                            <th colspan="3">&nbsp;</th>
+                                            <th colspan="2" class="text-center text-header">Co/DM</th>
+                                            <th colspan="2" class="text-center text-header">Co</th>
+                                            <th colspan="4" class="text-center text-header">DM</th>
+                                            <th class="text-center text-header">Others</th>
+                                            <th colspan="2" class="text-center text-header">Cedant's Invoice</th>
+                                            <th>&nbsp;</th>
+                                            <th colspan="2" class="text-center text-header">For OM Business</th>
+                                            <th colspan="2" class="text-center text-header">NB</th>
+                                            <th colspan="2" class="text-center text-header">RN</th>
+                                            <th colspan="2" class="text-center text-header">ALT/SURRENDER</th>
+                                            <th>&nbsp;</th>
+                                            <th colspan="5" class="text-center text-header">RBC</th>
+                                            <th colspan="9" class="text-center text-header">For CNWM, DNWM, CNOM, DNOM</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="w-10">INVOICE TYPE</th>
+                                            <th class="w-10">STT RECEIVED DATE</th>
+                                            <th class="w-10">RISK QTR</th>
+                                            <th class="w-10">TREATY CODE</th>
+                                            <th class="w-10" v-if="ReportingTypeId == ReportingTypeIFRS17">CONTRACT CODE</th>
+                                            <th class="w-10" v-if="ReportingTypeId == ReportingTypeIFRS17">ANNUAL COHORT</th>
+                                            <th class="w-10">ACCOUNT FOR</th>
+                                            <th class="w-10">NB PREMIUM</th>
+                                            <th class="w-10">RN PREMIUM</th>
+                                            <th class="w-10">ALT PREMIUM</th>
+                                            <th class="w-10">NB DISCOUNT</th>
+                                            <th class="w-10">RN DISCOUNT</th>
+                                            <th class="w-10">ALT DISCOUNT</th>
+                                            <th class="w-10">RISK PREMIUM</th>
+                                            <th class="w-10">CLAIM</th>
+                                            <th class="w-10">PROFIT COMM</th>
+                                            <th class="w-10">LEVY</th>
+                                            <th class="w-10">SURR VALUE</th>
+                                            <th class="w-10">GST</th>
+                                            <th class="w-10">MODCO RESERVE INCOME </th>
+                                            <th class="w-10">RI DEPOSIT </th>
+                                            <th class="w-10">NO CLAIM BONUS</th>
+                                            <th class="w-10">DATABASE COMMISSION </th>
+                                            <th class="w-10">ADMINISTRATION CONTRIBUTION </th>
+                                            <th class="w-20">SHARE OF RI COMMISSION FROM COMPULSORY CESSION </th>
+                                            <th class="w-10">RECAPTURE FEE</th>
+                                            <th class="w-10">CREDIT CARD CHARGES</th>
+                                            <th class="w-10">BROKERAGE FEE</th>
+                                            <th class="w-10">NET TOTAL AMOUNT</th>
+                                            <th class="w-10">CURRENCY CODE</th>
+                                            <th class="w-10">CURRENCY RATE</th>
+                                            <th class="w-10">NB CESSION</th>
+                                            <th class="w-10">NB SAR</th>
+                                            <th class="w-10">RN CESSION</th>
+                                            <th class="w-10">RN SAR</th>
+                                            <th class="w-10">ALT CESSION</th>
+                                            <th class="w-10">ALT SAR</th>
+                                            <th class="w-10">PREPARED BY</th>
+                                            <th class="w-10">DTH</th>
+                                            <th class="w-10">TPD</th>
+                                            <th class="w-10">CI</th>
+                                            <th class="w-10">PA</th>
+                                            <th class="w-10">HS</th>
+                                            <th class="w-10">SOA QTR</th>
+                                            <th class="w-20">REASON ADJUSTMENT 1</th>
+                                            <th class="w-20">REASON OF ADJUSTMENT 2</th>
+                                            <th class="w-10">INVOICE NO 1</th>
+                                            <th class="w-10">INVOCE DATE 1</th>
+                                            <th class="w-10">AMOUNT 1</th>
+                                            <th class="w-10">INVOICE NO 2</th>
+                                            <th class="w-10">INVOICE DATE 2</th>
+                                            <th class="w-10">AMOUNT 2</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!WMCompiledSummaryOCs || !WMCompiledSummaryOCs.length">
+                                            <td colspan="52" v-if="ReportingTypeId == ReportingTypeIFRS17" class="no-data">No available data found.</td>
+                                            <td colspan="50" v-if="ReportingTypeId == ReportingTypeIFRS4" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(oc, index) in WMCompiledSummaryOCs">
+                                            <td>{{ InvoiceTypes[oc.InvoiceType] }}</td>
+                                            <td>{{ oc.StatementReceivedDateStr }}</td>
+                                            <td>{{ oc.RiskQuarter }}</td>
+                                            <td>{{ oc.TreatyCode }}</td>
+                                            <td v-if="ReportingTypeId == ReportingTypeIFRS17">{{ oc.ContractCode }}</td>
+                                            <td v-if="ReportingTypeId == ReportingTypeIFRS17">{{ oc.AnnualCohort }}</td>
+                                            <td>{{ oc.AccountDescription }}</td>
+                                            <td>{{ oc.NbPremiumStr }}</td>
+                                            <td>{{ oc.RnPremiumStr }}</td>
+                                            <td>{{ oc.AltPremiumStr }}</td>
+                                            <td>{{ oc.NbDiscountStr }}</td>
+                                            <td>{{ oc.RnDiscountStr }}</td>
+                                            <td>{{ oc.AltDiscountStr }}</td>
+                                            <td>{{ oc.RiskPremiumStr }}</td>
+                                            <td>{{ oc.ClaimStr }}</td>
+                                            <td>{{ oc.ProfitCommStr }}</td>
+                                            <td>{{ oc.LevyStr }}</td>
+                                            <td>{{ oc.SurrenderValueStr }}</td>
+                                            <td>{{ oc.GstStr }}</td>
+                                            <td>{{ oc.ModcoReserveIncomeStr }}</td>
+                                            <td>{{ oc.RiDepositStr }}</td>
+                                            <td>{{ oc.NoClaimBonusStr }}</td>
+                                            <td>{{ oc.DatabaseCommissionStr }}</td>
+                                            <td>{{ oc.AdministrationContributionStr }}</td>
+                                            <td>{{ oc.ShareOfRiCommissionFromCompulsoryCessionStr }}</td>
+                                            <td>{{ oc.RecaptureFeeStr }}</td>
+                                            <td>{{ oc.CreditCardChargesStr }}</td>
+                                            <td>{{ oc.BrokerageFeeStr }}</td>
+                                            <td>{{ oc.NetTotalAmountStr }}</td>
+                                            <td>{{ oc.CurrencyCode }}</td>
+                                            <td>{{ oc.CurrencyRateStr }}</td>
+                                            <td>{{ oc.NbCession }}</td>
+                                            <td>{{ oc.NbSarStr }}</td>
+                                            <td>{{ oc.RnCession }}</td>
+                                            <td>{{ oc.RnSarStr }}</td>
+                                            <td>{{ oc.AltCession }}</td>
+                                            <td>{{ oc.AltSarStr }}</td>
+                                            <td>{{ oc.CreatedByBo.FullName }}</td>
+                                            <td>{{ oc.DTHStr }}</td>
+                                            <td>{{ oc.TPDStr }}</td>
+                                            <td>{{ oc.CIStr }}</td>
+                                            <td>{{ oc.PAStr }}</td>
+                                            <td>{{ oc.HSStr }}</td>
+                                            <td>{{ oc.SoaQuarter }}</td>
+                                            <td>{{ oc.ReasonOfAdjustment1 }}</td>
+                                            <td>{{ oc.ReasonOfAdjustment2 }}</td>
+                                            <td>{{ oc.InvoiceNumber1 }}</td>
+                                            <td>{{ oc.InvoiceDate1Str }}</td>
+                                            <td>{{ oc.Amount1Str}}</td>
+                                            <td>{{ oc.InvoiceNumber2 }}</td>
+                                            <td>{{ oc.InvoiceDate2Str }}</td>
+                                            <td>{{ oc.Amount2Str }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            @Html.Label("SFWM/CNSFWM/DNSFWM", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                            <div class="table-responsive">
+                                <table class="table table-hover table-soa">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="21" v-if="ReportingTypeId == ReportingTypeIFRS17">&nbsp;</th>
+                                            <th colspan="19" v-if="ReportingTypeId == ReportingTypeIFRS4">&nbsp;</th>
+                                            <th colspan="2" class="text-center text-header">NB</th>
+                                            <th colspan="2" class="text-center text-header">RN</th>
+                                            <th colspan="2" class="text-center text-header">ALT/SURRENDER</th>
+                                            <th>&nbsp;</th>
+                                            <th colspan="5" class="text-center text-header">RBC</th>
+                                            <th colspan="9" class="text-center text-header">For CNSFWM, DNSFWM</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="w-10">INVOICE TYPE</th>
+                                            <th class="w-10">STT RECEIVED DATE</th>
+                                            <th class="w-10">RISK QTR</th>
+                                            <th class="w-10">TREATY CODE</th>
+                                            <th class="w-10" v-if="ReportingTypeId == ReportingTypeIFRS17">CONTRACT CODE</th>
+                                            <th class="w-10" v-if="ReportingTypeId == ReportingTypeIFRS17">ANNUAL COHORT</th>
+                                            <th class="w-10">ACCOUNT FOR</th>
+                                            <th class="w-10">NB PREMIUM</th>
+                                            <th class="w-10">RN PREMIUM</th>
+                                            <th class="w-10">ALT PREMIUM</th>
+                                            <th class="w-10">NB DISCOUNT</th>
+                                            <th class="w-10">RN DISCOUNT</th>
+                                            <th class="w-10">ALT DISCOUNT</th>
+                                            <th class="w-10">RISK PREMIUM</th>
+                                            <th class="w-10">CLAIM</th>
+                                            <th class="w-10">GST</th>
+                                            <th class="w-10">NET TOTAL AMOUNT</th>
+                                            <th class="w-10">% OF SERVICE FEE</th>
+                                            <th class="w-10">SERVICE FEE</th>
+                                            <th class="w-10">SST PAYABLE</th>
+                                            <th class="w-10">TOTAL AMOUNT</th>
+                                            <th class="w-10">NB CESSION</th>
+                                            <th class="w-10">NB SAR</th>
+                                            <th class="w-10">RN CESSION</th>
+                                            <th class="w-10">RN SAR</th>
+                                            <th class="w-10">ALT CESSION</th>
+                                            <th class="w-10">ALT SAR</th>
+                                            <th class="w-10">PREPARED BY</th>
+                                            <th class="w-10">DTH</th>
+                                            <th class="w-10">TPD</th>
+                                            <th class="w-10">CI</th>
+                                            <th class="w-10">PA</th>
+                                            <th class="w-10">HS</th>
+                                            <th class="w-10">SOA QTR</th>
+                                            <th class="w-20">REASON ADJUSTMENT 1</th>
+                                            <th class="w-20">REASON OF ADJUSTMENT 2</th>
+                                            <th class="w-10">INVOICE NO 1</th>
+                                            <th class="w-10">INVOCE DATE 1</th>
+                                            <th class="w-10">AMOUNT 1</th>
+                                            <th class="w-10">INVOICE NO 2</th>
+                                            <th class="w-10">INVOICE DATE 2</th>
+                                            <th class="w-10">AMOUNT 2</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!SFCompiledSummarys || !SFCompiledSummarys.length">
+                                            <td colspan="42" v-if="ReportingTypeId == ReportingTypeIFRS17" class="no-data">No available data found.</td>
+                                            <td colspan="40" v-if="ReportingTypeId == ReportingTypeIFRS4" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(sf, index) in SFCompiledSummarys">
+                                            <td>{{ InvoiceTypes[sf.InvoiceType] }}</td>
+                                            <td>{{ sf.StatementReceivedDateStr }}</td>
+                                            <td>{{ sf.RiskQuarter }}</td>
+                                            <td>{{ sf.TreatyCodeBo }}</td>
+                                            <td v-if="ReportingTypeId == ReportingTypeIFRS17">{{ sf.ContractCode }}</td>
+                                            <td v-if="ReportingTypeId == ReportingTypeIFRS17">{{ sf.AnnualCohort }}</td>
+                                            <td>{{ sf.AccountDescription }}</td>
+                                            <td>{{ sf.NbPremiumStr }}</td>
+                                            <td>{{ sf.RnPremiumStr }}</td>
+                                            <td>{{ sf.AltPremiumStr }}</td>
+                                            <td>{{ sf.NbDiscountStr }}</td>
+                                            <td>{{ sf.RnDiscountStr }}</td>
+                                            <td>{{ sf.AltDiscountStr }}</td>
+                                            <td>{{ sf.RiskPremiumStr }}</td>
+                                            <td>{{ sf.ClaimStr }}</td>
+                                            <td>{{ sf.GstStr }}</td>
+                                            <td>{{ sf.NetTotalAmountStr }}</td>
+                                            <td>{{ sf.ServiceFeePercentageStr }}</td>
+                                            <td>{{ sf.ServiceFeeStr }}</td>
+                                            <td>{{ sf.SstStr }}</td>
+                                            <td>{{ sf.TotalAmountStr }}</td>
+                                            <td>{{ sf.NbCession }}</td>
+                                            <td>{{ sf.NbSarStr }}</td>
+                                            <td>{{ sf.RnCession }}</td>
+                                            <td>{{ sf.RnSarStr }}</td>
+                                            <td>{{ sf.AltCession }}</td>
+                                            <td>{{ sf.AltSarStr }}</td>
+                                            <td>{{ sf.CreatedByBo.FullName }}</td>
+                                            <td>{{ sf.DTHStr }}</td>
+                                            <td>{{ sf.TPDStr }}</td>
+                                            <td>{{ sf.CIStr }}</td>
+                                            <td>{{ sf.PAStr }}</td>
+                                            <td>{{ sf.HSStr }}</td>
+                                            <td>{{ sf.SoaQuarter }}</td>
+                                            <td>{{ sf.ReasonOfAdjustment1 }}</td>
+                                            <td>{{ sf.ReasonOfAdjustment2 }}</td>
+                                            <td>{{ sf.InvoiceNo1 }}</td>
+                                            <td>{{ sf.InvoiceDate1Str }}</td>
+                                            <td>{{ sf.Amount1Str }}</td>
+                                            <td>{{ sf.InvoiceNo2 }}</td>
+                                            <td>{{ sf.InvoiceDate2Str }}</td>
+                                            <td>{{ sf.Amount2Str }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="sunglFile" role="tabpanel" aria-labelledby="sunglFile-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-80">Output</th>
+                                <th class="w-20">File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!SunglFiles || !SunglFiles.length">
+                                <td colspan="2" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(file, index) in SunglFiles">
+                                <td>{{ file.FileName }}</td>
+                                <td><a v-bind:href="urlDownloadLink(index)" title="Download"><span class="fas fa-download" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                @*<div class="text-right mt-4 mb-2" v-if="@Model.Status == @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusSuccess">
+                    <div class="file btn btn-upload" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                        <label>UPLOAD</label>
+                        <input type="file" id="dataFile" name="upload" accept=".xls,.xlsx" @@change="uploadFileUpdate()" />
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-80">Input</th>
+                                <th class="w-20">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!Uploads || !Uploads.length">
+                                <td colspan="2" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(upload, index) in Uploads">
+                                <td>
+                                    <input type="hidden" v-model="upload.Id" :name="'uploadId[' + index + ']'">
+                                    <input type="hidden" v-model="upload.FileName" :name="'uploadFileName[' + index + ']'">
+                                    <input type="hidden" v-model="upload.HashFileName" :name="'uploadHashFileName[' + index + ']'">
+                                    <input type="hidden" v-model="upload.Type" :name="'uploadType[' + index + ']'">
+                                    {{ upload.FileName }}
+                                </td>
+                                <td v-if="!upload.Id || !upload.Type">
+                                    <select id="TypeId" class="form-control selectpicker" ref="select" data-container="body" v-model="upload.Type">
+                                        <option v-for="type in DropDownTypes" :value="type.Value">{{ type.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-if="upload.Id">
+                                    {{ UploadTypeList[upload.Type] }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>*@
+            </div>
+
+            <div class="tab-pane fade" id="remarkHistory" role="tabpanel" aria-labelledby="remarkHistory-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showFollowUp", true }, { "showPermission", true }, { "showDocuments", true }, { "dropdownRemarkStatus", ViewBag.StatusItems } })
+            </div>
+
+            <div class="tab-pane fade" id="documentTab" role="tabpanel" aria-labelledby="document-tab">
+                @Html.Partial("_Document", new ViewDataDictionary { { "showPermission", true }, { "hideDetail", true }, { "hideAddButton", true } })
+            </div>
+
+            <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-30">Status</th>
+                                <th class="w-30">Update Date & time</th>
+                                <th class="w-30">Updated By</th>
+                                <th class="w-10">Log File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!StatusHistories || !StatusHistories.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(statusHistory, index) in StatusHistories">
+                                <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                                <td>{{ statusHistory.CreatedAtStr }}</td>
+                                <td>{{ statusHistory.CreatedByName }}</td>
+                                <td>
+                                    <span v-for="log in logFile(index)">
+                                        <a v-bind:href="urlLogDownloadLink(index)" title="Download Log File">
+                                            <span class="fas fa-download" />
+                                        </a>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newSoaDataModal" tabindex="-1" role="dialog" aria-labelledby="newSoaDataModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="SoaDataValidation.length" class="alert alert-danger" role="alert">
+                    <ul>
+                        <li v-for="(validation, index) in SoaDataValidation">{{validation}}</li>
+                    </ul>
+                </div>
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="cedantId" class="col-form-label">Ceding Company</label>
+                            <select v-model="newSoaData.cedantId" id="cedantId" class="form-control selectpicker" ref="select" data-container="body" onchange="getTreatyByCedant(this.value)">
+                                <option v-for="cedant in DropDownCedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            <label for="treatyId" class="col-form-label">Treaty</label>
+                            <select v-model="newSoaData.treatyId" id="treatyId" class="form-control selectpicker" ref="select" data-container="body">
+                                <option v-for="treaty in DropDownTreatys" :value="treaty.Value">{{ treaty.Text }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            <label for="soaQuarter" class="col-form-label">SOA Quarter</label>
+                            <input type="text" v-model="newSoaData.soaQuarter" v-on:click="openQuarterPicker('soaQuarter')" id="soaQuarter" class="form-control" placeholder="YYYY MM" autocomplete="off" />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+
+                    <div class="table-responsive mb-4" v-if="newSoaDataDetail != null">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-30">Ceding Company</th>
+                                    <th class="w-10">Upload Date</th>
+                                    <th class="w-30">Treaty ID</th>
+                                    <th class="w-10">SOA Quarter</th>
+                                    <th class="w-10">Status</th>
+                                    <th class="w-10">Action &nbsp; <input type="checkbox" @@click='checkAll()' v-model='isCheckAll' :disabled="!newSoaDataDetail || !newSoaDataDetail.length" /></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!newSoaDataDetail || !newSoaDataDetail.length">
+                                    <td colspan="6" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(newdetail, index) in newSoaDataDetail">
+                                    <td>{{ newdetail.CedantBo ? newdetail.CedantBo.Name : null }}</td>
+                                    <td>{{ setDateFormat(newdetail.CreatedAt) }}</td>
+                                    <td>{{ newdetail.TreatyBo ? newdetail.TreatyBo.TreatyIdCode : null }}</td>
+                                    <td>{{ newdetail.Quarter }}</td>
+                                    <td class="va-middle"><span class="status-badge">{{ DetailStatusList[newdetail.Status] }}</span></td>
+                                    <td><input type="checkbox" v-model="selected" :value="newdetail.Id" @@change='updateCheckall()' /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit" v-on:click="searchSoaData()" style="width: auto;">SEARCH</button>
+                <button type="button" class="btn btn-submit" v-on:click="addSoaData()" :disabled="!newSoaDataDetail || !newSoaDataDetail.length">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    // Others
+    var ModelId = @Model.Id;
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var QuarterDateFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var DateFormat = "@Shared.Util.GetDateFormatMomentJs()";
+    var ReportingTypeIFRS17 = '@BusinessObject.SoaDatas.SoaDataCompiledSummaryBo.ReportingTypeIFRS17';
+    var ReportingTypeIFRS4 = '@BusinessObject.SoaDatas.SoaDataCompiledSummaryBo.ReportingTypeIFRS4';
+
+    // URL
+    var SoaDataUrl = '@Url.Action("GetSoaData", "InvoiceRegister")';
+    var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var SaveTempFileUrl = "@(Url.Action("Upload", "Document"))";
+    var DeleteTempFileUrl = "@(Url.Action("Remove", "Document"))";
+    var UploadFileUrl = "@(Url.Action("ProcessFileUpload", "InvoiceRegister"))";
+    var SaveTempUploadFileUrl = "@(Url.Action("Upload", "InvoiceRegister"))";
+    var DownloadFileUrl = "@(Url.Action("FileDownload", "InvoiceRegister"))";
+    var TreatyByCedantUrl = "@(Url.Action("GetTreatyByCedant", "InvoiceRegister"))";
+    var DownloadStatusFileUrl = '@Url.Action("StatusFileDownload", "InvoiceRegister")?id=@Model.Id' + "&statusHistoryId=";
+    var GetSoaDataCompiledSummaryUrl = "@(Url.Action("GetCompiledSummaryByReportingType"))";
+
+    // List
+    var SoaDataDetailsList = @Html.Raw(Json.Encode(ViewBag.SoaDataDetails));
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.Remarks));
+    var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistoryBos));
+    var SunglFileList = @Html.Raw(Json.Encode(ViewBag.SunglFiles));
+    var UploadList = @Html.Raw(Json.Encode(ViewBag.UploadFiles));
+    var DetailStatusList = @Html.Raw(Json.Encode(ViewBag.DetailStatusList));
+    var InvoiceTypeList = @Html.Raw(Json.Encode(ViewBag.InvoiceTypeItems));
+    var UploadTypeList = @Html.Raw(Json.Encode(ViewBag.UploadTypeItems));
+    var StatusFiles = @Html.Raw(Json.Encode(ViewBag.StatusFiles));
+    var ReportingTypeList = @Html.Raw(Json.Encode(ViewBag.ReportingTypeItems));
+
+    var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+    var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+    var DocumentTypeItems = @Html.Raw(Json.Encode(ViewBag.DropDownDocumentTypes));
+    var DropDownTypes = @Html.Raw(Json.Encode(ViewBag.TypeItems));
+    var DropDownTreatys = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+    // Status
+    var StatusPending = @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusPending;
+    var StatusSubmitForProcessing = @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusSubmitForProcessing;
+    var StatusProcessing = @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusProcessing;
+    var StatusSuccess = @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusSuccess;
+    var StatusSubmitForGenerate = @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusSubmitForGenerate;
+    var StatusGenerating = @BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusGenerating;
+    var StatusPendingName = "@BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.GetStatusName(BusinessObject.InvoiceRegisters.InvoiceRegisterBatchBo.StatusPending)";
+</script>

@@ -1,0 +1,1922 @@
+﻿@{
+    ViewBag.Title = "Rates Comparison - Aggregate Rates";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Rates Comparison</h4>
+            </div>
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="table-responsive my-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10 bg-white"></th>
+                                <th v-for="(comparison, index) in Comparisons" class="w-10">
+                                    {{ comparison.Name }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <input v-model="comparison.UnderwritingMethod" :id="'underwritingMethod' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <input v-model="comparison.UnderwritingMethod" :id="'underwritingMethod' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Type</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.ProductType" class="form-control" v-on:change="changeProductType(index)">
+                                        <option v-for="productTypeDropDown in comparison.ProductTypeDropDowns" :value="productTypeDropDown.Value">{{ productTypeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.ProductType" class="form-control" v-on:change="changeProductType(index)">
+                                        <option v-for="productTypeDropDown in comparison.ProductTypeDropDowns" :value="productTypeDropDown.Value">{{ productTypeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Target Segment</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <input v-model="comparison.TargetSegment" :id="'targetSegment' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <input v-model="comparison.TargetSegment" :id="'targetSegment' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <input v-model="comparison.DistributionChannel" :id="'distributionChannel' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <input v-model="comparison.DistributionChannel" :id="'distributionChannel' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.ProductName" class="form-control" v-on:change="changeProductName(index)">
+                                        <option v-for="productNameDropDown in comparison.ProductNameDropDowns" :value="productNameDropDown.Value">{{ productNameDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.ProductName" class="form-control" v-on:change="changeProductName(index)">
+                                        <option v-for="productNameDropDown in comparison.ProductNameDropDowns" :value="productNameDropDown.Value">{{ productNameDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.BenefitCode" class="form-control" v-on:change="changeBenefitCode(index)">
+                                        <option v-for="benefitCodeDropDown in comparison.BenefitCodeDropDowns" :value="benefitCodeDropDown.Value">{{ benefitCodeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.BenefitCode" class="form-control" v-on:change="changeBenefitCode(index)">
+                                        <option v-for="benefitCodeDropDown in comparison.BenefitCodeDropDowns" :value="benefitCodeDropDown.Value">{{ benefitCodeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.BenefitName" class="form-control" v-on:change="changeBenefitName(index)">
+                                        <option v-for="benefitNameDropDown in comparison.BenefitNameDropDowns" :value="benefitNameDropDown.Value">{{ benefitNameDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.BenefitName" class="form-control" v-on:change="changeBenefitName(index)">
+                                        <option v-for="benefitNameDropDown in comparison.BenefitNameDropDowns" :value="benefitNameDropDown.Value">{{ benefitNameDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.EffectiveDate" class="form-control" v-on:change="changeEffectiveDate(index)">
+                                        <option v-for="effectiveDateDropDown in comparison.EffectiveDateDropDowns" :value="effectiveDateDropDown.Value">{{ effectiveDateDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.EffectiveDate" class="form-control" v-on:change="changeEffectiveDate(index)">
+                                        <option v-for="effectiveDateDropDown in comparison.EffectiveDateDropDowns" :value="effectiveDateDropDown.Value">{{ effectiveDateDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Table ID</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.RateTableId" class="form-control" v-on:change="changeRateTableId(index)">
+                                        <option v-for="rateTableIdDropDown in comparison.RateTableIdDropDowns" :value="rateTableIdDropDown.Value">{{ rateTableIdDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.RateTableId" class="form-control" v-on:change="changeRateTableId(index)">
+                                        <option v-for="rateTableIdDropDown in comparison.RateTableIdDropDowns" :value="rateTableIdDropDown.Value">{{ rateTableIdDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20" v-if="index">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Ceding Company</th>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20 font-weight-bold" style="background-color: #c5d9ee;" v-if="!index">
+                                        {{rateTable.CedantName}}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20 font-weight-bold" v-if="index">
+                                        {{rateTable.CedantName}}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Name</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.ProductName }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.ProductName }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">RI Discount</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.RiDiscount }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.RiDiscount }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Profit Commission</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.ProfitCommission }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.ProfitCommission }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Guarantee</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.RateGuaranteePickListDetailBo?.Code }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.RateGuaranteePickListDetailBo?.Code }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.UnderwritingMethod }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.UnderwritingMethod }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance's Share</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.ReinsuranceShare }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.ReinsuranceShare }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Cedant's Retention</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.CedantRetention }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.CedantRetention }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.EffectiveDateStr }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.EffectiveDateStr }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Max Expiry Age</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.MaxExpiryAge }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.MaxExpiryAge }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #d9e5f1;" v-if="!index">
+                                        &nbsp;
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr id="ageCountUnitRow">
+                                    <td class="font-weight-bold" style="background-color: #d0e0f1;">ANxB</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #c3d6e9;" v-if="!index">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap font-weight-bold" style="width:200px;" v-if="rateTable.CedantName">
+                                            <div style="width:100px;" class="ur">Unit Rate</div>
+                                            <div style="width:100px;" class="oc">Occ Class</div>
+                                        </div>
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #e5edf5;" v-if="index">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap font-weight-bold" style="width:200px;" v-if="rateTable.CedantName">
+                                            <div style="width:100px;" class="ur">Unit Rate</div>
+                                            <div style="width:100px;" class="oc">Occ Class</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr v-for="age in AgeCount" id="ageCountDataRow">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">{{ age-1 }}</td>
+                                    <td v-for="(rateTable, rateTableIndex) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!rateTableIndex">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:200px;" v-for="(rateBo, index) in rateTable.TreatyPricingRateTableRateBos" v-if="rateTable.TreatyPricingRateTableRateBos && rateBo.Age == age-1">
+                                            <div style="width:100px;" class="ur">{{rateBo.UnitRateStr}}</div>
+                                            <div style="width:100px;" class="oc">{{rateBo.OccupationClassStr}}</div>
+                                        </div>
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap font-weight-bold" style="width:200px;" v-else>
+                                            <div style="width:100px;" class="ur"></div>
+                                            <div style="width:100px;" class="oc"></div>
+                                        </div>
+                                    </td>
+                                    <td v-for="(rateTable, rateTableIndex) in RateTables" class="w-20" v-if="rateTableIndex">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:200px;" v-for="(rateBo, index) in rateTable.TreatyPricingRateTableRateBos" v-if="rateTable.TreatyPricingRateTableRateBos && rateBo.Age == age-1">
+                                            <div style="width:100px;" class="ur">{{rateBo.UnitRateStr}}</div>
+                                            <div style="width:100px;" class="oc">{{rateBo.OccupationClassStr}}</div>
+                                        </div>
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap font-weight-bold" style="width:200px;" v-else>
+                                            <div style="width:100px;" class="ur"></div>
+                                            <div style="width:100px;" class="oc"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive mt-4 mb-3">
+                        <table class="table table-hover" id="outputTable2">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Ceding Company</th>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20 font-weight-bold" style="background-color: #c5d9ee;" v-if="!index">
+                                        {{ rateTable.CedantName }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20 font-weight-bold" v-if="index">
+                                        {{ rateTable.CedantName }}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Treaty / Name</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{rateTable.TreatyPricingRateTableBo?.Name}}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{rateTable.TreatyPricingRateTableBo?.Name}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">RI DIscount</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.RiDiscount }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.RiDiscount }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Profit Commission</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.ProfitCommission }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.ProfitCommission }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Guarantee</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.RateGuaranteePickListDetailBo?.Code }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.RateGuaranteePickListDetailBo?.Code }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.UnderwritingMethod }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.UnderwritingMethod }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance's Share</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.ReinsuranceShare }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.ReinsuranceShare }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Cedant's Retention</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.CedantRetention }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.CedantRetention }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{ rateTable.EffectiveDateStr }}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{ rateTable.EffectiveDateStr }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #d9e5f1;" v-if="!index">
+                                        &nbsp;
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d0e0f1;"></td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #c3d6e9;" v-if="!index">
+                                        <span v-if="rateTable.TreatyPricingRateTableBo?.Name">{{rateTable.TreatyPricingRateTableBo?.Name}}</span>
+                                        <span v-if="!rateTable.TreatyPricingRateTableBo?.Name">&nbsp;</span>
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #e5edf5;" v-if="index">
+                                        <span v-if="rateTable.TreatyPricingRateTableBo?.Name">{{rateTable.TreatyPricingRateTableBo?.Name}}</span>
+                                        <span v-if="!rateTable.TreatyPricingRateTableBo?.Name">&nbsp;</span>
+                                    </td>
+                                </tr>
+
+                                <tr v-for="(rateDifferencePercentage, ageIndex) in RateTables[0].RateDifferencePercentages" v-if="RateTables[0] && RateTables[0].RateDifferencePercentages">
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        {{rateDifferencePercentage.Age}}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        <span v-if="!rateTable.RateDifferencePercentages || !rateTable.RateDifferencePercentages[ageIndex]"></span>
+                                        <span v-if="rateTable.RateDifferencePercentages && rateTable.RateDifferencePercentages[ageIndex]">{{rateTable.RateDifferencePercentages[ageIndex].OccupationClassPercentStr}}</span>
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        <span v-if="!rateTable.RateDifferencePercentages || !rateTable.RateDifferencePercentages[ageIndex]"></span>
+                                        <span v-if="rateTable.RateDifferencePercentages && rateTable.RateDifferencePercentages[ageIndex]">{{rateTable.RateDifferencePercentages[ageIndex].OccupationClassPercentStr}}</span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">
+                                        Unit Rate
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" style="background-color: #ccdcec;" v-if="!index">
+                                        {{rateTable.UnitRatePercentStr}}
+                                    </td>
+                                    <td v-for="(rateTable, index) in RateTables" class="w-20" v-if="index">
+                                        {{rateTable.UnitRatePercentStr}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingCedants));
+        var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        function initTokenfield(index) {
+            var underwritingMethodCount = 0;
+            var targetSegmentCount = 0;
+            var distributionChannelCount = 0;
+
+            $(document).ready(function () {
+                $('#underwritingMethod' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (underwritingMethodCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].UnderwritingMethodCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        underwritingMethodCount += 1;
+                        $("#underwritingMethod" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].UnderwritingMethod = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeUnderwritingMethod(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].UnderwritingMethodCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        app.changeUnderwritingMethod(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        underwritingMethodCount -= 1;
+                        if (underwritingMethodCount == 0) {
+                            $("#underwritingMethod" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].UnderwritingMethod = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeUnderwritingMethod(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].UnderwritingMethodCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+
+                $('#targetSegment' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (targetSegmentCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].TargetSegmentCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        targetSegmentCount += 1;
+                        $("#targetSegment" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].TargetSegment = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeTargetSegment(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].TargetSegmentCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        app.changeTargetSegment(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        targetSegmentCount -= 1;
+                        if (targetSegmentCount == 0) {
+                            $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].TargetSegment = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeTargetSegment(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].TargetSegmentCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+
+                $('#distributionChannel' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (distributionChannelCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].DistributionChannelCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        distributionChannelCount += 1;
+                        $("#distributionChannel" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].DistributionChannel = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeDistributionChannel(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].DistributionChannelCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        app.changeDistributionChannel(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        distributionChannelCount -= 1;
+                        if (distributionChannelCount == 0) {
+                            $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].DistributionChannel = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeDistributionChannel(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].DistributionChannelCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+            });
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Basis", Cedant: "",
+                        // Underwriting Method
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        // Product Name
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        // Product Type
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        // Target Segment
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        // Distribution Channel
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        // Benefit Code
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        // Benefit Name
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        // Rate Effective Date
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        // Rate Table ID
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        // Rate Table Version
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 1", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: "", ProductVersionIds: [],
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        ProductTypeDropDowns: DropDownEmpty, ProductType: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        BenefitCodeDropDowns: DropDownEmpty, BenefitCode: "",
+                        BenefitNameDropDowns: DropDownEmpty, BenefitName: "",
+                        EffectiveDateDropDowns: DropDownEmpty, EffectiveDate: "",
+                        RateTableIdDropDowns: DropDownEmpty, RateTableId: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", RateTableVersionId: 0,
+                    },
+                ],
+                RateTables: [
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] }, // Default
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                    { TreatyPricingRateTableRateBos: [], RateDifferencePercentages: [] },
+                ],
+                AgeCount: 1, // Default set to 1
+                IsGenerated: false,
+            },
+            methods: {
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.UnderwritingMethod = "";
+                    $('#underwritingMethod' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#underwritingMethod" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductName = "";
+                    comparison.ProductType = "";
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.BenefitCode = "";
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var underwritingMethodCodes = comparison.UnderwritingMethodCodes;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var productTypeDropDowns = comparison.ProductTypeDropDowns;
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            underwritingMethodCodes = data.underwritingMethodCodes;
+                            productNameDropDowns = data.productNameDropDowns;
+                            productTypeDropDowns = data.productTypeDropDowns;
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.UnderwritingMethodCodes = underwritingMethodCodes;
+                    $('#underwritingMethod' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: underwritingMethodCodes });
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.ProductTypeDropDowns = productTypeDropDowns;
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeUnderwritingMethod: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.ProductType = "";
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductName = "";
+                    comparison.BenefitCode = "";
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var productTypeDropDowns = comparison.ProductTypeDropDowns;
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            productTypeDropDowns = data.productTypeDropDowns;
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            productNameDropDowns = data.productNameDropDowns;
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.ProductTypeDropDowns = productTypeDropDowns;
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeProductType: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductName = "";
+                    comparison.BenefitCode = "";
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productType: comparison.ProductType,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            productNameDropDowns = data.productNameDropDowns;
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeTargetSegment: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductName = "";
+                    comparison.BenefitCode = "";
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            productNameDropDowns = data.productNameDropDowns;
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeDistributionChannel: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.DistributionChannel) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.ProductName = "";
+                    comparison.BenefitCode = "";
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                            distributionChannel: formattedDistributionChannel,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            productNameDropDowns = data.productNameDropDowns;
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeProductName: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.DistributionChannel) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.BenefitCode = "";
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var benefitCodeDropDowns = comparison.BenefitCodeDropDowns;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                            distributionChannel: formattedDistributionChannel,
+                            productName: comparison.ProductName,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            benefitCodeDropDowns = data.benefitCodeDropDowns;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.BenefitCodeDropDowns = benefitCodeDropDowns;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeBenefitCode: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.BenefitName = "";
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var benefitNameDropDowns = comparison.BenefitNameDropDowns;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productName: comparison.ProductName,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                            distributionChannel: formattedDistributionChannel,
+                            benefitCode: comparison.BenefitCode,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            benefitNameDropDowns = data.benefitNameDropDowns;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.BenefitNameDropDowns = benefitNameDropDowns;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeBenefitName: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.EffectiveDate = "";
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var effectiveDateDropDowns = comparison.EffectiveDateDropDowns;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productName: comparison.ProductName,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                            distributionChannel: formattedDistributionChannel,
+                            benefitCode: comparison.BenefitCode,
+                            benefitName: comparison.BenefitName,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            effectiveDateDropDowns = data.effectiveDateDropDowns;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.EffectiveDateDropDowns = effectiveDateDropDowns;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeEffectiveDate: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.RateTableId = "";
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var rateTableIdDropDowns = comparison.RateTableIdDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productName: comparison.ProductName,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                            distributionChannel: formattedDistributionChannel,
+                            benefitCode: comparison.BenefitCode,
+                            benefitName: comparison.BenefitName,
+                            effectiveDate: comparison.EffectiveDate,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            rateTableIdDropDowns = data.rateTableIdDropDowns;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.RateTableIdDropDowns = rateTableIdDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeRateTableId: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductVersionIds = [];
+                    comparison.Version = "";
+                    comparison.RateTableVersionId = 0;
+
+                    var productVersionIds = comparison.ProductVersionIds;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            productName: comparison.ProductName,
+                            productType: comparison.ProductType,
+                            targetSegment: formattedTargetSegment,
+                            distributionChannel: formattedDistributionChannel,
+                            benefitCode: comparison.BenefitCode,
+                            benefitName: comparison.BenefitName,
+                            effectiveDate: comparison.EffectiveDate,
+                            rateTableId: comparison.RateTableId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productVersionIds = data.productVersionIds;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.ProductVersionIds = productVersionIds;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    var rateTableVersionId = 0;
+
+                    $.ajax({
+                        url: "@(Url.Action("GetRateTableVersionId", "Report"))",
+                        type: "POST",
+                        data: {
+                            rateTableId: comparison.RateTableId,
+                            version: comparison.Version,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            rateTableVersionId = data.rateTableVersionId;
+                        }
+                    });
+
+                    comparison.RateTableVersionId = rateTableVersionId;
+                },
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var rateTableVersionIds = [];
+                    var productVersionIds = [];
+
+                    var errorList = [];
+
+                    comparisons.forEach(function (comparison, index) {
+                        if (index == 0 && !comparison.Cedant) {
+                            errorList.push("Please select filter parameters in " + comparison.Name + ".");
+                        }
+                        if (comparison.Cedant) {
+                            if (comparison.UnderwritingMethod) {
+                                var isValid = true;
+                                var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                                    return item.trim();
+                                });
+                                underwritingMethodArr.forEach(function (value) {
+                                    if (!comparison.UnderwritingMethodCodes.includes(value)) {
+                                        isValid = false;
+                                    }
+                                });
+                                if (!isValid)
+                                    errorList.push("Please fill in correct Underwriting Method for " + comparison.Name + ".");
+                            }
+                            // As dicusss on 2021-08-22 - Remove these validation
+                            @*else {
+                                errorList.push("Please fill in Underwriting Method for " + comparison.Name + ".");
+                            }
+                            if (!comparison.ProductName) {
+                                errorList.push("Please select Product Name for " + comparison.Name + ".");
+                            }
+                            if (!comparison.ProductType) {
+                                errorList.push("Please select Product Type for " + comparison.Name + ".");
+                            }*@
+                            if (!comparison.RateTableId) {
+                                errorList.push("Please select Rate Table Id for " + comparison.Name + ".");
+                            }
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+                        }
+                    });
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    comparisons.forEach(function (comparison) {
+                        rateTableVersionIds.push(comparison.RateTableVersionId);
+                        var productVersionStr = comparison.ProductVersionIds.join(",");
+                        productVersionIds.push(productVersionStr);
+                    });
+
+                    var rateTables = this.RateTables;
+                    var ageCount = this.AgeCount;
+
+                    $.ajax({
+                        url: "@(Url.Action("GeneratePaRateComparison", "Report"))",
+                        type: "POST",
+                        data: {
+                            rateTableVersionIds: rateTableVersionIds,
+                            productVersionIds: productVersionIds,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            rateTables = data.rateTables;
+                            ageCount = data.ageCount;
+                        },
+                    });
+
+                    this.RateTables = rateTables;
+                    this.AgeCount = ageCount;
+                    this.IsGenerated = true;
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var mergingRows = [];
+                        var rows = [];
+                        var rows2 = [];
+
+                        $('#outputTable thead tr').each(function (index) {
+                            var header = "Ceding Company";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "||" + column2 + "||" + column3 + "||" + column4 + "||" + column5
+                                + "||" + column6 + "||" + column7 + "||" + column8 + "||" + column9 + "||" + column10 + "|";
+                            mergingRows.push(row);
+                        });
+
+                        $("#outputTable tbody tr:not('#ageCountUnitRow, #ageCountDataRow')").each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "||" + column2 + "||" + column3 + "||" + column4 + "||" + column5
+                                + "||" + column6 + "||" + column7 + "||" + column8 + "||" + column9 + "||" + column10 + "|";
+                            mergingRows.push(row);
+                        });
+
+                        $("#ageCountUnitRow, #ageCountDataRow").each(function () {
+                            var count = $(this).find('td').length;
+                            var row = "";
+                            for (var i = 0; i < count; i++) {
+                                if (i == 0) {
+                                    row = $(this).find('td').eq(i).text().trim();
+                                } else {
+                                    var urColumn = $(this).find('td').eq(i).find('.ur').text().trim();
+                                    row += "|" + urColumn;
+                                    var ocColumn = $(this).find('td').eq(i).find('.oc').text().trim();
+                                    row += "|" + ocColumn;
+                                }
+                            }
+                            rows.push(row);
+                        });
+
+                        if ($('#outputTable2').length > 0) {
+                            $('#outputTable2 thead tr').each(function (index) {
+                                var header = "Ceding Company";
+                                var column1 = $(this).find('td').eq(0).text().trim();
+                                var column2 = $(this).find('td').eq(1).text().trim();
+                                var column3 = $(this).find('td').eq(2).text().trim();
+                                var column4 = $(this).find('td').eq(3).text().trim();
+                                var column5 = $(this).find('td').eq(4).text().trim();
+                                var column6 = $(this).find('td').eq(5).text().trim();
+                                var column7 = $(this).find('td').eq(6).text().trim();
+                                var column8 = $(this).find('td').eq(7).text().trim();
+                                var column9 = $(this).find('td').eq(8).text().trim();
+                                var column10 = $(this).find('td').eq(9).text().trim();
+                                var row = header
+                                    + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                    + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                                rows2.push(row);
+                            });
+
+                            $("#outputTable2 tbody tr").each(function () {
+                                var header = $(this).find('td').eq(0).text().trim();
+                                var column1 = $(this).find('td').eq(1).text().trim();
+                                var column2 = $(this).find('td').eq(2).text().trim();
+                                var column3 = $(this).find('td').eq(3).text().trim();
+                                var column4 = $(this).find('td').eq(4).text().trim();
+                                var column5 = $(this).find('td').eq(5).text().trim();
+                                var column6 = $(this).find('td').eq(6).text().trim();
+                                var column7 = $(this).find('td').eq(7).text().trim();
+                                var column8 = $(this).find('td').eq(8).text().trim();
+                                var column9 = $(this).find('td').eq(9).text().trim();
+                                var column10 = $(this).find('td').eq(10).text().trim();
+                                var row = header
+                                    + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                    + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                                rows2.push(row);
+                            });
+                        }
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessRateComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "RateTablePA",
+                                mergingRows: mergingRows,
+                                rows: rows,
+                                rows2: rows2,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                },
+            },
+            created: function () {
+                var i = 0;
+                this.Comparisons.forEach(function (comparison) {
+                    if (comparison != null) {
+                        initTokenfield(i);
+                        i++;
+                    }
+                });
+            },
+            updated() {
+                //$(this.$refs.select).selectpicker('refresh');
+            }
+        });
+</script>
+}

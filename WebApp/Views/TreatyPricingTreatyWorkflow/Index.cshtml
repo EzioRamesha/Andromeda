@@ -1,0 +1,525 @@
+﻿@using PagedList.Mvc
+@model PagedList.IPagedList<WebApp.Models.TreatyPricingTreatyWorkflowViewModel>
+
+@{
+    ViewBag.Title = "Treaty Workflow";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right btn-row-inline">
+                <div class="btn btn-group" style="display:inline-flex;">
+                    <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        DOWNLOAD AS
+                    </button>
+                    <div class="dropdown-menu">
+                        @Html.ActionLink("All", "Download", new { type = 1 }, new { @class = "dropdown-item" })
+                        @Html.ActionLink("Filtered", "Download", new
+                   {
+                       type = 2,
+                       ReinsuranceTypePickListDetailId = routeValue["ReinsuranceTypePickListDetailId"],
+                       CounterPartyDetailId = routeValue["CounterPartyDetailId"],
+                       InwardRetroPartyDetailId = routeValue["InwardRetroPartyDetailId"],
+                       DocumentType = routeValue["DocumentType"],
+                       DocumentId = routeValue["DocumentId"],
+                       TypeOfBusiness = routeValue["TypeOfBusiness"],
+                       Description = routeValue["Description"],
+                       EffectiveAtStr = routeValue["EffectiveAtStr"],
+                       OrionGroupStr = routeValue["OrionGroupStr"],
+                       PersonInChargeId = routeValue["PersonInChargeId"],
+                       CoverageStatus = routeValue["CoverageStatus"],
+                       DocumentStatus = routeValue["DocumentStatus"],
+                       DraftingStatus = routeValue["DraftingStatus"],
+                       DraftingStatusCategory = routeValue["DraftingStatusCategory"],
+                       CountryOrigin = routeValue["CountryOrigin"],
+                       LatestRevisionDateStr = routeValue["LatestRevisionDateStr"]
+                   }, new { @class = "dropdown-item" })
+                    </div>
+                </div>
+                <button class="btn btn-add" v-on:click="resetTreatyWorkflowModal()" data-toggle="modal" data-target="#addNewModal">ADD NEW</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortReinsuranceTypePickListDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Reinsurance Type", "ReinsuranceTypePickListDetailId", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCounterPartyDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Counter Party", "CounterPartyDetailId", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortInwardRetroPartyDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Inward Retro Party", "InwardRetroPartyDetailId", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDocumentType;
+                                @Shared.Html.Sorter(ViewBag, "Document Type", "DocumentTypeName", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDocumentId;
+                                @Shared.Html.Sorter(ViewBag, "Document ID", "DocumentId", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortTypeOfBusiness;
+                                @Shared.Html.Sorter(ViewBag, "Type of Business", "TypeOfBusiness", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDescription;
+                                @Shared.Html.Sorter(ViewBag, "Description", "Description", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortEffectiveAt;
+                                @Shared.Html.Sorter(ViewBag, "Effective Date", "EffectiveAt", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortOrionGroupStr;
+                                @Shared.Html.Sorter(ViewBag, "ORION Group", "OrionGroupStr", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortPersonInChargeId;
+                                @Shared.Html.Sorter(ViewBag, "Person In-Charge", "PersonInChargeId", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCoverageStatus;
+                                @Shared.Html.Sorter(ViewBag, "Coverage Status", "CoverageStatus", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDocumentStatus;
+                                @Shared.Html.Sorter(ViewBag, "Document Status", "DocumentStatus", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDraftingStatus;
+                                @Shared.Html.Sorter(ViewBag, "Drafting Status", "DraftingStatus", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortDraftingStatusCategory;
+                                @Shared.Html.Sorter(ViewBag, "Drafting Status Category", "DraftingStatusCategory", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCountryOrigin;
+                                @Shared.Html.Sorter(ViewBag, "Country Origin", "CountryOrigin", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortLatestRevisionDateStr;
+                                @Shared.Html.Sorter(ViewBag, "Latest Revision Date", "LatestRevisionDateStr", Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "TreatyPricingTreatyWorkflow", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.DropDownList("ReinsuranceTypePickListDetailId", (List<SelectListItem>)ViewBag.DropDownReinsuranceTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("CounterPartyDetailId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("InwardRetroPartyDetailId", (List<SelectListItem>)ViewBag.DropDownRetroParties, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("DocumentType", (List<SelectListItem>)ViewBag.TreatyWorkflowDocumentTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("DocumentId", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("TypeOfBusiness", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("Description", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("EffectiveAtStr", null, new { @class = "form-control", placeholder = "DD/MM/YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveAtStr')" />
+                            </th>
+                            <th>
+                                @Html.DropDownList("OrionGroupStr", (List<SelectListItem>)ViewBag.OrionGroupSort, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("PersonInChargeId", (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("CoverageStatus", (List<SelectListItem>)ViewBag.CoverageStatuss, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("DocumentStatus", (List<SelectListItem>)ViewBag.DocumentStatuss, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("DraftingStatus", (List<SelectListItem>)ViewBag.DraftingStatuss, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("DraftingStatusCategory", (List<SelectListItem>)ViewBag.DraftingStatusCategories, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("CountryOrigin", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.TextBox("LatestRevisionDateStr", null, new { @class = "form-control", placeholder = "DD/MM/YYYY", @onclick = "openDatePicker(this.id)" })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('LatestRevisionDateStr')" />
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    @*<button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>*@
+                                    <button type="submit" title="Search" class="btn-circle" id="searchBtn"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @item.ReinsuranceTypePickListDetail.ToString()
+                            </td>
+                            <td>
+                                @item.CounterPartyDetail.ToString()
+                            </td>
+                            <td>
+                                @if (item.InwardRetroPartyDetail != null)
+                                {
+                                    @item.InwardRetroPartyDetail.ToString()
+                                }
+                            </td>
+                            <td>
+                                @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDocumentTypeName(item.DocumentType)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.DocumentId)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.TypeOfBusiness)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </td>
+                            <td>
+                                @if (item.EffectiveAt.HasValue)
+                                {
+                                    @item.EffectiveAt.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.OrionGroupStr)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.PersonInCharge.FullName)
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetCoverageStatusClass(item.CoverageStatus)">
+                                    @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetCoverageStatusName(item.CoverageStatus)
+                                </span>
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDocumentStatusClass(item.DocumentStatus)">
+                                    @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDocumentStatusName(item.DocumentStatus)
+                                </span>
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDraftingStatusClass(item.DraftingStatus)">
+                                    @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDraftingStatusName(item.DraftingStatus)
+                                </span>
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDraftingStatusCategoryClass(item.DraftingStatusCategory)">
+                                    @BusinessObject.TreatyPricing.TreatyPricingTreatyWorkflowBo.GetDraftingStatusCategoryName(item.DraftingStatusCategory)
+                                </span>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CountryOrigin)
+                            </td>
+                            <td>
+                                @if (item.LatestRevisionDate.HasValue)
+                                {
+                                    @item.LatestRevisionDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fas fa-ellipsis-v dropbtn" />
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @Html.ActionLink("Edit", "Edit", new { id = item.TreatyPricingTreatyWorkflowId }, new { @class = "dropdown-item" })
+                                        <a style="color: #004BA2;" class="dropdown-item" v-on:click="resetTreatyWorkflowAssignModal(@item.Id)" data-toggle="modal" data-target="#assignModal">Assign</a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="no-data">No available data found.</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="pagination-footer">
+        <div class="row">
+            <div class="col-md-4">
+                @Html.Partial("_PageInfo")
+            </div>
+            <div class="col-md-8">
+                @Html.PagedListPager(Model, Page => Url.Action("Index", new
+           {
+               ReinsuranceTypePickListDetailId = routeValue["ReinsuranceTypePickListDetailId"],
+               CounterPartyDetailId = routeValue["CounterPartyDetailId"],
+               InwardRetroPartyDetailId = routeValue["InwardRetroPartyDetailId"],
+               DocumentType = routeValue["DocumentType"],
+               DocumentId = routeValue["DocumentId"],
+               TypeOfBusiness = routeValue["TypeOfBusiness"],
+               Description = routeValue["Description"],
+               TreatyCode = routeValue["TreatyCode"],
+               EffectiveAtStr = routeValue["EffectiveAtStr"],
+               OrionGroupStr = routeValue["OrionGroupStr"],
+               PersonInChargeId = routeValue["PersonInChargeId"],
+               CoverageStatus = routeValue["CoverageStatus"],
+               DocumentStatus = routeValue["DocumentStatus"],
+               DraftingStatus = routeValue["DraftingStatus"],
+               DraftingStatusCategory = routeValue["DraftingStatusCategory"],
+               CountryOrigin = routeValue["CountryOrigin"],
+               LatestRevisionDateStr = routeValue["LatestRevisionDateStr"],
+               SortOrder = ViewBag.SortOrder,
+               Page,
+           }), Shared.Html.GetPagedListRenderOptions())
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addNewModal" tabindex="-1" role="dialog" aria-labelledby="addNewModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewModalTitle">Add New</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="newTreatyError" style="display:none;"></div>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-form-label">Reinsurance Type</label>
+                            <select v-model="TreatyWorkflowModal.ReinsuranceTypePickListDetailId" id="dropDownReinsuranceType" class="form-control selectpicker">
+                                <option v-for="reinsuranceType in DropDownReinsuranceType" :value="reinsuranceType.Value">
+                                    {{ reinsuranceType.Text }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Document Type</label>
+                            <select v-model="TreatyWorkflowModal.DocumentType" id="dropDownDocumentType" class="form-control selectpicker">
+                                <option v-for="documentType in DropDownDocumentType" :value="documentType.Value">
+                                    {{ documentType.Text }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Counter Party</label>
+                            <select v-model="TreatyWorkflowModal.CounterPartyDetailId" id="dropDownCounterParty" class="form-control selectpicker">
+                                <option v-for="counterParty in DropDownCounterParty" :value="counterParty.Value">
+                                    {{ counterParty.Text }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Inward Retro Party</label>
+                            <select v-model="TreatyWorkflowModal.InwardRetroPartyDetailId" id="dropDownInwardRetroParty" class="form-control selectpicker">
+                                <option v-for="inwardRetroParty in DropDownInwardRetroParty" :value="inwardRetroParty.Value">
+                                    {{ inwardRetroParty.Text }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Document ID</label>
+                            <input type="text" class="form-control" v-model="TreatyWorkflowModal.DocumentId">
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label">Description</label>
+                            <textarea class="form-control" v-model="TreatyWorkflowModal.Description"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-add" v-on:click="resetLinkObjectModal()" data-toggle="modal" data-target="#addLinkedObjectModal">LINK OBJECT</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-10">Object</th>
+                                        <th class="w-10">Object ID</th>
+                                        <th class="w-15">Object Name</th>
+                                        <th class="w-5">Version</th>
+                                        <th class="w-5 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!WorkflowObjects.length">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(objects, index) in WorkflowObjects">
+                                        <td>{{ objects.ObjectTypeName }}</td>
+                                        <td>{{ objects.ObjectCode }}</td>
+                                        <td>{{ objects.ObjectName }}</td>
+                                        <td>{{ objects.ObjectVersion }}</td>
+                                        <td class="text-center">
+                                            <a href="#" v-on:click="removeWorkflowObject(index);">
+                                                <span class="fas fa-trash-alt" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                    <button v-on:click="saveTreatyWorkflow()" type="button" class="btn btn-submit">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.Partial("_TreatyPricingWorkflowObject")
+
+    <div class="modal fade" id="assignModal" tabindex="-1" role="dialog" aria-labelledby="assignModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewModalTitle">Assign</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="newTreatyError" style="display:none;"></div>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-form-label">Drafting Person In-Charge</label>
+                            <select v-model="TreatyWorkflowAssignModal.DraftingPersonInChargeId" id="dropDownAssignDraftingPersonInCharge" class="form-control selectpicker">
+                                <option v-for="dropDownUsers in DropDownUsers" :value="dropDownUsers.Value">
+                                    {{ dropDownUsers.Text }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                    <button v-on:click="saveAssign()" type="button" class="btn btn-submit">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    <script>
+    //Model
+        var Model = "";
+
+        var TreatyPricingTreatyWorkflows = @Html.Raw(Json.Encode(ViewBag.TreatyPricingTreatyWorkflows));
+        var TreatyPricingWorkflowObjectBos = [];
+
+        //Url
+        var AddTreatyWorkflowUrl = "@Url.Action("Add", "TreatyPricingTreatyWorkflow")";
+        var EditTreatyWorkflowUrl = "@Url.Action("Edit", "TreatyPricingTreatyWorkflow")?Id=";
+        var AssignPersonInChargeUrl = "@Url.Action("AssignPersonInCharge", "TreatyPricingTreatyWorkflow")";
+        var IndexUrl = "@Url.Action("Index")";
+        var routeValue = @Html.Raw(Json.Encode(@routeValue));
+        var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+        var loadingDiv = $("#loadingSpinner");
+
+        //Dropdowns
+        var DropDownReinsuranceType = @Html.Raw(Json.Encode(ViewBag.DropDownReinsuranceTypes));
+        var DropDownDocumentType = @Html.Raw(Json.Encode(ViewBag.TreatyWorkflowDocumentTypes));
+        var DropDownCounterParty = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var DropDownInwardRetroParty= @Html.Raw(Json.Encode(ViewBag.DropDownRetroParties));
+        var DropDownObjectModules = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingObjectModules));
+        var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+
+        //Remarks
+        var Remarks = "";
+        var RemarkSubjects = "";
+        var AuthUserName = "";
+        var StatusHistories = [];
+        var RecipientEmails = [];
+        var DraftingStatuses = [];
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingTreatyWorkflow.js")
+}

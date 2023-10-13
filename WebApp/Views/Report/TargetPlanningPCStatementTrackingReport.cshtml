@@ -1,0 +1,236 @@
+﻿@{
+    ViewBag.Title = "Profit Commission Statement Tracking Report";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>Profit Commission Statement Tracking Report</h4>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="form-horizontal" v-cloak>
+            @* Parameters *@
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.Label("Extraction Date", htmlAttributes: new { @class = "col-form-label" })
+                    <div class="input-w-icon">
+                        <input id="ExtractionDate" class="form-control" placeholder="DD MMM YYYY" autocomplete="off" />
+                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ExtractionDate')" />
+                    </div>
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.Label("Extraction Year Range From", htmlAttributes: new { @class = "col-form-label" })
+                            <select id="ExtractionFrom" class="form-control selectpicker" v-on:change="changeRange()">
+                                <option v-for="range in DropDownRange" :value="range.Value">
+                                    {{ range.Text }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.Label("Extraction Year Range To", htmlAttributes: new { @class = "col-form-label" })
+                            <select id="ExtractionTo" class="form-control selectpicker" v-on:change="changeRange()">
+                                <option v-for="range in DropDownRange" :value="range.Value">
+                                    {{ range.Text }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-100 text-right">
+                <button type="button" class="btn btn-download" v-on:click="generate(true)">DOWNLOAD</button>
+                <button type="button" class="btn btn-download" v-on:click="generate(false)">GENERATE</button>
+            </div>
+
+            @* Output *@
+            <div v-if="IsGenerated">
+                <div class="table-responsive my-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10">Ceding Company</th>
+                                <th class="w-10">Treaty ID</th>
+                                <th class="w-10">Person In-Charge</th>
+                                <th class="w-10">Treaty Code</th>
+                                <td v-for="(columnHeader, index) in ColumnHeaders" class="w-5 font-weight-bold">
+                                    {{columnHeader}}
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(output, index) in Output">
+                                <td>{{output.CedingCompany}}</td>
+                                <td>{{output.TreatyId}}</td>
+                                <td>{{output.PersonInCharge}}</td>
+                                <td>{{output.TreatyCode}}</td>
+                                <td v-for="(columnHeader, columnIndex) in ColumnHeaders">
+                                    {{output.OutputData[columnIndex]}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var DropDownYears = @Html.Raw(Json.Encode(ViewBag.DropDownYears));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+            setDefaultDate();
+
+            $('#ExtractionDate').datepicker({
+                format: DateFormatDatePickerJs,
+                autoclose: true
+            });
+        });
+
+        function setDefaultDate() {
+            var now = new Date();
+
+            let monthNames = ["Jan", "Feb", "Mar", "Apr",
+                "May", "Jun", "Jul", "Aug",
+                "Sep", "Oct", "Nov", "Dec"];
+
+            let day = now.getDate();
+
+            if (day.toString().length = 1) {
+                day = "0" + day;
+            }
+
+            let monthIndex = now.getMonth();
+            let monthName = monthNames[monthIndex];
+
+            let year = now.getFullYear();
+
+            $('#ExtractionDate').val(day + " " + monthName + " " + year);
+        }
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+            app.IsGenerated = false;
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                DropDownRange: DropDownYears,
+                ErrorList: [],
+                IsGenerated: false,
+                ColumnHeaders: [],
+                Output: [],
+            },
+            methods: {
+                changeRange() {
+                    this.IsGenerated = false;
+                },
+                resetErrorMessage() {
+                    this.ErrorList = [];
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                validationCheck() {
+                    var extractionDateStr = $('#ExtractionDate').val();
+                    var extractionFrom = $('#ExtractionFrom').val();
+                    var extractionTo = $('#ExtractionTo').val();
+
+                    if (extractionDateStr == "") {
+                        this.ErrorList.push("Extraction Date must not be empty");
+                    }
+
+                    if (extractionTo < extractionFrom) {
+                        this.ErrorList.push("Extraction Year Range From must be before or equal to Extraction Year Range To");
+                    }
+
+                    if (this.ErrorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < this.ErrorList.length; i++) {
+                            text += "<li>" + this.ErrorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                },
+                generate(isDownload) {
+                    this.resetErrorMessage();
+                    this.validationCheck();
+
+                    if (this.ErrorList.length == 0) {
+                        var errorList = [];
+                        var columnHeaders = [];
+                        var output = [];
+
+                        if (isDownload == false) {
+                            $.ajax({
+                                url: "@(Url.Action("GetTargetPlanningReportOutput", "Report"))",
+                                type: "POST",
+                                data: {
+                                    extractionDateStr: $('#ExtractionDate').val(),
+                                    extractionFrom: $('#ExtractionFrom').val(),
+                                    extractionTo: $('#ExtractionTo').val(),
+                                    isProfitComm: true,
+                                },
+                                cache: false,
+                                async: false,
+                                success: function (data) {
+                                    errorList = data.errors;
+                                    columnHeaders = data.columnHeaders;
+                                    output = data.output;
+                                },
+                            });
+                        }
+                        else {
+                            var url = '@Url.Action("DownloadTargetPlanningOutput", "Report")' + '?extractionDateStr=' + $('#ExtractionDate').val() + '&extractionFrom=' + $('#ExtractionFrom').val() + '&extractionTo=' + $('#ExtractionTo').val() + '&isProfitComm=' + true;
+                            window.location = url;
+                        }
+
+                        if (errorList.length > 0) {
+                            text = "<ul>";
+                            for (i = 0; i < errorList.length; i++) {
+                                text += "<li>" + errorList[i] + "</li>";
+                            }
+                            text += "</ul>";
+                            $('#errorMessage').append(text);
+                            $('#errorMessage').show();
+
+                            var elmnt = document.getElementById("errorMessage");
+                            elmnt.scrollIntoView();
+                            return;
+                        }
+                        else {
+                            if (isDownload == false) {
+                                this.ColumnHeaders = columnHeaders;
+                                this.Output = output;
+                                this.IsGenerated = true;
+                            }
+                        }
+                    }
+                },
+            },
+            created: function () {
+            },
+            updated() {
+            }
+        });
+</script>
+}

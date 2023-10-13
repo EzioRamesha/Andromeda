@@ -1,0 +1,142 @@
+﻿@model WebApp.Models.TreatyPricingRateTableViewModel
+@using Shared.Forms.Helpers
+
+@{
+    ViewBag.Title = "Rate Table";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "Cedant";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", "TreatyPricingCedant", new { id = Model.TreatyPricingRateTableGroupBo?.TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexRateTableGroup });
+
+    ViewBag.Prev2Title = "Rate Table Group";
+    ViewBag.Prev2Action = "Edit";
+    ViewBag.EditDetailsPageUrl = Url.Action("Edit", "TreatyPricingRateTableGroup", new { id = Model.TreatyPricingRateTableGroupId });
+
+    string cancelController = "TreatyPricingRateTableGroup";
+    object cancelRouteValues = new { id = Model.TreatyPricingRateTableGroupId };
+
+    if (ViewBag.IsCalledFromWorkflow)
+    {
+        cancelRouteValues = new { id = Model.WorkflowId };
+        cancelController = ViewBag.IsQuotationWorkflow ? "TreatyPricingQuotationWorkflow" : "TreatyPricingTreatyWorkflow";
+    }
+}
+
+@if (ViewBag.IsCalledFromWorkflow == false)
+{
+    @section breadcrumb
+    {
+        @Html.Partial("_Breadcrumb")
+    }
+
+    @Html.Partial("_BackToList")
+}
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.TreatyPricing.TreatyPricingRateTableBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.TreatyPricing.TreatyPricingRateTableBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_ObjectLockEditButton")
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.TreatyPricingRateTableGroupId)
+            @Html.HiddenFor(model => model.EditableVersion)
+
+            <div class="form-horizontal">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.BenefitId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.BenefitId, (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", disabled = "true" })
+                        @Html.HiddenFor(model => model.BenefitId)
+                        @Html.ValidationMessageFor(model => model.BenefitId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", maxlength = @ViewBag.NameMaxLength } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.Status, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Status, (List<SelectListItem>)ViewBag.DropDownStatuses, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Edit", cancelController, cancelRouteValues, new { @class = "btn btn-cancel" })
+                        @if (ViewBag.IsEditMode ?? false)
+                        {
+                            <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-submit prevent-disable float-right edit-mode-btn" onclick="enterEditMode()">EDIT</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (ViewBag.IsCalledFromWorkflow == false)
+{
+    @Html.Partial("_BackToList")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+        $(document).ready(function () {
+            $('#Description').autoResize();
+            $('#Description').trigger('keyup');
+
+            $('#AdditionalRemark').autoResize();
+            $('#AdditionalRemark').trigger('keyup');
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingRateTable.js")
+    @Scripts.Render("~/Scripts/models/Versioning.js")
+    @Scripts.Render("~/Scripts/models/ObjectLock.js")
+}

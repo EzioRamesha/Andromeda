@@ -1,0 +1,104 @@
+﻿@model WebApp.Models.RetroTreatyDetailViewModel
+
+@{
+    ViewBag.Title = "Retro Treaty Detail";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "Retro Treaty";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", new { id = Model.RetroTreatyId });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyCode)</td>
+                            <td>@Html.DisplayFor(model => model.TreatyCode)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyType)</td>
+                            <td>@Html.DisplayFor(model => model.TreatyType)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffectiveStartDateStr)</td>
+                            <td>@Html.DisplayFor(model => model.ReinsEffectiveStartDateStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffectiveEndDateStr)</td>
+                            <td>@Html.DisplayFor(model => model.ReinsEffectiveEndDateStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RiskQuarterStartDateStr)</td>
+                            <td>@Html.DisplayFor(model => model.RiskQuarterStartDateStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RiskQuarterEndDateStr)</td>
+                            <td>@Html.DisplayFor(model => model.RiskQuarterEndDateStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.IsToAggregate)</td>
+                            <td>@Html.DisplayFor(model => model.IsToAggregate)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.FundsAccountingType)</td>
+                            <td>@Html.DisplayFor(model => model.FundsAccountingType)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.MlreShareStr)</td>
+                            <td>@Html.DisplayFor(model => model.MlreShareStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PremiumSpreadTableId)</td>
+                            <td>@Html.DisplayFor(model => model.PremiumSpreadTableRule)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyDiscountTableId)</td>
+                            <td>@Html.DisplayFor(model => model.TreatyDiscountTableRule)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.RetroTreatyId)
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Edit", new { id = Model.RetroTreatyId }, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

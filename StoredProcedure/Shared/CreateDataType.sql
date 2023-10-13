@@ -1,0 +1,5 @@
+IF TYPE_ID(N'IdTable') IS NULL
+	CREATE TYPE IdTable AS TABLE ([Id] INT)
+
+	IF TYPE_ID(N'NameTable') IS NULL
+	CREATE TYPE NameTable AS TABLE ([Name] VARCHAR(MAX))

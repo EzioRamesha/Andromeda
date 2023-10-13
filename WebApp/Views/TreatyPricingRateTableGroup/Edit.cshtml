@@ -1,0 +1,204 @@
+﻿@model WebApp.Models.TreatyPricingRateTableGroupViewModel
+@using Shared.Forms.Helpers
+
+@{
+    ViewBag.Title = "Rate Table Group";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index", "TreatyPricingCedant");
+
+    ViewBag.PrevTitle = "Cedant";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", "TreatyPricingCedant", new { id = Model.TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexRateTableGroup });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.TreatyPricing.TreatyPricingRateTableGroupBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.TreatyPricing.TreatyPricingRateTableGroupBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm("Edit", "TreatyPricingRateTableGroup", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.TreatyPricingCedantId)
+            @Html.HiddenFor(model => model.FileName)
+            @Html.HiddenFor(model => model.HashFileName)
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.Errors)
+            @Html.HiddenFor(model => model.UploadedAt)
+            @Html.HiddenFor(model => model.UploadedById)
+
+            <div class="form-horizontal">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.NoOfRateTable, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.NoOfRateTable, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.NoOfRateTable, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", maxlength = @ViewBag.NameMaxLength } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.Description, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextAreaFor(model => model.Description, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="col-form-label col-12 p-0 mt-3 font-weight-bold">Upload Details</div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelForRequired(model => model.UploadedAt, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.UploadedAtStr, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.UploadedAt, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelForRequired(model => model.UploadedById, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.Editor("UploadedByStr", new { htmlAttributes = new { @class = "form-control", @readonly = "true", @Value = Model.UploadedByBo?.FullName } })
+                        @Html.ValidationMessageFor(model => model.UploadedById, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Errors", htmlAttributes: new { @class = "col-form-label" })
+                        <textarea class="form-control" rows="5" readonly style="resize: none;">@(ViewBag.Errors)</textarea>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.FileName))
+                    {
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.Label("Current File", htmlAttributes: new { @class = "col-form-label" })
+                            <div id="selectedFiles" class="file-list-display">
+                                <ul>
+                                    <li>
+                                        <input class="btn btn-transparent" style="color: #01509F !important; background-color: transparent !important; border-color: transparent !important;" id="downloadFile" type="submit" href="#" formaction="@(Url.Action("FileDownload", new { treatyPricingRateTableGroupId = Model.Id }))" value="@Html.Raw(Model.FileName)" />
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-form-label col-12 p-0 mt-3 font-weight-bold">Reupload</div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Upload File", htmlAttributes: new { @class = "col-form-label" })
+                        <div class="file is-boxed">
+                            <label class="file-label">
+                                <input class="form-control-file" type="file" id="files" name="upload" accept=".xlsx, .xls">
+                                Drag and Drop File Here or <u>Browse your file</u>
+                                <br />
+                                <span class="file-desc">
+                                    Allowed file format: .xls .xlsx
+                                </span>
+                                <br />
+                                <span class="file-desc">
+                                    File size is up to 2GB
+                                </span>
+                            </label>
+                        </div>
+                        <div id="selectedFiles" class="reuploadFile file-list-display"></div>
+                        <div class="field-validation-error text-danger" id="errorSizeExceeds" style="display: none;"></div>
+                        @Html.ValidationMessageFor(model => model.Upload, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Edit", "TreatyPricingCedant", new { id = Model.TreatyPricingCedantId, TabIndex = BusinessObject.TreatyPricing.TreatyPricingCedantBo.IndexRateTableGroup }, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+                $('textarea').prop("disabled", true);
+            }
+
+            $('#Description').autoResize();
+            $('#Description').trigger('keyup');
+        });
+
+        var selDiv = "";
+        document.addEventListener("DOMContentLoaded", init, false);
+        function init() {
+            var control = document.querySelector('#files');
+            if (control) {
+                document.querySelector('#files').addEventListener('change', handleFileSelect, false);
+                selDiv = document.querySelector(".reuploadFile#selectedFiles");
+            }
+        }
+        function handleFileSelect(e) {
+            if (!e.target.files) return;
+            selDiv.innerHTML = "";
+            var files = e.target.files;
+            var list = "";
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+
+                var fileSize = f.size / 1024 / 1024 / 1024; // in GB
+                if (fileSize >= 2) {
+                    $("#errorSizeExceeds").css("display", "block");
+                    $("#errorSizeExceeds").text('Maximum allowed size is : 2 GB');
+                    //reset file upload control
+                    e.target.value = null;
+                    return;
+                } else {
+                    $("#errorSizeExceeds").css("display", "none");
+                }
+
+                list += "<li>" + f.name + "</li>";
+            }
+            selDiv.innerHTML = "<ul>" + list + "</ul>";
+        }
+    </script>
+
+    @Scripts.Render("~/Scripts/models/TreatyPricingRateTableGroup.js")
+}

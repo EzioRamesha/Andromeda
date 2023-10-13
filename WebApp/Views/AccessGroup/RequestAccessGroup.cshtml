@@ -1,0 +1,144 @@
+﻿@model WebApp.Models.RequestAccessGroupViewModel
+
+@{
+    ViewBag.Title = "Access Group";
+    ViewBag.Action = "Request New / Modify";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+        <h4>@ViewBag.Temp</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+
+                @Html.HiddenFor(model => model.Id, new { htmlAttributes = new { @id = "id" } })
+                @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+                @Html.HiddenFor(model => model.Code, new { htmlAttributes = new { @id = "code" } })
+                @Html.HiddenFor(model => model.Download)
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.DepartmentId, "Department", htmlAttributes: new { @class = "col-form-label" })
+                        <input type="hidden" name="DepartmentId" value=@ViewBag.AuthUserDepartment.Id />
+                        <input type="text" readonly class="form-control" value=@ViewBag.AuthUserDepartment.Name>
+                        @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RequestType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RequestType, (List<SelectListItem>)ViewBag.DropDownRequestTypes, htmlAttributes: new { @class = "form-control selectpicker", @id = "requestType", @onchange = "changeRequestType(this.value)" })
+                        @Html.ValidationMessageFor(model => model.RequestType, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.SelectId, (List<SelectListItem>)ViewBag.DropDownAccessGroups, htmlAttributes: new { @class = "form-control selectpicker", @id = "selectName", @style = "display: none", @onchange = "changeAccessGroup(this.value)" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @id = "enterName", placeholder = "Type here" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RequestDateStr, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" name="RequestDateStr" readonly class="form-control" value="@Model.RequestDateStr">
+                        @Html.ValidationMessageFor(model => model.RequestDateStr, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RequestUserName, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" name="RequestUserName" readonly class="form-control" value="@ViewBag.AuthUserName">
+                        @Html.ValidationMessageFor(model => model.RequestUserName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-12">
+                        @Html.Label("Module & Access Power", htmlAttributes: new { @class = "col-form-label access-matrices-label" })
+                        <div class="table-responsive" id="accessMatrixContainer">
+                            @Html.Partial("_AccessMatrices")
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right" id="submitButton">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var AuthUserName = '@ViewBag.AuthUserName';
+        $(document).ready(function () {
+            $('input[name="Download"]').val('@Model.Download');
+            if ('@Model.Download' == "True") {
+                $('#submitButton').click();
+            }
+
+            if ($('#requestType').val() == @BusinessObject.Identity.AccessGroupBo.RequestTypeAmendment) {
+                $('#enterName').hide();
+                //$('#selectName').selectpicker('show');
+            } else {
+                $('#selectName').selectpicker('hide');
+            }
+
+            $('select').selectpicker('refresh');
+        });
+
+        function changeRequestType(requestType) {
+            $('#enterName').hide();
+            $('#selectName').selectpicker('hide');
+
+            $('#selectName').val('');
+            $('#enterName').val('');
+
+            if (requestType == @BusinessObject.Identity.AccessGroupBo.RequestTypeAmendment) {
+                $('#selectName').selectpicker('show');
+            } else {
+                $('#enterName').show();
+            }
+            changeAccessGroup($('#selectName').val());
+        }
+
+        function changeAccessGroup(accessGroupId) {
+            $('#enterName').val('');
+            if (accessGroupId != '') {
+                var selectedText = $("#selectName option:selected").html();
+                $('#enterName').val(selectedText);
+            }
+
+            $('#id').val(accessGroupId);
+            $('input[name=Id]').val(accessGroupId);
+            var id = accessGroupId;
+
+            $('#accessMatrixContainer').load("@Url.Action("GetAccessMatricesView")?id=" + id);
+        }
+    </script>
+    @Scripts.Render("~/Scripts/models/AccessGroupCheckBox.js")
+    @Scripts.Render("~/Scripts/models/AccessGroup.js")
+
+}

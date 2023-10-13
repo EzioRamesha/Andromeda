@@ -1,0 +1,185 @@
+﻿@model WebApp.Models.DirectRetroViewModel
+
+@{
+    ViewBag.Title = "Direct Retro";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly != null && ViewBag.ReadOnly);
+    var enableSubmit = ViewBag.EnableSubmit;
+    var enableSubmitForApproval = ViewBag.EnableSubmitForApproval;
+    var enableApproval = ViewBag.EnableApproval;
+    var enableDelete = ViewBag.EnableDelete;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.DirectRetroBo.GetRetroStatusClass(Model.RetroStatus)">
+                    @BusinessObject.DirectRetroBo.GetRetroStatusName(Model.RetroStatus)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" id="app">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.RetroStatus, new { @Id = "RetroStatus" })
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "refreshTreatyCode(this.value)", @disabled = "disabled" })
+                        @Html.HiddenFor(model => model.CedantId)
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.SoaDataBatchId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.SoaDataBatchId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                        @Html.HiddenFor(model => model.SoaDataBatchId)
+                        @Html.ValidationMessageFor(model => model.SoaDataBatchId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.TreatyCodeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyCodeId, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @disabled = "disabled" })
+                        @Html.HiddenFor(model => model.TreatyCodeId)
+                        @Html.ValidationMessageFor(model => model.TreatyCodeId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" name="SoaQuarter" id="SoaQuarter" value="@Html.DisplayFor(model => model.SoaQuarter)" placeholder="yyyy MM">
+                        @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <br />
+                <br />
+
+                @Html.Partial("_DirectRetroDetails")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @if (enableDelete)
+                        {
+                            @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        }
+                        <div class="row m-0 p-0 float-right">
+                            @if (enableSubmit)
+                            {
+                                <button class="btn btn-submit ml-1" type="button" data-toggle="modal" data-target="#submitForProcessingModal">SUBMIT FOR PROCESSING</button>
+                            }
+                            @if (enableSubmitForApproval)
+                            {
+                                <button class="btn btn-submit ml-1" type="button" data-toggle="modal" data-target="#submitForApprovalModal">SUBMIT FOR APPROVAL</button>
+                            }
+                            @if (enableApproval)
+                            {
+                                <button class="btn btn-submit ml-1" type="button" data-toggle="modal" data-target="#approvalModal">APPROVAL</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="submitForProcessingModal" tabindex="-1" role="dialog" aria-labelledby="submitForProcessingModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="submitForProcessingModalLabel">Submit For Processing Confirmation</h5>
+                        </div>
+                        <div class="modal-body">
+                            Do you want to submit this Direct Retro for Processing? <br />
+                            <div class="text-right form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <button type="submit" onclick="submitForProcessing()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="submitForApprovalModal" tabindex="-1" role="dialog" aria-labelledby="submitForApprovalModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="submitForApprovalModalLabel">Submit For Approval Confirmation</h5>
+                        </div>
+                        <div class="modal-body">
+                            Do you want to submit this Direct Retro for Approval? <br />
+                            <div class="text-right form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <button type="submit" onclick="submitForApproval()" class="btn btn-submit" data-dismiss="modal">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="approvalModal" tabindex="-1" role="dialog" aria-labelledby="approvalModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="approvalModalLabel">Approval Confirmation</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-row-btn">
+                                <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                <div class="row m-0 p-0 float-right">
+                                    <button type="submit" onclick="rejectDirectRetro()" class="btn btn-del ml-1" data-dismiss="modal">REJECT</button>
+                                    <button type="submit" onclick="approveDirectRetro()" class="btn btn-submit ml-1" data-dismiss="modal">APPROVE</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True' || '@ViewBag.Disabled' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('.selectpicker').selectpicker('refresh');
+            }
+
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $('button').prop("disabled", true);
+            } else {
+                $("[name='__RequestVerificationToken']").prop("disabled", false);
+            }
+        });
+    </script>
+
+    @Scripts.Render("~/Scripts/models/DirectRetro.js")
+}

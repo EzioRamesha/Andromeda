@@ -1,0 +1,702 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="InvoiceRegisterDataSource">
+      <DataSourceReference>/AndromedaDataSource</DataSourceReference>
+      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:DataSourceID>74f4126c-1442-459c-8dcb-ffd801712799</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="TreatyCodeLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>SELECT 'NULL' AS [Value], '(Blank)' AS [Label]
+UNION ALL
+SELECT
+	TreatyCodes.Code AS [Value]
+	,TreatyCodes.Code AS [Label]
+FROM TreatyCodes</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Value">
+          <DataField>Value</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="RiskQuarterLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>SELECT DISTINCT 
+   CASE ISNULL(RiDataWarehouse.RiskPeriodMonth, '') WHEN '' THEN '' ELSE CONCAT(RiDataWarehouse.RiskPeriodYear, ' Q', CASE WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 1 and 3 THEN 1 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 4 and 6 THEN 2 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 7 and 9 THEN 3 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 10 and 12 THEN 4 END) END AS [Value]
+   ,CASE ISNULL(RiDataWarehouse.RiskPeriodMonth, '') WHEN '' THEN '(Blank)' ELSE CONCAT(RiDataWarehouse.RiskPeriodYear, ' Q', CASE WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 1 and 3 THEN 1 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 4 and 6 THEN 2 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 7 and 9 THEN 3 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 10 and 12 THEN 4 END) END AS [Label]
+FROM
+   RiDataWarehouse
+WHERE RiDataWarehouse.PolicyStatusCode = 'SU'
+AND RiDataWarehouse.FundsAccountingTypeCode = 'INDIVIDUAL'
+AND RiDataWarehouse.EndingPolicyStatus = (SELECT PickListDetails.Id FROM PickListDetails WHERE PickListDetails.PickListId = (SELECT PickLists.Id FROM PickLists WHERE PickLists.FieldName = 'Policy Status Code') AND PickListDetails.Code = 'SU')</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Value">
+          <DataField>Value</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="RiDatawarehouse">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@ReportingQuarterYear">
+            <Value>=Parameters!ReportingQuarterYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ReportingQuarter">
+            <Value>=Parameters!ReportingQuarter.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@TreatyCode">
+            <Value>=Parameters!TreatyCode.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@SoaQuarter">
+            <Value>=Parameters!SoaQuarter.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@RiskQuarter">
+            <Value>=Parameters!RiskQuarter.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@SoaQuarterYear">
+            <Value>=Parameters!SoaQuarterYear.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@RiskQuarterYear">
+            <Value>=Parameters!RiskQuarterYear.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>SELECT
+	rw.TreatyCode
+	,rw.Aar
+FROM (
+	SELECT DISTINCT
+		CONCAT(DATEPART(YEAR, RiDataWarehouse.LastUpdatedDate), ' Q', DATEPART(QUARTER, RiDataWarehouse.LastUpdatedDate)) AS LastUpdatedQuarter
+		,RiDataWarehouse.LastUpdatedDate
+		,CASE ISNULL(RiDataWarehouse.RiskPeriodMonth, '') WHEN '' THEN '' ELSE CONCAT(RiDataWarehouse.RiskPeriodYear, ' Q', CASE WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 1 and 3 THEN 1 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 4 and 6 THEN 2 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 7 and 9 THEN 3 WHEN RiDataWarehouse.RiskPeriodMonth BETWEEN 10 and 12 THEN 4 END) END AS [RiskQuarter]
+		,RiDataWarehouse.TreatyCode
+		,RiDataWarehouse.Quarter
+		,RiDataWarehouse.PolicyNumber AS PolicyNumber
+		,SUM(ISNULL(RiDataWarehouse.Aar, 0)) AS Aar
+	FROM
+		RiDataWarehouse
+	WHERE RiDataWarehouse.PolicyStatusCode = 'SU'
+	AND RiDataWarehouse.FundsAccountingTypeCode = 'INDIVIDUAL'
+	AND RiDataWarehouse.EndingPolicyStatus = (SELECT PickListDetails.Id FROM PickListDetails WHERE PickListDetails.PickListId = (SELECT PickLists.Id FROM PickLists WHERE PickLists.FieldName = 'Policy Status Code') AND PickListDetails.Code = 'SU')
+	GROUP BY RiDataWarehouse.LastUpdatedDate, RiDataWarehouse.TreatyCode, RiDataWarehouse.Quarter, RiDataWarehouse.PolicyNumber, RiDataWarehouse.RiskPeriodMonth, RiDataWarehouse.RiskPeriodYear
+) rw
+WHERE rw.LastUpdatedDate &gt;= DATEFROMPARTS(@ReportingQuarterYear - 1, 12, 21)
+AND rw.LastUpdatedDate &lt;= DATEFROMPARTS(@ReportingQuarterYear, @ReportingQuarter, 20)
+AND rw.TreatyCode IN (@TreatyCode) 
+AND SUBSTRING(rw.Quarter, 6, 2) IN (@SoaQuarter)
+AND SUBSTRING(rw.Quarter, 1, 4) IN (@SoaQuarterYear)
+AND SUBSTRING(rw.RiskQuarter, 6, 2) IN (@RiskQuarter)
+AND SUBSTRING(rw.RiskQuarter, 1, 4) IN (@RiskQuarterYear)</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="TreatyCode">
+          <DataField>TreatyCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Aar">
+          <DataField>Aar</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="BenefitCategoryLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>SELECT
+  PickListDetails.Id AS [Value]
+  ,PickListDetails.Code AS [Label]
+FROM
+  PickListDetails
+WHERE PickListDetails.PickListId = (SELECT Id FROM PickLists WHERE PickLists.FieldName = 'Benefit Category')</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Value">
+          <DataField>Value</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="ReportingQuarterLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>SELECT DISTINCT
+  CONCAT(DATEPART(YEAR, RiDataWarehouse.LastUpdatedDate), '-', CASE DATEPART(QUARTER, RiDataWarehouse.LastUpdatedDate) WHEN 1 THEN '3' WHEN 2 THEN '6' WHEN 3 THEN '9' WHEN 4 THEN '12' END, '-20') AS [Value]
+  ,CONCAT(DATEPART(YEAR, RiDataWarehouse.LastUpdatedDate), ' Q', DATEPART(QUARTER, RiDataWarehouse.LastUpdatedDate)) AS [Label]
+FROM
+  RiDataWarehouse
+WHERE RiDataWarehouse.PolicyStatusCode = 'SU'
+AND RiDataWarehouse.FundsAccountingTypeCode = 'INDIVIDUAL'
+AND RiDataWarehouse.EndingPolicyStatus = (SELECT PickListDetails.Id FROM PickListDetails WHERE PickListDetails.PickListId = (SELECT PickLists.Id FROM PickLists WHERE PickLists.FieldName = 'Policy Status Code') AND PickListDetails.Code = 'SU')</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Value">
+          <DataField>Value</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SoaQuarterLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>SELECT DISTINCT
+  RiDataWarehouse.Quarter AS [Value]
+  ,ISNULL(RiDataWarehouse.Quarter, '(Blank)') AS [Label]
+FROM
+  RiDataWarehouse
+WHERE RiDataWarehouse.PolicyStatusCode = 'SU'
+AND RiDataWarehouse.FundsAccountingTypeCode = 'INDIVIDUAL'
+AND RiDataWarehouse.EndingPolicyStatus = (SELECT PickListDetails.Id FROM PickListDetails WHERE PickListDetails.PickListId = (SELECT PickLists.Id FROM PickLists WHERE PickLists.FieldName = 'Policy Status Code') AND PickListDetails.Code = 'SU')</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="Value">
+          <DataField>Value</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Label">
+          <DataField>Label</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="YearLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>WITH    yearlist
+      AS ( SELECT   2000 AS year
+           UNION ALL
+           SELECT   yl.year + 1 AS year
+           FROM     yearlist yl
+           WHERE    yl.year + 1 &lt;= YEAR(GETDATE())
+         )
+SELECT  year
+FROM    yearlist
+ORDER BY year DESC</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="year">
+          <DataField>year</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="QuarterLookup">
+      <Query>
+        <DataSourceName>InvoiceRegisterDataSource</DataSourceName>
+        <CommandText>SELECT 'Q1' AS [Quarter]
+UNION ALL
+SELECT 'Q2' AS [Quarter]
+UNION ALL
+SELECT 'Q3' AS [Quarter]
+UNION ALL
+SELECT 'Q4' AS [Quarter]</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Quarter">
+          <DataField>Quarter</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Tablix Name="Tablix4">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>40.08125mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>51.45833mm</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>6mm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox97">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Count - Surrender</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox97</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>5pt</PaddingLeft>
+                            <PaddingRight>5pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox99">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Sum Reins - Surrender</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox99</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>#e8f1fb</BackgroundColor>
+                            <PaddingLeft>5pt</PaddingLeft>
+                            <PaddingRight>5pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>6mm</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox98">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Count(Fields!TreatyCode.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>#,0;(#,0);'-'</Format>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox98</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <PaddingLeft>5pt</PaddingLeft>
+                            <PaddingRight>5pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox100">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=SUM(Fields!Aar.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>#,0.00;(#,0.00);'-'</Format>
+                                    <Color>#01509f</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox100</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <PaddingLeft>5pt</PaddingLeft>
+                            <PaddingRight>5pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <TablixHeader>
+                    <Size>49.60625mm</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox90">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>Treaty No:</Value>
+                                <Style>
+                                  <FontWeight>Bold</FontWeight>
+                                  <Color>#01509f</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox90</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>None</Style>
+                          </Border>
+                          <BackgroundColor>#e8f1fb</BackgroundColor>
+                          <PaddingLeft>5pt</PaddingLeft>
+                          <PaddingRight>5pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="TreatyCode2">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!TreatyCode.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!TreatyCode.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>49.60625mm</Size>
+                    <CellContents>
+                      <Textbox Name="TreatyCode2">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!TreatyCode.Value</Value>
+                                <Style>
+                                  <FontFamily>Arial</FontFamily>
+                                  <Color>#01509f</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style />
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>TreatyCode2</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>None</Style>
+                          </Border>
+                          <PaddingLeft>5pt</PaddingLeft>
+                          <PaddingRight>5pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>RiDatawarehouse</DataSetName>
+            <Top>19.28283mm</Top>
+            <Left>10.287mm</Left>
+            <Height>12mm</Height>
+            <Width>141.14583mm</Width>
+            <Visibility>
+              <Hidden>=IIF(CountRows()&gt;0, False, True)</Hidden>
+            </Visibility>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>48.15833mm</Height>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Body>
+      <Width>174.32781mm</Width>
+      <Page>
+        <PageFooter>
+          <Height>11.43mm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <PageHeight>29.7cm</PageHeight>
+        <PageWidth>21cm</PageWidth>
+        <LeftMargin>2cm</LeftMargin>
+        <RightMargin>2cm</RightMargin>
+        <TopMargin>2cm</TopMargin>
+        <BottomMargin>2cm</BottomMargin>
+        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="TreatyCode">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>TreatyCodeLookup</DataSetName>
+          <ValueField>Value</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Treaty Code</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>TreatyCodeLookup</DataSetName>
+          <ValueField>Value</ValueField>
+          <LabelField>Label</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="RiskQuarter">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>QuarterLookup</DataSetName>
+          <ValueField>Quarter</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Risk Quarter</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>QuarterLookup</DataSetName>
+          <ValueField>Quarter</ValueField>
+          <LabelField>Quarter</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="RiskQuarterYear">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=YEAR(Today())</Value>
+          <Value>=YEAR(Today()) - 1</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Risk Quarter (Year)</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>YearLookup</DataSetName>
+          <ValueField>year</ValueField>
+          <LabelField>year</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="SoaQuarter">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <DataSetReference>
+          <DataSetName>QuarterLookup</DataSetName>
+          <ValueField>Quarter</ValueField>
+        </DataSetReference>
+      </DefaultValue>
+      <Prompt>Soa Quarter</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>QuarterLookup</DataSetName>
+          <ValueField>Quarter</ValueField>
+          <LabelField>Quarter</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="SoaQuarterYear">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=YEAR(Today())</Value>
+          <Value>=YEAR(Today()) - 1</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Soa Quarter (Year)</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>YearLookup</DataSetName>
+          <ValueField>year</ValueField>
+          <LabelField>year</LabelField>
+        </DataSetReference>
+      </ValidValues>
+      <MultiValue>true</MultiValue>
+    </ReportParameter>
+    <ReportParameter Name="ReportingQuarter">
+      <DataType>String</DataType>
+      <Prompt>Reporting Quarter</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>3</Value>
+            <Label>Q1</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>6</Value>
+            <Label>Q2</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>9</Value>
+            <Label>Q3</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>12</Value>
+            <Label>Q4</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ReportingQuarterYear">
+      <DataType>String</DataType>
+      <Prompt>Reporting Quarter (Year)</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>3</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>TreatyCode</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RiskQuarter</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RiskQuarterYear</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>SoaQuarter</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>SoaQuarterYear</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ReportingQuarter</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ReportingQuarterYear</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <rd:ReportUnitType>Mm</rd:ReportUnitType>
+  <rd:ReportServerUrl>http://desktop-3lid7oe/ReportServer</rd:ReportServerUrl>
+  <rd:ReportID>e220cf14-139e-4f2a-b21f-8e51c972df6e</rd:ReportID>
+</Report>

@@ -1,0 +1,115 @@
+﻿<div class="tab-pane fade" id="financeProvisioningTab" role="tabpanel" aria-labelledby="financeProvisioning-tab">
+    @if (ViewBag.ProvisionErrors != null)
+    {
+        List<string> provisionErrors = (List<string>)ViewBag.ProvisionErrors;
+        if (provisionErrors != null && provisionErrors.Count > 0)
+        {
+            <div class="alert alert-danger" role="alert" style="margin-bottom: 1.5rem">
+                <ul>
+                    @{
+                        foreach (string msg in provisionErrors)
+                        {
+                            <li>@msg</li>
+                        }
+                    }
+                </ul>
+            </div>
+        }
+    }
+
+    <div class="table-responsive mt-4">
+        <table class="table table-hover my-3">
+            <thead>
+                <tr>
+                    <th class="w-10">Date Notified</th>
+                    <th class="w-10">Entry No</th>
+                    <th class="w-10">SOA Quarter</th>
+                    <th class="w-15">Claim ID</th>
+                    <th class="w-10">Policy No</th>
+                    <th class="w-15">Ceding Company</th>
+                    <th class="w-15">Sum Reinsured</th>
+                    <th class="w-15">Claim Recovery Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-if="ClaimRegister.ProvisionStatus == ProvisionStatusPending">
+                    <td colspan="8" class="no-data">
+                        Claim has not been provisioned yet
+                    </td>
+                </tr>
+                <tr v-else-if="ClaimRegister.ProvisionStatus == ProvisionStatusFailed">
+                    <td colspan="8" class="no-data">
+                        Claim provision failed
+                    </td>
+                </tr>
+                <tr v-else-if="!FinanceProvisioningTransactions || !FinanceProvisioningTransactions.length">
+                    <td colspan="8" class="no-data">
+                        No available data found.
+                    </td>
+                </tr>
+                <tr v-for="(transaction, index) in FinanceProvisioningTransactions">
+                    <td>{{ transaction.CreatedAtStr }}</td>
+                    <td>{{ transaction.EntryNo }}</td>
+                    <td>{{ transaction.Quarter }}</td>
+                    <td>{{ transaction.ClaimId }}</td>
+                    <td>{{ transaction.PolicyNumber }}</td>
+                    <td>{{ transaction.CedingCompany }}</td>
+                    <td>{{ transaction.SumReinsuredStr }}</td>
+                    <td>{{ transaction.ClaimRecoveryAmountStr }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <span class="font-weight-bold">@Html.Label("Direct Retro Provisioning", htmlAttributes: new { @class = "col-form-label" })</span>
+        <span class="@BusinessObject.ClaimRegisterBo.GetDrProvisionStatusClass(Model.DrProvisionStatus) ml-2">
+            @BusinessObject.ClaimRegisterBo.GetDrProvisionStatusName(Model.DrProvisionStatus)
+        </span>
+        <div class="table-responsive mt-1">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="w-10" rowspan="2">Date Notified</th>
+                        <th class="w-10" rowspan="2">Entry No</th>
+                        <th class="w-10" rowspan="2">SOA Quarter</th>
+                        <th class="w-15" rowspan="2">Claim ID</th>
+                        <th class="w-15" rowspan="2">Ceding Company</th>
+                        <th class="w-10" rowspan="2">Retro Party</th>
+                        <th class="w-10" rowspan="2">MLRe's Portion</th>
+                        <th colspan="2" class="text-center">
+                            Recovery Amount
+                        </th>
+                    </tr>
+                    <tr class="second-row-header">
+                        <th class="w-15">Retro Statement ID</th>
+                        <th class="w-15">Retro Statement Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="ClaimRegister.DrProvisionStatus == DrProvisionStatusPending && (!DirectRetroProvisioningTransactions || !DirectRetroProvisioningTransactions.length)">
+                        <td colspan="9" class="no-data">
+                            Claim has not been provisioned yet
+                        </td>
+                    </tr>
+                    <tr v-else-if="!DirectRetroProvisioningTransactions || !DirectRetroProvisioningTransactions.length">
+                        <td colspan="9" class="no-data">
+                            No available data found.
+                        </td>
+                    </tr>
+                    <tr v-for="(transaction, index) in DirectRetroProvisioningTransactions">
+                        <td>{{ transaction.CreatedAtStr }}</td>
+                        <td>{{ transaction.EntryNo }}</td>
+                        <td>{{ transaction.Quarter }}</td>
+                        <td>{{ transaction.ClaimId }}</td>
+                        <td>{{ transaction.CedingCompany }}</td>
+                        <td>{{ transaction.RetroParty }}</td>
+                        <td>{{ transaction.RetroRecoveryStr }}</td>
+                        <td>{{ transaction.RetroStatementId }}</td>
+                        <td>{{ transaction.RetroStatementDateStr }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

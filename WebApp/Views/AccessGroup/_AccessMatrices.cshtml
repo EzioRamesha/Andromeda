@@ -1,0 +1,153 @@
+﻿@using BusinessObject
+
+@using BusinessObject.Identity
+
+@model WebApp.Models.AccessGroupViewModel
+
+@{
+    var disabled = Model.Code == DataAccess.Entities.AccessGroup.DefaultSuperCode;
+}
+
+<table class="table table-bordered table-access-matrices">
+    <thead style="text-transform: uppercase;">
+        <tr>
+            <th>Module</th>
+            <th>Type</th>
+            <th class="text-center">Create</th>
+            <th class="text-center">Read</th>
+            <th class="text-center">Update</th>
+            <th class="text-center">Delete</th>
+            <th>Additional</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if (!disabled)
+        {
+            <tr>
+                <td></td>
+                <td></td>
+                <td class="text-center"><input type="checkbox" id="createAll" /></td>
+                <td class="text-center"><input type="checkbox" id="readAll" /></td>
+                <td class="text-center"><input type="checkbox" id="updateAll" /></td>
+                <td class="text-center"><input type="checkbox" id="deleteAll" /></td>
+                <td><input type="checkbox" id="additionalAll" /></td>
+            </tr>
+        }
+
+        @foreach (DepartmentBo department in Services.Identity.DepartmentService.Get())
+        {
+            if (Services.ModuleService.CountByDepartmentId(department.Id) == 0)
+            {
+                continue;
+            }
+
+            <tr class="table-secondary">
+                <th>@department.Name</th>
+                <th>Type</th>
+                <th class="text-center">Create</th>
+                <th class="text-center">Read</th>
+                <th class="text-center">Update</th>
+                <th class="text-center">Delete</th>
+                <th>Additional</th>
+            </tr>
+
+            foreach (ModuleBo bo in Services.ModuleService.GetByDepartmentId(department.Id, Model.Id))
+            {
+                ModuleBo moduleBo = bo;
+                string createCheckBoxName = moduleBo.GetCreateName();
+                string readCheckBoxName = moduleBo.GetReadName();
+                string updateCheckBoxName = moduleBo.GetUpdateName();
+                string deleteCheckBoxName = moduleBo.GetDeleteName();
+
+                if (ViewBag.AccessMatrices != null)
+                {
+                    moduleBo.AccessMatrixBo = ((List<AccessMatrixBo>)ViewBag.AccessMatrices).Where(am => am.ModuleId == moduleBo.Id).FirstOrDefault();
+                }
+
+                <tr class="table-module">
+                    <td>
+                        @moduleBo.Name
+                    </td>
+                    <td>
+                        @ModuleBo.GetTypeName(moduleBo.Type)
+                    </td>
+                    <td class="text-center">
+                        @if (createCheckBoxName != null)
+                        {
+                            <div class="checkbox">
+                                <label>
+                                    @Html.CheckBox(createCheckBoxName, moduleBo.IsCreateChecked(), (disabled ? (object)new { id = createCheckBoxName, disabled } : new { id = createCheckBoxName }))
+                                </label>
+                            </div>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (readCheckBoxName != null)
+                        {
+                            <div class="checkbox">
+                                <label>
+                                    @Html.CheckBox(readCheckBoxName, moduleBo.IsReadChecked(), (disabled ? (object)new { id = readCheckBoxName, disabled } : new { id = readCheckBoxName }))
+                                </label>
+                            </div>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (updateCheckBoxName != null)
+                        {
+                            <div class="checkbox">
+                                <label>
+                                    @Html.CheckBox(updateCheckBoxName, moduleBo.IsUpdateChecked(), (disabled ? (object)new { id = updateCheckBoxName, disabled } : new { id = updateCheckBoxName }))
+                                </label>
+                            </div>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (deleteCheckBoxName != null)
+                        {
+                            <div class="checkbox">
+                                <label>
+                                    @Html.CheckBox(deleteCheckBoxName, moduleBo.IsDeleteChecked(), (disabled ? (object)new { id = deleteCheckBoxName, disabled } : new { id = deleteCheckBoxName }))
+                                </label>
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        @foreach (string power in moduleBo.GetPowerAdditionals())
+                        {
+                            var checkboxName = moduleBo.GetAdditionalCheckBoxName(power);
+                            <div class="checkbox">
+                                <label>
+                                    @Html.CheckBox(checkboxName, moduleBo.IsChecked(power), (disabled ? (object)new { id = checkboxName, disabled } : new { id = checkboxName }))
+                                    @AccessMatrixBo.GetPowerName(power)
+                                </label>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+</table>
+
+@section Scripts {
+    @Scripts.Render("~/Scripts/models/AccessGroupCheckBox.js")
+}
+<script>
+    if (typeof jQuery !== 'undefined') {
+        $('#createAll').change(function () {
+            check('C', this.checked);
+        });
+        $('#readAll').change(function () {
+            check('R', this.checked);
+        });
+        $('#updateAll').change(function () {
+            check('U', this.checked);
+        });
+        $('#deleteAll').change(function () {
+            check('D', this.checked);
+        });
+        $('#additionalAll').change(function () {
+            checkAdditional(this.checked);
+        });
+    }
+</script>

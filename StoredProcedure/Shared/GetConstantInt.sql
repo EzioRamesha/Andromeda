@@ -1,0 +1,7 @@
+CREATE OR ALTER FUNCTION [dbo].[GetConstantInt] (@Name VARCHAR(MAX)) RETURNS INT
+
+AS
+
+BEGIN
+	RETURN CAST(dbo.GetConstant(@Name) AS INT)
+END

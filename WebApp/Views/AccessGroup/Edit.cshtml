@@ -1,0 +1,109 @@
+﻿@model WebApp.Models.AccessGroupViewModel
+
+@{
+    ViewBag.Title = "Access Group";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    var disabled = Model.Code == DataAccess.Entities.AccessGroup.DefaultSuperCode;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm("Edit", "AccessGroup", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item"><a data-toggle="tab" href="#general" class="active underline-tab">General</a></li>
+                    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#documents">Documents</a></li>
+                </ul>
+
+                <div class="tab-content underline-tab-content">
+                    <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.DepartmentId, "Department", htmlAttributes: new { @class = "col-form-label" })
+                                @Html.DropDownListFor(model => model.DepartmentId, (List<SelectListItem>)ViewBag.DropDownDepartments, htmlAttributes: new { @class = "form-control selectpicker", disabled = true })
+                                @Html.HiddenFor(model => model.DepartmentId)
+                                @Html.ValidationMessageFor(model => model.DepartmentId, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                @Html.LabelFor(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.Code, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                                @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                                @Html.EditorFor(model => model.Name, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                        </div>
+                        <div class="form-row mt-4">
+                            <div class="form-group col-md-12">
+                                @Html.Label("Module & Access Power", htmlAttributes: new { @class = "col-form-label access-matrices-label" })
+                                <div class="table-responsive">
+                                    @Html.Partial("_AccessMatrices")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                        @Html.Partial("_Document")
+                    </div>
+                </div>
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right" disabled="@disabled">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script>
+        var AccessGroup = @Html.Raw(Json.Encode(Model));
+        var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+        var DocumentTypeItems = @Html.Raw(Json.Encode(ViewBag.DropDownDocumentTypes));
+        var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+        var AuthUserName = "@ViewBag.AuthUserName";
+
+        $(document).ready(function () {
+            if ('@ViewBag.ReadOnly' == 'True') {
+                $("input").prop("disabled", true);
+                $("select").prop("disabled", true);
+                $('button').prop("disabled", true);
+            }
+        });
+    </script>
+    @Scripts.Render("~/Scripts/models/AccessGroupCheckBox.js")
+    @Scripts.Render("~/Scripts/models/AccessGroup.js")
+}

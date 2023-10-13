@@ -1,0 +1,98 @@
+﻿@model WebApp.Models.RetroBenefitRetentionLimitViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="RetroBenefitRetentionLimitDetailMaxIndex" name="retroBenefitRetentionLimitDetailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-10">Min. Issue Age</th>
+                        <th class="w-10">Max. Issue Age</th>
+                        <th class="w-20">Mortality Limit</th>
+                        <th class="w-20"></th>
+                        <th class="w-20">Reinsurance Effective Start Date</th>
+                        <th class="w-20">Reinsurance Effective End Date</th>
+                        <th class="w-15">MLRe Retention (MYR)</th>
+                        <th class="w-15">Min. Reinsurance Amount (MYR)</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!RetroBenefitRetentionLimitDetails.length">
+                        <td colspan="10" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in RetroBenefitRetentionLimitDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'retroBenefitRetentionLimitDetailId[' + index + ']'" class="form-control" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input type="number" min="0" v-model="detail.MinIssueAgeStr" :name="'minIssueAgeStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.MinIssueAgeStr">
+                        </td>
+                        <td>
+                            <input type="number" min="0" v-model="detail.MaxIssueAgeStr" :name="'maxIssueAgeStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.MaxIssueAgeStr">
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">STD %</div>
+                                </div>
+                                <input v-model="detail.MortalityLimitFromStr" :name="'mortalityLimitFromStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.MortalityLimitFromStr">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">TM %</div>
+                                </div>
+                                <input v-model="detail.MortalityLimitToStr" :name="'mortalityLimitToStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.MortalityLimitToStr">
+                            </div>
+                        </td>
+                        <td>
+                            <input v-model="detail.ReinsEffStartDateStr" class="form-control" :name="'reinsEffStartDateStr[' + index + ']'" v-on:click="openDatePicker('ReinsEffStartDateStr_' + index)" :id="'ReinsEffStartDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.ReinsEffEndDateStr" class="form-control" :name="'reinsEffEndDateStr[' + index + ']'" v-on:click="openDatePicker('ReinsEffEndDateStr_' + index)" :id="'ReinsEffEndDateStr_' + index" placeholder="DD MM YYYY" autocomplete="off" disabled=@disabled>
+                        </td>
+                        <td>
+                            <input v-model="detail.MlreRetentionAmountStr" :name="'mlreRetentionAmountStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.MlreRetentionAmountStr">
+                        </td>
+                        <td>
+                            <input v-model="detail.MinReinsAmountStr" :name="'minReinsAmountStr[' + index + ']'" class="form-control" disabled="@disabled" :value="detail.MinReinsAmountStr">
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeRetroBenefitRetentionLimitDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var RetroBenefitRetentionLimitModel = @Html.Raw(Json.Encode(Model));
+    var RetroBenefitRetentionLimitDetails = @Html.Raw(Json.Encode(ViewBag.RetroBenefitRetentionLimitDetailBos));
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

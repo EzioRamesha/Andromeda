@@ -1,0 +1,642 @@
+﻿@model WebApp.Models.ClaimRegisterViewModel
+
+@Html.HiddenFor(model => model.IsClaim)
+
+<div class="form-row" style="margin-top: 50px;">
+    <div class="form-group col-md-12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a class="active underline-tab" data-toggle="tab" href="#generalTab">General</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#riDataTab">RI Data</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#financeProvisioningTab">Finance Provisioning</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#underwritingTab">Underwriting</a></li>
+            @if (Model.RecordType == BusinessObject.PickListDetailBo.RecordTypeExGratia)
+            {
+                <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#exGratiaTab">Ex-Gratia</a></li>
+            }
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#checklistTab">Checklist</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remarkTab">Remarks</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#documentTab">Documents</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistoryTab">Status History</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelogTab">Changelog</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            @Html.Partial("~/Views/ClaimRegister/Shared/_GeneralTab.cshtml")
+            @Html.Partial("~/Views/ClaimRegister/Shared/_RiDataTab.cshtml")
+            @Html.Partial("~/Views/ClaimRegister/Shared/_FinanceProvisioningTab.cshtml")
+
+            <div class="tab-pane fade" id="underwritingTab" role="tabpanel" aria-labelledby="underwriting-tab">
+                <div class="form-group">
+                    <span class="font-weight-bold">@Html.Label("Request Underwriter Review", htmlAttributes: new { @class = "col-form-label" })</span>
+                    <div class="row m-0 p-0">
+                        <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                        <div class="custom-control custom-switch pl-2">
+                            @Html.EditorFor(model => model.RequestUnderwriterReview, new { htmlAttributes = new { @class = "custom-control-input", placeholder = "Type Here", @v_model = "ClaimRegister.RequestUnderwriterReview", disabled = true } })
+                            <label class="custom-control-label" for="RequestUnderwriterReview">Yes</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.RadioButtonFor(model => model.UnderwriterFeedback, BusinessObject.ClaimRegisterBo.UnderwriterFeedbackAcceptedNoAlteration, htmlAttributes: new { @class = "prevent-disable" })
+                        @Html.Label("Accepted with no alteration", htmlAttributes: new { @class = "col-form-label" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.RadioButtonFor(model => model.UnderwriterFeedback, BusinessObject.ClaimRegisterBo.UnderwriterFeedbackAcceptedAlteration, htmlAttributes: new { @class = "prevent-disable" })
+                        @Html.Label("Accepted with alteration", htmlAttributes: new { @class = "col-form-label" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.RadioButtonFor(model => model.UnderwriterFeedback, BusinessObject.ClaimRegisterBo.UnderwriterFeedbackAppliedExclusion, htmlAttributes: new { @class = "prevent-disable" })
+                        @Html.Label("Accepted an exclusion", htmlAttributes: new { @class = "col-form-label" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.RadioButtonFor(model => model.UnderwriterFeedback, BusinessObject.ClaimRegisterBo.UnderwriterFeedbackDeclined, htmlAttributes: new { @class = "prevent-disable" })
+                        @Html.Label("Declined Application", htmlAttributes: new { @class = "col-form-label" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.RadioButtonFor(model => model.UnderwriterFeedback, BusinessObject.ClaimRegisterBo.UnderwriterFeedbackOthers, htmlAttributes: new { @class = "prevent-disable" })
+                        @Html.Label("Others", htmlAttributes: new { @class = "col-form-label" })
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <button id="addRemarkButton" type="button" class="btn btn-add-sub mt-4 prevent-disable" style="width: auto;" v-on:click="resetRemarkInfo('Underwriting')" data-toggle="modal" data-target="#underwritingRemarkModal">ADD REMARK</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr>
+                                <th class="w-25">Created Date & time</th>
+                                <th class="w-25">Updated By</th>
+                                <th class="w-40">Remarks</th>
+                                <th class="w-10 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!UnderwritingRemarks || !UnderwritingRemarks.length">
+                                <td colspan="4" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(remark, index) in UnderwritingRemarks">
+                                <td>
+                                    <input type="hidden" v-model="remark.CreatedAtStr" class="form-control form-control-sm" :name="'ur.CreatedAtStr[' + index + ']'" />
+                                    {{ remark.CreatedAtStr }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="remark.CreatedByName" class="form-control form-control-sm" :name="'ur.CreatedByName[' + index + ']'" />
+                                    {{ remark.CreatedByName }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="remark.Status" :name="'ur.Status[' + index + ']'" />
+                                    <input type="hidden" v-model="remark.Content" class="form-control form-control-sm" :name="'ur.Content[' + index + ']'" />
+                                    {{ remark.ShortContent }}
+                                </td>
+                                <td class="text-center">
+                                    <a href="" v-on:click="viewUnderwritingRemark(index)" data-toggle="modal" data-target="#viewUnderwritingRemarkModal">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @if (Model.RecordType == BusinessObject.PickListDetailBo.RecordTypeExGratia)
+            {
+                <div class="tab-pane fade" id="exGratiaTab" role="tabpanel" aria-labelledby="exGratia-tab">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.CedingCompany, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.CedingCompany" class="form-control" disabled />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.ClaimTransactionType, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.ClaimTransactionType" class="form-control" disabled />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.InsuredName, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.InsuredName" class="form-control" disabled />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.InsuredDateOfBirthStr, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.InsuredDateOfBirthStr" class="form-control" disabled />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.PolicyNumber, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.PolicyNumber" class="form-control" disabled />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.ReinsEffDatePolStr, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.ReinsEffDatePolStr" class="form-control" disabled />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.DateOfEventStr, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.DateOfEventStr" class="form-control" disabled />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.TreatyCode" class="form-control" disabled />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.CauseOfEvent, htmlAttributes: new { @class = "col-form-label" })
+                            <input value="@Model.CauseOfEvent" class="form-control" disabled />
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">MYR</div>
+                                </div>
+                                <input value="@Model.ClaimRecoveryAmtStr" class="form-control text-right" disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.EventChronologyComment, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextArea("EventChronologyComment", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                            @Html.ValidationMessageFor(model => model.EventChronologyComment, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.ClaimAssessorRecommendation, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextArea("ClaimAssessorRecommendation", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                            @Html.ValidationMessageFor(model => model.ClaimAssessorRecommendation, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-4">
+                        <div class="col-md-6 mid-line-1 pb-0">
+                            <span class="font-weight-bold">@Html.Label("Claims Committee 1", htmlAttributes: new { @class = "col-form-label" })</span>
+                        </div>
+                        <div class="col-md-6 mid-line-2 pb-0">
+                            <span class="font-weight-bold">@Html.Label("Claims Committee 2", htmlAttributes: new { @class = "col-form-label" })</span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.ClaimCommitteeComment1, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextArea("ClaimCommitteeComment1", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeComment1, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.ClaimCommitteeComment2, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextArea("ClaimCommitteeComment2", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeComment2, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.ClaimCommitteeUser1Id, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.ClaimCommitteeUser1Id, (List<SelectListItem>)ViewBag.DropDownClaimUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.ClaimCommitteeUser1Id", @onchange = "toggleClaimCommitteeUser(1)" })
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeUser1Id, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.ClaimCommitteeUser2Id, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.ClaimCommitteeUser2Id, (List<SelectListItem>)ViewBag.DropDownClaimUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.ClaimCommitteeUser2Id", @onchange = "toggleClaimCommitteeUser(2)" })
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeUser2Id, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.EditorFor(model => model.ClaimCommitteeUser1Name, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ClaimRegister.ClaimCommitteeUser1Name" } })
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeUser1Name, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.EditorFor(model => model.ClaimCommitteeUser2Name, new { htmlAttributes = new { @class = "form-control", placeholder = "Type Here", @v_model = "ClaimRegister.ClaimCommitteeUser2Name" } })
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeUser2Name, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.ClaimCommitteeDateCommented1Str, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.ClaimCommitteeDateCommented1Str, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('ClaimCommitteeDateCommented1Str')" }, { @"v-model.lazy", @"ClaimRegister.ClaimCommitteeDateCommented1Str" } })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ClaimCommitteeDateCommented1Str')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeDateCommented1Str, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.ClaimCommitteeDateCommented2Str, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.ClaimCommitteeDateCommented2Str, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('ClaimCommitteeDateCommented2Str')" }, { @"v-model.lazy", @"ClaimRegister.ClaimCommitteeDateCommented2Str" } })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ClaimCommitteeDateCommented2Str')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.ClaimCommitteeDateCommented2Str, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.Label("CEO Name", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.Editor("CeoName", new { htmlAttributes = new { @class = "form-control", @Value = Shared.Util.GetConfig("ExGratiaCeoName"), disabled = "disabled" } })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.CeoClaimReasonId, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.CeoClaimReasonId, (List<SelectListItem>)ViewBag.DropDownClaimReasons, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.CeoClaimReasonId" })
+                            @Html.ValidationMessageFor(model => model.CeoClaimReasonId, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.SignOffDateStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.SignOffDateStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('SignOffDateStr')" }, { @"v-model.lazy", @"ClaimRegister.SignOffDateStr" } })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('SignOffDateStr')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.SignOffDateStr, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.CeoComment, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextArea("CeoComment", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                            @Html.ValidationMessageFor(model => model.CeoComment, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.LabelFor(model => model.UpdatedOnBehalfById, htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownListFor(model => model.UpdatedOnBehalfById, (List<SelectListItem>)ViewBag.DropDownClaimUsers, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.UpdatedOnBehalfById" })
+                            @Html.ValidationMessageFor(model => model.UpdatedOnBehalfById, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">
+                            @Html.LabelFor(model => model.UpdatedOnBehalfAtStr, htmlAttributes: new { @class = "col-form-label" })
+                            <div class="input-w-icon">
+                                @Html.TextBoxFor(model => model.UpdatedOnBehalfAtStr, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "DD MM YYYY" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('UpdatedOnBehalfAtStr')" }, { @"v-model.lazy", @"ClaimRegister.UpdatedOnBehalfAtStr" } })
+                                <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('UpdatedOnBehalfAtStr')" />
+                            </div>
+                            @Html.ValidationMessageFor(model => model.UpdatedOnBehalfAtStr, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-btn">
+                        <div class="form-group col-md-12 btn-row" style="padding-right: 5px!important;">
+                            <div class="row m-0 p-0 float-right">
+                                <div class="mr-1">
+                                    <input type="button" class="btn btn-submit float-right" id="notifyCommitteeBtn" value="NOTIFY CLAIM COMMITTEE USERS" onclick="notifyClaimCommittee()" />
+                                </div>
+                                <div>
+                                    @Html.ActionLink("GENERATE", "DownloadExGratia", new
+                                    {
+                                        @*CedingCompany = Model.CedingCompany,
+                                            InsuredName = Model.InsuredName,
+                                            ClaimId = Model.ClaimId,
+                                            InsuredDateOfBirthStr = Model.InsuredDateOfBirthStr,
+                                            InsuredGenderCode = Model.InsuredGenderCode,
+                                            ClaimTransactionType = Model.ClaimTransactionType,
+                                            PolicyNumber = Model.PolicyNumber,
+                                            DateOfEventStr = Model.DateOfEventStr,
+                                            MlreBenefitCode = Model.MlreBenefitCode,
+                                            TreatyCode = Model.TreatyCode,
+                                            CauseOfEvent = Model.CauseOfEvent,
+                                            ClaimRecoveryAmountStr = Model.ClaimRecoveryAmtStr,
+                                            ClaimAssessorRecommendation = Model.ClaimAssessorRecommendation,
+                                            EventChronologyComment = Model.EventChronologyComment,
+                                            ClaimCommitteeComment1 = Model.ClaimCommitteeComment1,
+                                            ClaimCommitteeComment2 = Model.ClaimCommitteeComment2,
+                                            ClaimCommitteeUser1Id = Model.ClaimCommitteeUser1Id,
+                                            ClaimCommitteeUser2Id = Model.ClaimCommitteeUser2Id,*@
+                                    }, new { @class = "btn btn-submit float-right", @id = "downloadExGratiaBtn" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="tab-pane fade" id="checklistTab" role="tabpanel" aria-labelledby="checklist-tab">
+                @if (!string.IsNullOrEmpty(ViewBag.ChecklistError))
+                {
+                    <div class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem">
+                        @ViewBag.ChecklistError
+                    </div>
+                }
+
+                @if (ViewBag.ChecklistErrors != null)
+                {
+                    List<string> checklistErrors = (List<string>)ViewBag.ChecklistErrors;
+                    if (checklistErrors != null && checklistErrors.Count > 0)
+                    {
+                        <div class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem">
+                            <div class="ml-1" style="display: inline-block;">
+                                <div class="mb-1">The following document needed action: </div>
+                                <ul class="mb-0">
+                                    @{
+                                        foreach (string error in checklistErrors)
+                                        {
+                                            <li>@error</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                }
+
+                @if (ViewBag.Checklists != null)
+                {
+                    Dictionary<string, string> checklists = (Dictionary<string, string>)ViewBag.Checklists;
+                    if (checklists != null && checklists.Count > 0)
+                    {
+                        var dropDownChecklistStatuses = (List<SelectListItem>)ViewBag.DropDownChecklistStatuses;
+                        var formattedChecklists = checklists.Select((Entry, Index) => new { Entry, Index });
+                        for (int i = 0; i < checklists.Count; i += 2)
+                        {
+                            var firstChecklist = formattedChecklists.Where(q => q.Index == i).FirstOrDefault();
+                            var secondChecklist = formattedChecklists.Where(q => q.Index == i + 1).FirstOrDefault();
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.Label(firstChecklist.Entry.Key, htmlAttributes: new { @class = "col-form-label" })
+
+                                    @if (firstChecklist.Entry.Key == BusinessObject.ClaimChecklistDetailBo.RemarkCode)
+                                    {
+                                        string name = @firstChecklist.Entry.Key;
+                                        <textarea class="form-control textarea-auto-expand" id="@name" name="@name" placeholder="Type Here" v-on:focus="autoExpandTextarea('@name')" v-on:blur="autoCollapseTextarea('@name')" rows="1">@firstChecklist.Entry.Value</textarea>
+                                    }
+                                    else
+                                    {
+                                        <select class="form-control selectpicker" name="@firstChecklist.Entry.Key">
+                                            @foreach (var item in dropDownChecklistStatuses)
+                                            {
+                                                var isSelected = item.Value == firstChecklist.Entry.Value;
+                                                <option value="@item.Value" selected="@isSelected">@item.Text</option>
+                                            }
+                                        </select>
+                                    }
+                                    @Html.ValidationMessage(firstChecklist.Entry.Key, "", new { @class = "text-danger" })
+                                </div>
+
+                                @if (secondChecklist != null)
+                                {
+                                    <div class="form-group col-md-6 mid-line-2">
+                                        @Html.Label(secondChecklist.Entry.Key, htmlAttributes: new { @class = "col-form-label" })
+
+                                        @if (secondChecklist.Entry.Key == BusinessObject.ClaimChecklistDetailBo.RemarkCode)
+                                        {
+                                            string name = @secondChecklist.Entry.Key;
+                                            <textarea class="form-control textarea-auto-expand" id="@name" name="@name" placeholder="Type Here" v-on:focus="autoExpandTextarea('@name')" v-on:blur="autoCollapseTextarea('@name')" rows="1">@secondChecklist.Entry.Value</textarea>
+                                        }
+                                        else
+                                        {
+                                            <select class="form-control selectpicker" name="@secondChecklist.Entry.Key">
+                                                @foreach (var item in dropDownChecklistStatuses)
+                                                {
+                                                    var isSelected = item.Value == secondChecklist.Entry.Value;
+                                                    <option value="@item.Value" selected="@isSelected">@item.Text</option>
+                                                }
+                                            </select>
+                                        }
+                                        @Html.ValidationMessage(secondChecklist.Entry.Key, "", new { @class = "text-danger" })
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                }
+
+
+            </div>
+
+            <div class="tab-pane fade" id="remarkTab" role="tabpanel" aria-labelledby="remark-tab">
+                @Html.Partial("_Remark", new ViewDataDictionary { { "showFollowUp", true }, { "showPermission", true }, { "showDocuments", true }, { "dropdownRemarkStatus", ViewBag.DropDownClaimStatuses } })
+            </div>
+
+            <div class="tab-pane fade" id="documentTab" role="tabpanel" aria-labelledby="document-tab">
+                @Html.Partial("_Document", new ViewDataDictionary { { "showPermission", true }, { "hideDetail", true }, { "hideAddButton", true } })
+            </div>
+
+            @Html.Partial("~/Views/ClaimRegister/Shared/_OtherTabs.cshtml")
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="notificationResultModal" tabindex="-1" role="dialog" aria-labelledby="notificationResultModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Notify Claim Committee Result</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Claim Committee User 1", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+
+                <div class="form-row">
+                    <span id="committeeUser1Msg" class="col-form-label"></span>
+                </div>
+
+                <div class="form-row mt-2">
+                    <span style="padding-left: 5px;">
+                        @Html.Label("Claim Committee User 2", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                    </span>
+                </div>
+
+                <div class="form-row">
+                    <span id="committeeUser2Msg" class="col-form-label"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-submit" data-dismiss="modal">CLOSE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="underwritingRemarkModal" tabindex="-1" role="dialog" aria-labelledby="underwritingRemarkModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Remark</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger" id="addUnderwritingRemarkError" style="display:none;"></div>
+
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">Your Name</label>
+                        <input type="text" readonly class="form-control" id="userName" value="@ViewBag.AuthUserName">
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label" for="remarkContent">Please write your remark here</label>
+                        <textarea rows="1" v-on:focus="autoExpandTextarea('remarkContent')" v-on:blur="autoCollapseTextarea('remarkContent')" v-model="RemarkModal.Content" class="form-control textarea-auto-expand" id="remarkContent" placeholder="Type here"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" v-on:click="addUnderwritingRemark()" class="btn btn-submit prevent-disable">SAVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewUnderwritingRemarkModal" tabindex="-1" role="dialog" aria-labelledby="viewUnderwritingRemarkModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Underwriting Remark</h5>
+                <button type="button" class="close prevent-disable" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{ RemarkModal.Content }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel prevent-disable" data-dismiss="modal">CLOSE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePicModal" tabindex="-1" role="dialog" aria-labelledby="changePicModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Next Person In Charge</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div v-if="!HasAuthorityLimitClaimUsers" class="alert alert-danger">
+                    <span>There are no claim users that are authorised to approve this claim</span>
+                </div>
+                <div class="form">
+                    <div class="form-group">
+                        <label class="col-form-label" for="userName">User</label>
+                        @Html.DropDownListFor(model => model.NextPicClaimId, (List<SelectListItem>)ViewBag.DropDownAuthorityLimitClaimUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" v-if="HasAuthorityLimitClaimUsers">
+                @*<a href="#" id="confirmApprovalByLimitBtn" class="btn btn-submit">SUBMIT</a>*@
+                <button type="submit" class="btn btn-submit prevent-disable" formaction="@Url.Action("UpdateStatus", new { id = Model.Id, status = BusinessObject.ClaimRegisterBo.StatusApprovalByLimit })">SUBMIT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="overwriteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="overwriteConfirmationModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Overwrite Approval Confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span class="font-weight-bold">
+                    The amount for this claim has exceeded your limit. Do you confirm that you want to overwrite this and approve this claim?
+                </span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                @*<a href="#" class="btn btn-submit" onclick="confirmOverwriteApproval()">CONFIRM</a>*@
+                <button type="submit" class="btn btn-submit prevent-disable" formaction="@Url.Action("UpdateStatus", new { id = Model.Id, status = Model.IsReferralCase ? BusinessObject.ClaimRegisterBo.StatusApprovedReferralClaim : BusinessObject.ClaimRegisterBo.StatusApproved })">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    // Status
+    var ClaimStatusReported = @BusinessObject.ClaimRegisterBo.StatusReported;
+    var ClaimStatusRegistered = @BusinessObject.ClaimRegisterBo.StatusRegistered;
+    var ClaimStatusPending = @BusinessObject.ClaimRegisterBo.StatusPendingClarification;
+    var ClaimStatusApproved = @BusinessObject.ClaimRegisterBo.StatusApproved;
+    var ClaimStatusDeclined = @BusinessObject.ClaimRegisterBo.StatusDeclined;
+    var ClaimStatusApprovalByLimit = @BusinessObject.ClaimRegisterBo.StatusApprovalByLimit;
+    var ClaimStatusReportedName = "@BusinessObject.ClaimRegisterBo.GetStatusName(BusinessObject.ClaimRegisterBo.StatusReported)";
+    var ProvisionStatusProvisioned = @BusinessObject.ClaimRegisterBo.ProvisionStatusProvisioned;
+    var ProvisionStatusPending = @BusinessObject.ClaimRegisterBo.ProvisionStatusPending;
+    var ProvisionStatusFailed = @BusinessObject.ClaimRegisterBo.ProvisionStatusFailed;
+    var ProvisionStatusPendingReprovision = @BusinessObject.ClaimRegisterBo.ProvisionStatusPendingReprovision;
+    var DrProvisionStatusPending = @BusinessObject.ClaimRegisterBo.DrProvisionStatusPending;
+    var DrProvisionStatusSuccess = @BusinessObject.ClaimRegisterBo.DrProvisionStatusSuccess;
+    var DrProvisionStatusFailed = @BusinessObject.ClaimRegisterBo.DrProvisionStatusFailed;
+
+    // Url
+    var GetTreatyCodeByCedantUrl = '@Url.Action("GetByCedantCode", "TreatyCode")';
+    var GetDropDownTreatyCodeByCedantUrl = '@Url.Action("GetDropDownByCedantCode", "TreatyCode")';
+    var GetClaimDataConfigListUrl = '@Url.Action("GetClaimDataConfigByCedant")';
+    var SearchRIDataUrl = '@Url.Action("SearchFromClaimRegister", "RiDataWarehouse")';
+    var SearchClaimDataUrl = '@Url.Action("SearchOriginalClaimRegister")';
+    var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+    var SaveTempFileUrl = "@(Url.Action("Upload", "Document"))";
+    var UploadSaveDocumentUrl = "@(Url.Action("UploadSave", "Document"))";
+    var DeleteTempFileUrl = "@(Url.Action("Remove", "Document"))";
+    var NotifyClaimCommitteeUrl = "@(Url.Action("NotifyClaimCommittee"))";
+    var DownloadExGratiaUrl = "@(Url.Action("DownloadExGratia"))";
+    var AssignCaseUrl = "@(Url.Action("AssignCase"))";
+    var UpdateStatusUrl = "@(Url.Action("UpdateStatus"))";
+    var UrlReferralEditLink = "@Url.Action("Edit", "ReferralClaim")";
+    var EditRiDataWarehouseUrl = "@(Url.Action("Edit", "RiDataWarehouse"))";
+
+    // List
+    var Months = @Html.Raw(Json.Encode(ViewBag.DropDownMonths));
+    var CedingBenefitTypeCodes = @Html.Raw(Json.Encode(ViewBag.DropDownCedingBenefitTypeCodes));
+    var DropDownBenefits = @Html.Raw(Json.Encode(ViewBag.DropDownBenefits));
+    var DropDownClaimCodes = @Html.Raw(Json.Encode(ViewBag.DropDownClaimCodes));
+    var DropDownTreatyCodes = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyCodes));
+    var DocumentTypeItems = @Html.Raw(Json.Encode(ViewBag.DropDownDocumentTypes));
+    var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+
+    // List
+    var RemarksList = @Html.Raw(Json.Encode(ViewBag.Remarks));
+    var StatusHistoriesList = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+    var DocumentBos = @Html.Raw(Json.Encode(ViewBag.DocumentBos));
+    var UserTrails = @Html.Raw(Json.Encode(ViewBag.UserTrails));
+    var RelatedClaims = @Html.Raw(Json.Encode(ViewBag.RelatedClaims));
+    var FinanceProvisioningTransactions = @Html.Raw(Json.Encode(ViewBag.FinanceProvisioningTransactions));
+    var DirectRetroProvisioningTransactions = @Html.Raw(Json.Encode(ViewBag.DirectRetroProvisioningTransactions));
+    var UnderwritingRemarks = @Html.Raw(Json.Encode(ViewBag.UnderwritingRemarks));
+
+    // Others
+    var AuthUserName = '@ViewBag.AuthUserName';
+    var TreatyCodeActive = '@BusinessObject.TreatyCodeBo.StatusActive';
+    var QuarterDateFormat = '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs';
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var DateFormat = "@Shared.Util.GetDateFormatMomentJs()";
+    var CanUpdateUnderwritingFeedback = @(ViewBag.CanUpdateUnderwritingFeedback != null ? ViewBag.CanUpdateUnderwritingFeedback.ToString().ToLower() : "false");
+    var PicClaimId = Model.PicClaimId;
+    var ReadOnly = @(ViewBag.ReadOnly != null ? ViewBag.ReadOnly.ToString().ToLower() : "false");
+    var HasAuthorityLimitClaimUsers = @(ViewBag.HasAuthorityLimitClaimUsers != null ? ViewBag.HasAuthorityLimitClaimUsers.ToString().ToLower() : "false");
+    var ClaimTransactionTypeAdjustment = '@BusinessObject.PickListDetailBo.ClaimTransactionTypeAdjustment';
+</script>

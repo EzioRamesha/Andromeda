@@ -1,0 +1,140 @@
+﻿@model WebApp.Models.PerLifeRetroConfigurationRatioViewModel
+
+@{
+    ViewBag.Title = "Per Life Retro Configuration - Retro Ratio";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Ratio", "PerLifeRetroConfiguration");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyCodeId)</td>
+                            <td>
+                                @if (Model.TreatyCodeBo != null)
+                                {
+                                    @Model.TreatyCodeBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RetroRatio)</td>
+                            <td>@Shared.Util.DoubleToString(Model.RetroRatio)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.MlreRetainRatio)</td>
+                            <td>@Shared.Util.DoubleToString(Model.MlreRetainRatio)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RuleValue)</td>
+                            <td>@Shared.Util.DoubleToString(Model.RuleValue)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffectiveStartDate)</td>
+                            <td>
+                                @if (Model.ReinsEffectiveStartDate.HasValue)
+                                {
+                                    @Model.ReinsEffectiveStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffectiveEndDate)</td>
+                            <td>
+
+                                @if (Model.ReinsEffectiveEndDate.HasValue)
+                                {
+                                    @Model.ReinsEffectiveEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RiskQuarterStartDate)</td>
+                            <td>
+
+                                @if (Model.RiskQuarterStartDate.HasValue)
+                                {
+                                    @Model.RiskQuarterStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RiskQuarterEndDate)</td>
+                            <td>
+
+                                @if (Model.RiskQuarterEndDate.HasValue)
+                                {
+                                    @Model.RiskQuarterEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RuleEffectiveDate)</td>
+                            <td>
+
+                                @if (Model.RuleEffectiveDate.HasValue)
+                                {
+                                    @Model.RuleEffectiveDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.RuleCeaseDate)</td>
+                            <td>
+
+                                @if (Model.RuleCeaseDate.HasValue)
+                                {
+                                    @Model.RuleCeaseDate.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.Description)</td>
+                            <td>@Html.DisplayFor(model => model.Description)</td>
+                        </tr>
+                        <tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Ratio", "PerLifeRetroConfiguration", null, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

@@ -1,0 +1,152 @@
+﻿namespace DataAccess.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    public partial class UpdateRiDataTable5 : DbMigration
+    {
+        public override void Up()
+        {
+            AlterColumn("dbo.RiData", "OriSumAssured", c => c.Double());
+            AlterColumn("dbo.RiData", "CurrSumAssured", c => c.Double());
+            AlterColumn("dbo.RiData", "AmountCededB4MlreShare", c => c.Double());
+            AlterColumn("dbo.RiData", "RetentionAmount", c => c.Double());
+            AlterColumn("dbo.RiData", "AarOri", c => c.Double());
+            AlterColumn("dbo.RiData", "Aar", c => c.Double());
+            AlterColumn("dbo.RiData", "AarSpecial1", c => c.Double());
+            AlterColumn("dbo.RiData", "AarSpecial2", c => c.Double());
+            AlterColumn("dbo.RiData", "AarSpecial3", c => c.Double());
+            AlterColumn("dbo.RiData", "DurationYear", c => c.Double());
+            AlterColumn("dbo.RiData", "CedantRiRate", c => c.Double());
+            AlterColumn("dbo.RiData", "DiscountRate", c => c.Double());
+            AlterColumn("dbo.RiData", "UnderwriterRating", c => c.Double());
+            AlterColumn("dbo.RiData", "UnderwriterRatingUnit", c => c.Double());
+            AlterColumn("dbo.RiData", "UnderwriterRating2", c => c.Double());
+            AlterColumn("dbo.RiData", "UnderwriterRatingUnit2", c => c.Double());
+            AlterColumn("dbo.RiData", "UnderwriterRating3", c => c.Double());
+            AlterColumn("dbo.RiData", "UnderwriterRatingUnit3", c => c.Double());
+            AlterColumn("dbo.RiData", "FlatExtraAmount", c => c.Double());
+            AlterColumn("dbo.RiData", "FlatExtraUnit", c => c.Double());
+            AlterColumn("dbo.RiData", "FlatExtraAmount2", c => c.Double());
+            AlterColumn("dbo.RiData", "StandardPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "SubstandardPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "FlatExtraPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "GrossPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "StandardDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "SubstandardDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "VitalityDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "TotalDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "NetPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "AnnualRiPrem", c => c.Double());
+            AlterColumn("dbo.RiData", "PolicyGrossPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "PolicyStandardPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "PolicySubstandardPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "PolicyAmountDeath", c => c.Double());
+            AlterColumn("dbo.RiData", "PolicyReserve", c => c.Double());
+            AlterColumn("dbo.RiData", "ApLoading", c => c.Double());
+            AlterColumn("dbo.RiData", "LoanInterestRate", c => c.Double());
+            AlterColumn("dbo.RiData", "CedantSar", c => c.Double());
+            AlterColumn("dbo.RiData", "AmountCededB4MlreShare2", c => c.Double());
+            AlterColumn("dbo.RiData", "GroupEmployeeBasicSalary", c => c.Double());
+            AlterColumn("dbo.RiData", "GroupEmployeeBasicSalaryRevise", c => c.Double());
+            AlterColumn("dbo.RiData", "GroupEmployeeBasicSalaryMultiplier", c => c.Double());
+            AlterColumn("dbo.RiData", "PolicyAmountSubstandard", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1RiShare", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1StandardPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1SubstandardPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1GrossPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1StandardDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1SubstandardDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1TotalDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1NetPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1GrossPremiumAlt", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1TotalDiscountAlt", c => c.Double());
+            AlterColumn("dbo.RiData", "Layer1NetPremiumAlt", c => c.Double());
+            AlterColumn("dbo.RiData", "TaxAmount", c => c.Double());
+            AlterColumn("dbo.RiData", "GstGrossPremium", c => c.Double());
+            AlterColumn("dbo.RiData", "GstTotalDiscount", c => c.Double());
+            AlterColumn("dbo.RiData", "GstVitality", c => c.Double());
+            AlterColumn("dbo.RiData", "GstAmount", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA1", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA2", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA3", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA4", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA5", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA6", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA7", c => c.Double());
+            AlterColumn("dbo.RiData", "TempA8", c => c.Double());
+        }
+        
+        public override void Down()
+        {
+            AlterColumn("dbo.RiData", "TempA8", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA7", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA6", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA5", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA4", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA3", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA2", c => c.Int());
+            AlterColumn("dbo.RiData", "TempA1", c => c.Int());
+            AlterColumn("dbo.RiData", "GstAmount", c => c.Int());
+            AlterColumn("dbo.RiData", "GstVitality", c => c.Int());
+            AlterColumn("dbo.RiData", "GstTotalDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "GstGrossPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "TaxAmount", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1NetPremiumAlt", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1TotalDiscountAlt", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1GrossPremiumAlt", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1NetPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1TotalDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1SubstandardDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1StandardDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1GrossPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1SubstandardPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1StandardPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "Layer1RiShare", c => c.Int());
+            AlterColumn("dbo.RiData", "PolicyAmountSubstandard", c => c.Int());
+            AlterColumn("dbo.RiData", "GroupEmployeeBasicSalaryMultiplier", c => c.Int());
+            AlterColumn("dbo.RiData", "GroupEmployeeBasicSalaryRevise", c => c.Int());
+            AlterColumn("dbo.RiData", "GroupEmployeeBasicSalary", c => c.Int());
+            AlterColumn("dbo.RiData", "AmountCededB4MlreShare2", c => c.Int());
+            AlterColumn("dbo.RiData", "CedantSar", c => c.Int());
+            AlterColumn("dbo.RiData", "LoanInterestRate", c => c.Int());
+            AlterColumn("dbo.RiData", "ApLoading", c => c.Int());
+            AlterColumn("dbo.RiData", "PolicyReserve", c => c.Int());
+            AlterColumn("dbo.RiData", "PolicyAmountDeath", c => c.Int());
+            AlterColumn("dbo.RiData", "PolicySubstandardPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "PolicyStandardPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "PolicyGrossPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "AnnualRiPrem", c => c.Int());
+            AlterColumn("dbo.RiData", "NetPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "TotalDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "VitalityDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "SubstandardDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "StandardDiscount", c => c.Int());
+            AlterColumn("dbo.RiData", "GrossPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "FlatExtraPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "SubstandardPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "StandardPremium", c => c.Int());
+            AlterColumn("dbo.RiData", "FlatExtraAmount2", c => c.Int());
+            AlterColumn("dbo.RiData", "FlatExtraUnit", c => c.Int());
+            AlterColumn("dbo.RiData", "FlatExtraAmount", c => c.Int());
+            AlterColumn("dbo.RiData", "UnderwriterRatingUnit3", c => c.Int());
+            AlterColumn("dbo.RiData", "UnderwriterRating3", c => c.Int());
+            AlterColumn("dbo.RiData", "UnderwriterRatingUnit2", c => c.Int());
+            AlterColumn("dbo.RiData", "UnderwriterRating2", c => c.Int());
+            AlterColumn("dbo.RiData", "UnderwriterRatingUnit", c => c.Int());
+            AlterColumn("dbo.RiData", "UnderwriterRating", c => c.Int());
+            AlterColumn("dbo.RiData", "DiscountRate", c => c.Int());
+            AlterColumn("dbo.RiData", "CedantRiRate", c => c.Int());
+            AlterColumn("dbo.RiData", "DurationYear", c => c.Int());
+            AlterColumn("dbo.RiData", "AarSpecial3", c => c.Int());
+            AlterColumn("dbo.RiData", "AarSpecial2", c => c.Int());
+            AlterColumn("dbo.RiData", "AarSpecial1", c => c.Int());
+            AlterColumn("dbo.RiData", "Aar", c => c.Int());
+            AlterColumn("dbo.RiData", "AarOri", c => c.Int());
+            AlterColumn("dbo.RiData", "RetentionAmount", c => c.Int());
+            AlterColumn("dbo.RiData", "AmountCededB4MlreShare", c => c.Int());
+            AlterColumn("dbo.RiData", "CurrSumAssured", c => c.Int());
+            AlterColumn("dbo.RiData", "OriSumAssured", c => c.Int());
+        }
+    }
+}

@@ -1,0 +1,171 @@
+﻿@model WebApp.Models.PerLifeDataCorrectionViewModel
+
+@{
+    ViewBag.Title = "Per Life Data Correction";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyCodeId)</td>
+                            <td>
+                                @if (Model.TreatyCodeBo != null)
+                                {
+                                    @Model.TreatyCodeBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.InsuredName)</td>
+                            <td>@Html.DisplayFor(model => model.InsuredName)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.InsuredDateOfBirth)</td>
+                            <td>
+                                @if (Model.InsuredDateOfBirth.HasValue)
+                                {
+                                    @Model.InsuredDateOfBirth.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PolicyNumber)</td>
+                            <td>@Html.DisplayFor(model => model.PolicyNumber)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.InsuredGenderCodePickListDetailId)</td>
+                            <td>
+                                @if (Model.InsuredGenderCodePickListDetailBo != null)
+                                {
+                                    @Model.InsuredGenderCodePickListDetailBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TerritoryOfIssueCodePickListDetailId)</td>
+                            <td>
+                                @if (Model.TerritoryOfIssueCodePickListDetailBo != null)
+                                {
+                                    @Model.TerritoryOfIssueCodePickListDetailBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PerLifeRetroGenderId)</td>
+                            <td>
+                                @if (Model.PerLifeRetroGenderBo?.InsuredGenderCodePickListDetailBo != null)
+                                {
+                                    @Model.PerLifeRetroGenderBo.InsuredGenderCodePickListDetailBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PerLifeRetroCountryId)</td>
+                            <td>
+                                @if (Model.PerLifeRetroCountryBo?.TerritoryOfIssueCodePickListDetailBo != null)
+                                {
+                                    @Model.PerLifeRetroCountryBo.TerritoryOfIssueCodePickListDetailBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.DateOfExceptionDetected)</td>
+                            <td>
+                                @if (Model.DateOfExceptionDetected.HasValue)
+                                {
+                                    @Model.DateOfExceptionDetected.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.DateOfPolicyExist)</td>
+                            <td>
+                                @if (Model.DateOfPolicyExist.HasValue)
+                                {
+                                    @Model.DateOfPolicyExist.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.IsProceedToAggregate)</td>
+                            <td>
+                                @if (Model.IsProceedToAggregate)
+                                {
+                                    @Html.Raw("Yes")
+                                }
+                                else
+                                {
+                                    @Html.Raw("No")
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.DateUpdated)</td>
+                            <td>
+                                @if (Model.DateUpdated.HasValue)
+                                {
+                                    @Model.DateUpdated.Value.ToString(Shared.Util.GetDateFormat())
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ExceptionStatusPickListDetailId)</td>
+                            <td>
+                                @if (Model.ExceptionStatusPickListDetailBo != null)
+                                {
+                                    @Model.ExceptionStatusPickListDetailBo.ToString()
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.Remark)</td>
+                            <td>@Html.DisplayFor(model => model.Remark)</td>
+                        </tr>
+                        <tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

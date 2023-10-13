@@ -1,0 +1,285 @@
+﻿@model WebApp.Models.RateViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#listing" class="active underline-tab">Listing</a></li>
+            <li class="nav-item"><a data-toggle="tab" class="underline-tab" href="#upload">Upload</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="listing" role="tabpanel" aria-labelledby="listing-tab">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="form-group row pl-3" style="margin-bottom: 50px;">
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2 text-right btn-row-inline">
+                        <div id="uploadDetailButton" class="file btn btn-upload mt-2" role="button" data-loading-text="Processing...<span></span>" style="display: inline-flex;" disabled="@disabled">
+                            UPLOAD
+                            <input type="file" id="RateTableFile" :name="'RateTableFile'" accept=".csv" onchange="uploadFile(this.form)" />
+                        </div>
+                        <button type="button" id="btnDownload" class="btn btn-download dropdown-toggle mt-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled="@disabled">
+                            DOWNLOAD AS
+                        </button>
+                        <div class="dropdown-menu" disabled="@disabled">
+                            @if (Model.Id != 0)
+                            {
+                                <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadDetail", new { id = Model.Id, type = 1 } ))" value="All" />
+                            }
+                            <input class="dropdown-item" type="submit" href="#" formaction="@(Url.Action("DownloadDetail", new { id = Model.Id, type = 2 } ))" value="Template" />
+                        </div>
+                        <button type="button" v-on:click="resetRateDetailModal()" data-toggle="modal" data-target="#rateDetailModal" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+                        @*<button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>*@
+                    </div>
+                </div>
+
+                <input type="hidden" v-model="RateDetailMaxIndex" name="rateDetailMaxIndex" />
+                <div class="table-responsive">
+                    <table class="table table-hover my-3" v-cloak>
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th style="display: none;"></th>
+                                <th class="w-15">Gender</th>
+                                <th class="w-15">Smoker</th>
+                                <th class="w-15">Occupation Code</th>
+                                <th class="w-15">Attained Age</th>
+                                <th class="w-15">Issue Age</th>
+                                <th class="w-15">Policy Terms</th>
+                                <th class="w-15">Policy Terms Remain</th>
+                                <th class="w-15">Rate</th>
+                                <th class="text-center w-5">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!RateDetails.length">
+                                <td colspan="10" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(detail, index) in RateDetails">
+                                <td class="text-center" v-if="detail.Id > 0">{{ StartItemOnPage+index }}</td>
+                                <td class="text-center" v-else-if="detail.Id == 0">{{ index+1 }}</td>
+                                <td style="display:none">
+                                    <input type="hidden" :name="'rateDetailId[' + index + ']'" class="form-control" :value="detail.Id">
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.InsuredGenderCodePickListDetailId" :name="'genderCodeId[' + index + ']'" />
+                                    <input type="hidden" v-model="detail.InsuredGenderCode" :name="'genderCode[' + index + ']'" />
+                                    {{ detail.InsuredGenderCode }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.CedingTobaccoUsePickListDetailId" :name="'cedingTobaccoUseId[' + index + ']'" />
+                                    <input type="hidden" v-model="detail.CedingTobaccoUse" :name="'cedingTobaccoUse[' + index + ']'" />
+                                    {{ detail.CedingTobaccoUse }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.CedingOccupationCodePickListDetailId" :name="'cedingOccupationCodeId[' + index + ']'" />
+                                    <input type="hidden" v-model="detail.CedingOccupationCode" :name="'cedingOccupationCode[' + index + ']'" />
+                                    {{ detail.CedingOccupationCode }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.AttainedAge" :name="'attainedAge[' + index + ']'" />
+                                    {{ detail.AttainedAge }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.IssueAge" :name="'issueAge[' + index + ']'" />
+                                    {{ detail.IssueAge }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.PolicyTerm" :name="'policyTerm[' + index + ']'" />
+                                    {{ detail.PolicyTerm }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.PolicyTermRemain" :name="'policyTermRemain[' + index + ']'" />
+                                    {{ detail.PolicyTermRemain }}
+                                </td>
+                                <td>
+                                    <input type="hidden" v-model="detail.RateValueStr" :name="'rateValue[' + index + ']'" />
+                                    {{ detail.RateValueStr }}
+                                </td>
+                                <td class="text-center">
+                                    @if (disabled)
+                                    {
+                                        <span class="fas fa-pencil-alt text-secondary" />
+                                        <span class="fas fa-trash-alt text-secondary" />
+                                    }
+                                    else
+                                    {
+                                        <a href="#rateDetailModal" data-toggle="modal" v-on:click="editRateDetail(index)"><span class="fas fa-pencil-alt" /></a>
+                                        <a href="javascript:void(0);" v-on:click="removeRateDetail(index, ('@Model.Id' == 0) ? false : true)"><span class="fas fa-trash-alt" /></a>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="paged">
+
+                </div>
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4" id="contentPagerInfo"></div>
+                        <div class="col-md-8" id="contentPager"></div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="rateDetailModal" tabindex="-1" role="dialog" aria-labelledby="rateDetailModal" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ (RateDetailModal.index > -1 ? 'Edit' : 'Add New') }} Details</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-danger" id="rateTableError" style="display:none;"></div>
+
+                                <div class="form">
+                                    <div class="form-group">
+                                        <input type="hidden" :name="'rateDetailId'" class="form-control" :value="RateDetailModal.RateDetailId">
+                                        <input type="hidden" :name="'rateId'" class="form-control" :value="RateDetailModal.RateId">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Gender</label>
+                                        <select v-model="RateDetailModal.InsuredGenderCodeId" class="form-control" ref="select" :id="'genderCode'" :name="'genderCode'" data-container="body" :disabled="DisabledGender || Disabled == 'True'">
+                                            <option v-for="insuredGenderCode in InsuredGenderCodes" :value="insuredGenderCode.Value">{{ insuredGenderCode.Text }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Smoker</label>
+                                        <select v-model="RateDetailModal.CedingTobaccoUseId" class="form-control" ref="select" :id="'cedingTobaccoUse'" :name="'cedingTobaccoUse'" data-container="body" :disabled="DisabledSmoker || Disabled == 'True'">
+                                            <option v-for="insuredTobaccoUse in InsuredTobaccoUses" :value="insuredTobaccoUse.Value">{{ insuredTobaccoUse.Text }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Occupation Code</label>
+                                        <select v-model="RateDetailModal.CedingOccupationCodeId" class="form-control" ref="select" :id="'cedingOccupationCode'" :name="'cedingOccupationCode'" data-container="body" :disabled="DisabledOccupation || Disabled == 'True'">
+                                            <option v-for="insuredOccupationCode in InsuredOccupationCodes" :value="insuredOccupationCode.Value">{{ insuredOccupationCode.Text }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Attained Age</label>
+                                        <input type="number" v-model="RateDetailModal.AttainedAge" :name="'attainedAge'" class="form-control" :disabled="DisabledAttainedAge || Disabled == 'True'">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Issue Age</label>
+                                        <input type="number" v-model="RateDetailModal.IssueAge" :name="'issueAge'" class="form-control" :disabled="DisabledIssueAge || Disabled == 'True'">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Policy Terms</label>
+                                        <input v-model="RateDetailModal.PolicyTerm" :name="'policyTerm'" class="form-control" :disabled="DisabledPolicyTerm || Disabled == 'True'">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Policy Terms Remain</label>
+                                        <input min="0" v-model="RateDetailModal.PolicyTermRemain" :name="'policyTermRemain'" class="form-control" :disabled="DisabledPolicyTermRemain || Disabled == 'True'">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-form-label">Rate</label>
+                                        <input v-model="RateDetailModal.RateValue" :name="'rateValue'" class="form-control" disabled="@disabled">
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button v-on:click="saveRateDetail((RateDetailModal.index > -1 ? 'u' : 'c'), ('@Model.Id' == 0) ? false : true)" type="button" class="btn btn-submit">SAVE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="tab-pane fade" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                <input type="hidden" name="rateDetailUploadsJsonString" />
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-20">
+                                    Date & Time Uploaded
+                                </th>
+                                <th class="w-25">
+                                    File Name
+                                </th>
+                                <th class="w-15">
+                                    Submitted By
+                                </th>
+                                <th class="w-10">
+                                    Status
+                                </th>
+                                <th class="w-5 text-center">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!RateDetailUploads.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(upload, index) in RateDetailUploads">
+                                <td>{{ upload.CreatedAtStr }}</td>
+                                <td>{{ upload.FileName }}</td>
+                                <td>{{ upload.CreatedByName }}</td>
+                                <td>
+                                    <span v-bind:class="upload.StatusClass">
+                                        {{ upload.StatusName }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span v-if="upload.Status == 4" class="badge badge-failed" @@click="downloadError(upload.Id)">Download Error</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var RateModel = @Html.Raw(Json.Encode(Model));
+    var RateDetails = @Html.Raw(serializer.Serialize(ViewBag.RateDetailBos));
+    var RateDetailUploads = @Html.Raw(Json.Encode(ViewBag.RateDetailUploadBos));
+    var InsuredGenderCodes = @Html.Raw(Json.Encode(ViewBag.DropDownInsuredGenderCodes));
+    var InsuredTobaccoUses = @Html.Raw(Json.Encode(ViewBag.DropDownInsuredTobaccoUses));
+    var InsuredOccupationCodes = @Html.Raw(Json.Encode(ViewBag.DropDownInsuredOccupationCodes));
+    var UploadFileUrl = "@(Url.Action("UploadDetail"))";
+    var ActionUrl = "@(Url.Action("ActionDetail"))";
+    var FetchUrl = "@(Url.Action("GetDetail"))";
+    var DownloadErrorUrl = "@(Url.Action("DownloadError"))";
+
+    // Others
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+
+    // ValuationRate
+    var ValuationRate = "@Model.ValuationRate";
+    var ValuationRate1 = "@BusinessObject.RateBo.ValuationRate1";
+    var ValuationRate2 = "@BusinessObject.RateBo.ValuationRate2";
+    var ValuationRate3 = "@BusinessObject.RateBo.ValuationRate3";
+    var ValuationRate4 = "@BusinessObject.RateBo.ValuationRate4";
+    var ValuationRate5 = "@BusinessObject.RateBo.ValuationRate5";
+    var ValuationRate6 = "@BusinessObject.RateBo.ValuationRate6";
+    var ValuationRate7 = "@BusinessObject.RateBo.ValuationRate7";
+    var ValuationRate8 = "@BusinessObject.RateBo.ValuationRate8";
+    var ValuationRate9 = "@BusinessObject.RateBo.ValuationRate9";
+    var ValuationRate10 = "@BusinessObject.RateBo.ValuationRate10";
+
+    var TypeInsuredGenderCode = "@BusinessObject.RateDetailBo.TypeInsuredGenderCode";
+    var TypeCedingTobaccoUse = "@BusinessObject.RateDetailBo.TypeCedingTobaccoUse";
+    var TypeCedingOccupationCode = "@BusinessObject.RateDetailBo.TypeCedingOccupationCode";
+
+    var RateDetailCount = @Html.Raw(Json.Encode(ViewBag.RateDetailTotal));
+    var PageSize = 20;
+</script>

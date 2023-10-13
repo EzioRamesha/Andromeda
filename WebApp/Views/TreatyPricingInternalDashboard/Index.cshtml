@@ -1,0 +1,183 @@
+﻿@{
+    ViewBag.Title = "Internal Dashboard";
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="card">
+            <div class="card-header">
+                <h4>Pending Quotation Case <span class="small">&bull; @ViewBag.PendingQuotationCasesLength Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-20">Quotation ID</th>
+                                <th class="w-20">Quotation Name</th>
+                                <th class="w-20">Ceding Company</th>
+                                <th class="w-20">Target Send Date</th>
+                                <th class="w-15">Trigger Date</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!PendingQuotationCases.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PendingQuotationCase, index) in PendingQuotationCases">
+                                <td class="w-20 font-weight-bold">{{ PendingQuotationCase.QuotationId }}</td>
+                                <td class="w-20">{{ PendingQuotationCase.Name }}</td>
+                                <td class="w-20">{{ PendingQuotationCase.CedantBo?.Name }}</td>
+                                <td class="w-20">{{ PendingQuotationCase.TargetSendDateStr }}</td>
+                                <td class="w-15">{{ PendingQuotationCase.TriggerDateStr }}</td>
+                                <td class="w-5 text-center"><a v-bind:href="editQuotationWorkflow(PendingQuotationCase.Id)"><span class="fas fa-eye" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Pending Group Referral Case <span class="small">&bull; @ViewBag.PendingGroupReferralCasesLength Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="my-3" v-cloak>
+                    <table class="table table-hover tableBodyScroll">
+                        <thead>
+                            <tr>
+                                <th class="w-15">Group Referral ID</th>
+                                <th class="w-20">Group Referral Description</th>
+                                @*<th class="w-20">Ceding Company</th>*@
+                                <th class="w-20">Insured Group Name</th>
+                                <th class="w-15">Request Received Date</th>
+                                <th class="w-10">Version</th>
+                                <th class="w-15">Pending Item(s)</th>
+                                <th class="w-15">Trigger Date</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="max-height: 160px !important;">
+                            <tr v-if="!PendingGroupReferralCases.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PendingGroupReferralCase, index) in PendingGroupReferralCases">
+                                <td class="w-15">{{ PendingGroupReferralCase.Code }}</td>
+                                <td class="w-20">{{ PendingGroupReferralCase.Description }}</td>
+                                @*<td class="w-20">{{ PendingGroupReferralCase.CedantBo?.Name }}</td>*@
+                                <td class="w-20">{{ PendingGroupReferralCase.InsuredGroupNameBo?.Name }}</td>
+                                <td class="w-15">{{ PendingGroupReferralCase.LatestTreatyPricingGroupReferralVersionBo?.RequestReceivedDateStr }}</td>
+                                <td class="w-10">{{ PendingGroupReferralCase.LatestTreatyPricingGroupReferralVersionBo?.Version }}.0</td>
+                                <td class="w-15">
+                                    <ul class="list-unstyled" v-if="PendingGroupReferralCase.PendingItems.length">
+                                        <li v-for="(PendingItem, index) in PendingGroupReferralCase.PendingItems">{{ PendingItem }}</li>
+                                    </ul>
+                                </td>
+                                <td class="w-15">{{ PendingGroupReferralCase.TriggerDateStr }}</td>
+                                <td class="w-5 text-center"><a v-bind:href="editGroupReferral(PendingGroupReferralCase.Id)"><span class="fas fa-eye" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4>Pending Treaty Case <span class="small">&bull; @ViewBag.PendingTreatyCasesLength Case(s)</span></h4>
+            </div>
+            <div class="card-body card-body-dashboard">
+                <div class="table-responsive my-3" v-cloak>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-15">Reinsurance Type</th>
+                                <th class="w-15">Counter Party</th>
+                                <th class="w-15">Inward Retro Party</th>
+                                <th class="w-15">Document Type</th>
+                                <th class="w-15">Document ID</th>
+                                <th class="w-15">Business Type</th>
+                                <th class="w-15">Description</th>
+                                <th class="w-15">Treaty Code</th>
+                                <th class="w-15">Effective Date</th>
+                                <th class="w-15">Trigger Date</th>
+                                <th class="w-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="!PendingTreatyCases.length">
+                                <td colspan="5" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-for="(PendingTreatyCase, index) in PendingTreatyCases">
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.ReinsuranceTypePickListDetailBo?.Description }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.CounterPartyDetailBo?.Name }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.InwardRetroPartyDetailBo?.Name }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.DocumentTypeName }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.DocumentId }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.BusinessTypePickListDetailBo?.Description }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.Description }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.TreatyCode }}</td>
+                                <td>{{ PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.EffectiveAtStr }}</td>
+                                <td>{{ PendingTreatyCase.TriggerDateStr }}</td>
+                                <td class="text-center"><a v-bind:href="editTreatyWorkflow(PendingTreatyCase.TreatyPricingTreatyWorkflowBo?.Id)"><span class="fas fa-eye" /></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var PendingQuotationCases = @Html.Raw(serializer.Serialize(@ViewBag.PendingQuotationCases));
+        var QuotationWorkflowEditUrl = "@Url.Action("Edit", "TreatyPricingQuotationWorkflow")";
+
+        var PendingGroupReferralCases = @Html.Raw(serializer.Serialize(@ViewBag.PendingGroupReferralCases));
+    var GroupReferralEditUrl = "@Url.Action("Edit", "TreatyPricingGroupReferral")";
+
+    var PendingTreatyCases = @Html.Raw(serializer.Serialize(@ViewBag.PendingTreatyCases));
+    var TreatyWorkflowEditUrl = "@Url.Action("Edit", "TreatyPricingTreatyWorkflow")";
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                PendingQuotationCases: PendingQuotationCases,
+                PendingGroupReferralCases: PendingGroupReferralCases,
+                PendingTreatyCases: PendingTreatyCases,
+            },
+            methods: {
+                editQuotationWorkflow: function (id) {
+                    var url = QuotationWorkflowEditUrl + '/' + id;
+                    return url
+                },
+                editGroupReferral: function (id) {
+                    var url = GroupReferralEditUrl + '/' + id;
+                    return url
+                },
+                editTreatyWorkflow: function (id) {
+                    var url = TreatyWorkflowEditUrl + '/' + id;
+                    return url
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+</script>
+}

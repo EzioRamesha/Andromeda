@@ -1,0 +1,188 @@
+﻿@model WebApp.Models.PerLifeClaimRetroDataViewModel
+
+@{
+    ViewBag.Title = "Per Life Claims";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@*@Html.Partial("_BackToList")*@
+
+<a href="@ViewBag.EditPerLifeClaimData" class="btn btn-circle btn-circle-txt" title="Back">
+    <span id="backTxt">Back</span>
+</a>
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-6">
+                <h4>@ViewBag.Action @ViewBag.Title</h4>
+            </div>
+            <div class="col-md-6 text-right">
+                <span class="@BusinessObject.Retrocession.PerLifeClaimBo.GetStatusClass(Model.PerLifeClaimDataBo.PerLifeClaimBo.Status)">
+                    @BusinessObject.Retrocession.PerLifeClaimBo.GetStatusName(Model.PerLifeClaimDataBo.PerLifeClaimBo.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <div class="col-form-label">
+                            SOA Quarter
+                        </div>
+                        @Html.EditorFor(model => model.PerLifeClaimDataBo.PerLifeClaimBo.SoaQuarter, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    </div>
+                </div>
+            </div>
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>Quarter Comparison</h4>
+                </div>
+                <div class="card-body" style="min-height: 1px;" v-cloak>
+                    <div class="table-responsive">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-10" colspan="4">Previous Quarter</th>
+                                    <th class="w-10" colspan="4">Current Quarter</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Offset Status</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Recovered</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Claim Category</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Decision</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Offset Status</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Recovered</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Claim Category</td>
+                                    <td class="w-15" style="font-weight: bold; background-color: #f3f8fe;">Decision</td>
+                                </tr>
+                                <tr v-if="!ComparisonPreviousQuarter && !ComparisonCurrentQuarter">
+                                    <td colspan="10" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr>
+                                    <td> {{ ComparisonPreviousQuarter.ClaimRegisterOffsetStatusStr }} </td>
+                                    <td> {{ ComparisonPreviousQuarter.ClaimRecoveryStatusStr }} </td>
+                                    <td> {{ ComparisonPreviousQuarter.ClaimCategoryStr }} </td>
+                                    <td> {{ ComparisonPreviousQuarter.ClaimRecoveryDecisionStr }} </td>
+                                    <td> {{ ComparisonCurrentQuarter.ClaimRegisterOffsetStatusStr }} </td>
+                                    <td> {{ ComparisonCurrentQuarter.ClaimRecoveryStatusStr }} </td>
+                                    <td> {{ ComparisonCurrentQuarter.ClaimCategoryStr }} </td>
+                                    <td>
+                                        <select v-model="ComparisonCurrentQuarter.ClaimRecoveryDecision" class="form-control selectpicker">
+                                            <option v-for="currenntQuarterDecision in DropDownCurrentQuarterDecision" :value="currenntQuarterDecision.Value">
+                                                {{ currenntQuarterDecision.Text }}
+                                            </option>
+                                        </select>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-horizontal">
+                @Html.Partial("_Details")
+            </div>
+
+            <div class="form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    <button type="button" class="btn btn-submit float-right" v-on:click="processClaimRecovery()">PROCESS CLAIM RECOVERY</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="processClaimRecoveryModal" tabindex="-1" role="dialog" aria-labelledby="processClaimRecoveryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="processClaimRecoveryLabel">Process Claim Recovery Error</h5>
+            </div>
+            <div class="modal-body">
+                Process Claim Recovery can only be run if the status is Status Validation Success.
+                <div class="text-right form-row-btn">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+
+    //Remarks
+        var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+        var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+        var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.PerLifeClaimRetroData.ToString()';
+        var AuthUserId = "@ViewBag.PersonInChargeId";
+        var AuthUserName = "@ViewBag.AuthUserName";
+
+    //List
+    var RecoveryDetails = @Html.Raw(Json.Encode(ViewBag.RecoveryDetails));
+    var ComparisonPreviousQuarter = @Html.Raw(Json.Encode(ViewBag.PreviousQuarter));
+    var ComparisonCurrentQuarter = @Html.Raw(Json.Encode(ViewBag.CurrentQuarter));
+
+        // DropDown
+    var DropDownCurrentQuarterDecision = @Html.Raw(Json.Encode(ViewBag.DropDownCurrentQuarterDecision));
+    var DropDownusers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+
+    //Url
+    var MatchSanctionUrl = "@(Url.Action("MatchSanction"))";
+    // Edit Recovery Detail Url
+    var EditRecoveryDetailUrl = "@(Url.Action("EditRecoveryDetails"))";
+        var ProcessClaimRecoveryUrl = "@Url.Action("ProcessClaimRecovery", "PerLifeClaim")";
+
+    var Model = @Html.Raw(Json.Encode(Model));
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#SoaQuarter').datepicker({
+            format: '@BusinessObject.Mfrs17ReportingBo.DateQuarterFormatJs',
+            minViewMode: 1,
+            autoclose: true,
+            language: "qtrs",
+            forceParse: false
+            }).on('show', function (e) {
+                var datepickerDropDown = $('.datepicker');
+                datepickerDropDown.addClass('quarterpicker');
+            });
+        });
+
+        function validateQuarter(qtr, name) {
+            if (qtr == null || qtr == "")
+                return;
+            if (!/[0-9]{4} Q{1}([1-4]){1}$/.test(qtr)) {
+                console.log(qtr);
+                $("#SoaQuarter").val(null);
+                alert(name + " format is incorrect");
+            }
+    }
+
+    </script>
+    @Scripts.Render("~/Scripts/models/PerLifeClaimRetroData.js")
+}

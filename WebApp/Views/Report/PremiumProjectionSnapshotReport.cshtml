@@ -1,0 +1,173 @@
+﻿@{
+    ViewBag.Title = "Premium Projection Report (Snapshot)";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>@ViewBag.Title</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <div for="typeOfReport" class="col-form-label"> Report</div>
+                            <select class="form-control selectpicker" name="typeOfReport" id="TypeOfReport" v-on:change="resetToDefaultSelection()" v-model="ReportParams.TypeOfReport" ref="select">
+                                <option value="1">Invoice Register Gross Premium</option>
+                                <option value="2">SOA Tracking Gross Premium</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Treaty Type</div>
+                            <select class="form-control selectpicker" multiple name="treatyType" id="TreatyType" v-model="ReportParams.TreatyType" data-actions-box="true" ref="select">
+                                <option value="">Please Select</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="col-form-label">Reporting Quarter</div>
+                            <select class="form-control selectpicker" name="reportingQuarter" id="ReportingQuarter" v-model="ReportParams.ReportingQuarter" ref="select">
+                                <option v-for="cutOff in CutOffs" :value="cutOff.Value">{{ cutOff.Text }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">&nbsp;</div>
+                    </div>
+
+                    <div class="w-100 text-right">
+                        <button type="button" class="btn btn-download" v-on:click="generate()">GENERATE</button>
+                    </div>
+
+                    <div id="reportBody">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var CutOffs = @Html.Raw(Json.Encode(ViewBag.DropDownCutOffQuarters));
+        var SoaDataSnapshotTreatyTypes = @Html.Raw(Json.Encode(ViewBag.DropdownSoaDataSnapshotTreatyTypes));
+        var InvoiceRegisterSnapshotTreatyTypes = @Html.Raw(Json.Encode(ViewBag.DropdownInvoiceRegisterSnapshotGPTreatyTypes));
+
+        $(document).ready(function () {
+
+            //$('.selectpicker').selectpicker('selectAll');
+        });
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                ReportParams: {
+                    TypeOfReport: 1,
+                    TreatyType: "",
+                    ReportingQuarter: "",
+                },
+                // Dropdownlists
+                CutOffs: CutOffs,
+                SoaDataSnapshotTreatyTypes: SoaDataSnapshotTreatyTypes,
+                InvoiceRegisterSnapshotTreatyTypes: InvoiceRegisterSnapshotTreatyTypes,
+            },
+            methods: {
+                resetToDefaultSelection: function () {
+                    this.ReportParams.ReportingQuarter = "";
+                    this.getTreatyType(false);
+
+                    this.$nextTick(function () {
+                        $('#TreatyType').selectpicker('refresh').selectpicker('selectAll');
+                        $('#ReportingQuarter').selectpicker('refresh');
+                    });
+                },
+                getTreatyType: function (refresh) {
+                    if (this.ReportParams.TypeOfReport == 1) {
+                        this.updateDropDownItems('TreatyType', this.InvoiceRegisterSnapshotTreatyTypes, refresh, false, false);
+                    }
+                    else if (this.ReportParams.TypeOfReport == 2) {
+                        this.updateDropDownItems('TreatyType', this.SoaDataSnapshotTreatyTypes, refresh, false, false);
+                    }
+                    else {
+                        this.updateDropDownItems('TreatyType', [], refresh);
+                    }
+                },
+                generate: function () {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                    var errorList = [];
+
+                    if (this.ReportParams.TreatyType == null || this.ReportParams.TreatyType == "") {
+                        errorList.push("Treaty Type is required.");
+                    }
+                    if (this.ReportParams.ReportingQuarter == null || this.ReportParams.ReportingQuarter == "") {
+                        errorList.push("Reporting Quarter is required.");
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    } else {
+
+                        var obj = {
+                            typeOfReport: this.ReportParams.TypeOfReport,
+                            treatyType: this.ReportParams.TreatyType.join(","),
+                            cutOff: this.ReportParams.ReportingQuarter,
+                        };
+                        console.log(obj)
+                        $.ajax({
+                            url: "@(Url.Action("GeneratePremiumProjectionSnapshotReport", "Report"))",
+                            type: "POST",
+                            data: obj,
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                            }
+                        }).done(function (result) {
+                            $("#reportBody").html(result);
+                        });
+                    }
+                },
+                // Sum Of Dropdownlist
+                updateDropDownItems(id, items, style = true, displaySelect = true, displayAllSelect = false) {
+                    $('#' + id + ' option').remove();
+                    if (displaySelect) {
+                        $('#' + id).append(new Option("Please select", ""));
+                    }
+                    if (displayAllSelect) {
+                        $('#' + id).append(new Option("(All)", "0"));
+                    }
+                    items.forEach(function (obj) {
+                        var text = obj["Text"];
+                        $('#' + id).append(new Option(text, obj["Value"], false));
+                    });
+                    if (style) {
+                        $('#' + id).selectpicker('refresh');
+                    }
+                }
+            },
+            created: function () {
+                this.resetToDefaultSelection();
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+    </script>
+}

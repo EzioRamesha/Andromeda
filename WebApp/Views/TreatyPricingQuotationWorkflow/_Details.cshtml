@@ -1,0 +1,74 @@
+﻿@model WebApp.Models.TreatyPricingQuotationWorkflowViewModel
+
+<div class="form-row mt-4" id="app">
+    <div class="form-group col-md 12">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#quotation" class="active underline-tab">Quotation</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#pricing">Pricing</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#linkedObjects">Linked Objects</a></li>
+            <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade show active" id="quotation" role="tabpanel" aria-labelledby="quotation-tab">
+                @Html.Partial("_QuotationTab")
+            </div>
+
+            <div class="tab-pane fade" id="pricing" role="tabpanel" aria-labelledby="pricing-tab">
+                @Html.Partial("_PricingTab")
+            </div>
+
+            <div class="tab-pane fade" id="linkedObjects" role="tabpanel" aria-labelledby="linkedObjects-tab">
+                <div class="text-right mt-4">
+                    <button type="button" class="btn btn-add" v-on:click="resetLinkObjectModal()" data-toggle="modal" data-target="#addLinkedObjectModal">LINK OBJECT</button>
+                </div>
+
+                <div class="form-horizontal">
+                    <div class="table-responsive">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Object</th>
+                                    <th class="w-10">Object ID / Name</th>
+                                    <th class="w-20">Description</th>
+                                    <th class="w-10">Object Version</th>
+                                    <th class="w-5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!WorkflowObjects.length">
+                                    <td colspan="4" class="no-data">No available data found.</td>
+                                </tr>
+                                <tr v-for="(workflowObject, index) in WorkflowObjects">
+                                    <td>{{ workflowObject.ObjectTypeName }}</td>
+                                    <td>{{ workflowObject.ObjectCode }}</td>
+                                    <td>{{ workflowObject.ObjectName }}</td>
+                                    <td>{{ workflowObject.ObjectVersion }}.0</td>
+                                    <td class="text-center">
+                                        <a href="#" v-on:click="removeWorkflowObject(index, true)" data-toggle="" data-target="">
+                                            <span class="fas fa-unlink" />
+                                        </a>
+                                        <a v-bind:href="editObjectLink(index)">
+                                            <span class="fas fa-pencil-alt" />
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                @Html.Partial("_TreatyPricingWorkflowObject", new ViewDataDictionary { { "save", true } })
+            </div>
+
+            <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+                @Html.Partial("_StatusHistory", new ViewDataDictionary { { "loadModal", false }, { "showRemark", true }, { "showDocuments", true }, { "showVersion", true }, { "showStatusSelect", true }, { "showRecipient", true }, { "statusHeaderName", "Quotation Status" } })
+            </div>
+
+            <div class="tab-pane fade show active" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab"></div>
+        </div>
+    </div>
+
+    @Html.Partial("_AddRemarkModal", new ViewDataDictionary { { "showDocuments", true }, { "showSubject", true } })
+    @Html.Partial("_AddStatusHistoryModal", new ViewDataDictionary { { "showVersion", true }, { "showStatusSelect", true }, { "showRecipient", true }, { "showRemark", true }, { "showDocuments", true } })
+</div>

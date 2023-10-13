@@ -1,0 +1,49 @@
+﻿@{
+    int currentPageNumber = 0;
+    int currentPageItems = 0;
+    int pageSize = 0;
+
+    int start = 1;
+    int end = 0;
+    int total = 0;
+
+    if (Model != null && Model is PagedList.IPagedList)
+    {
+        currentPageNumber = Model.PageNumber;
+        currentPageItems = Model.Count;
+        pageSize = Model.PageSize;
+    }
+
+    if (ViewBag.CurrentPageNumber != null)
+    {
+        currentPageNumber = ViewBag.CurrentPageNumber;
+    }
+    if (ViewBag.CurrentPageItems != null)
+    {
+        currentPageItems = ViewBag.CurrentPageItems;
+    }
+    if (ViewBag.PageSize != null)
+    {
+        pageSize = ViewBag.PageSize;
+    }
+    if (ViewBag.Total != null)
+    {
+        total = ViewBag.Total;
+    }
+
+    if (currentPageItems == pageSize)
+    {
+        start = (currentPageNumber * pageSize) - pageSize + 1;
+        end = currentPageNumber * pageSize;
+    }
+    else
+    {
+        start = (currentPageNumber * pageSize) - pageSize + 1;
+        end = start + currentPageItems - 1;
+    }
+
+    if (total > 0)
+    {
+        <span class="page-info">Showing @string.Format("{0:N0}", start) to @string.Format("{0:N0}", end) of @string.Format("{0:N0}", total) records</span>
+    }
+}

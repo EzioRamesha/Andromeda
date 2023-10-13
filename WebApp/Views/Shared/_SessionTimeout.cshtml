@@ -1,0 +1,81 @@
+﻿<div class="modal fade" id="sessionTimeoutModal" tabindex="-1" role="dialog" aria-labelledby="sessionTimeoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Session Timeout</h5>
+            </div>
+            <div class="modal-body">
+                Your session will expire in <span id="remainingTime"></span> seconds. Press OK to Continue
+                <div class="text-right mt-2">
+                    <button type="button" class="btn btn-submit prevent-disable" id="refreshSession" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/bundles/jquery")
+<script>
+    $(document).ready(function () {
+        var time = 0;
+        function promptSession() {
+            setTimeout(function () {
+                checkSession();
+            }, 1000 * 60);
+        }
+
+        function checkSession() {
+            $.ajax({
+                url: "@(Url.Action("CheckUserSession", "Account"))",
+                type: "POST",
+                cache: false,
+                async: false,
+                success: function (data) {
+                    if (data.show == true && !($("#sessionTimeoutModal").data('bs.modal') || {})._isShown) {
+                        time = data.secondsRemaining + 1;
+                        $('#sessionTimeoutModal').modal({ keyboard: false, backdrop: 'static' });
+                        sessionCountdown();
+                    } else if (data.refresh == true) {
+                        promptSession();
+                    } else if (data.logout == true) {
+                        $('#logoutForm').submit();
+                    } else {
+                        window.location.href = "@(Url.Action("Login", "Account"))";
+                    }
+                },
+            });
+        }
+
+        function sessionCountdown() {
+            let countdown = setInterval(function () {
+                if (time == 0) {
+                    clearInterval(countdown);
+                    $('#sessionTimeoutModal').modal('hide');
+                    checkSession();
+                }
+                time--;
+                $('#remainingTime').text(time);
+            }, 1000);
+
+            $('#refreshSession').click(function () {
+                clearInterval(countdown);
+                $.ajax({
+                    url: "@(Url.Action("RefreshUserSession", "Account"))",
+                    type: "POST",
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        clearInterval(countdown);
+                        if (data.logout == true) {
+                            window.location.href = "@(Url.Action("Login", "Account"))";
+                        } else {
+                            promptSession();
+                        }
+                    },
+                });
+            });
+        }
+
+        promptSession();
+    });
+</script>

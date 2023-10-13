@@ -1,0 +1,346 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.SanctionBatchViewModel>
+
+@{
+    ViewBag.Title = "Sanction Upload";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right  btn-row-inline">
+                <button class="btn btn-upload" onclick="resetUploadFileModal()" data-toggle="modal" data-target="#uploadFileModal">UPLOAD FILE</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortFileName;
+                                @Shared.Html.Sorter(ViewBag, "Filename", "FileName", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortSourceId;
+                                @Shared.Html.Sorter(ViewBag, "Source", "SourceId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortUploadedAt;
+                                @Shared.Html.Sorter(ViewBag, "Upload Date & Time", "UploadedAt", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCreatedBy;
+                                @Shared.Html.Sorter(ViewBag, "Uploaded By", "CreatedBy", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortMethod;
+                                @Shared.Html.Sorter(ViewBag, "Method", "Method", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            No of Record(s)
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortStatus;
+                                @Shared.Html.Sorter(ViewBag, "Status", "Status", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            File
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "SanctionBatch", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.TextBox("FileName", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("SourceId", (List<SelectListItem>)ViewBag.DropDownSources, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @*Uploaded At*@
+                            </th>
+                            <th>
+                                @Html.TextBox("CreatedBy", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("Method", (List<SelectListItem>)ViewBag.DropDownMethods, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @*No of Record(s)*@
+                            </th>
+                            <th>
+                                @Html.DropDownList("Status", (List<SelectListItem>)ViewBag.DropDownStatuses, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th></th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.FileName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Source.Name)
+                            </td>
+                            <td>
+                                @item.UploadedAt.ToString(Shared.Util.GetDateTimeFormat())
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CreatedBy.FullName)
+                            </td>
+                            <td>
+                                @BusinessObject.Sanctions.SanctionBatchBo.GetMethodName(item.Method)
+                            </td>
+                            <td class="text-right">
+                                @Html.DisplayFor(modelItem => item.Record)
+                            </td>
+                            <td class="va-middle">
+                                <span class="@BusinessObject.Sanctions.SanctionBatchBo.GetStatusClass(item.Status)">
+                                    @BusinessObject.Sanctions.SanctionBatchBo.GetStatusName(item.Status)
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Download", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-download fa-lg"></span></a>
+                            </td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Edit", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-eye fa-lg"></span></a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        FileName = routeValue["FileName"],
+                        FileType = routeValue["FileType"],
+                        SourceId = routeValue["SourceId"],
+                        CreatedBy = routeValue["CreatedBy"],
+                        Method = routeValue["Method"],
+                        Status = routeValue["Status"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("UploadFile", "SanctionBatch", FormMethod.Post, new { enctype = "multipart/form-data", id = "uploadFileForm" }))
+{
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadFileModalTitle">Upload File</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="uploadFileError" style="display:none;"></div>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            @Html.Label("Update Method", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("UploadUpdateMethod", (List<SelectListItem>)ViewBag.DropDownMethods, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Source", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("UploadSourceId", (List<SelectListItem>)ViewBag.DropDownSources, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <label class="col-form-label">File Upload</label>
+                        <div class="file is-boxed">
+                            <label class="file-label">
+                                <input class="form-control-file" type="file" id="files" name="upload" accept=".csv">
+                                Drag and Drop File Here or <u>Browse your file</u>
+                                <br />
+                                <span class="file-desc">
+                                    Allowed file format: .csv
+                                </span>
+                                <br />
+                                <span class="file-desc">
+                                    File size is up to 2GB
+                                </span>
+                            </label>
+                        </div>
+                        <div id="selectedFiles" class="file-list-display"></div>
+                        <div class="field-validation-error text-danger" id="errorSizeExceeds" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-submit" id="saveBtn">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        function resetUploadFileModal() {
+            $('#UploadUpdateMethod').val('');
+            $('#UploadSourceId').val('');
+            $('#files').val('');
+
+            $('#UploadUpdateMethod').selectpicker('refresh');
+            $('#UploadSourceId').selectpicker('refresh');
+
+            selDiv.innerHTML = "";
+            resetModalValidation();
+        }
+
+        function resetModalValidation() {
+            $('#uploadFileError').empty();
+            $('#uploadFileError').hide();
+            $("#errorSizeExceeds").css("display", "none");
+        }
+
+        function populateValidateTable(bos) {
+            bos.forEach(function (bo) {
+                var details = [
+                    bo.ClaimId,
+                    bo.EntryNo,
+                    bo.ClaimTransactionType,
+                    bo.ClaimCode,
+                    bo.ClaimRecoveryAmtStr,
+                    bo.PicClaimId,
+                    bo.StatusName,
+                    bo.BatchSelectionError,
+                ];
+
+                var row = '<tr>';
+                details.forEach(function (detail) {
+                    if (detail == null || detail == 'null')
+                        detail = '';
+                    row += '<td>' + detail ?? '' + '</td>';
+                });
+                row += '</tr>';
+                $('#batchTable').find('tbody').append(row);
+            });
+        }
+
+        $('#saveBtn').on("click", function () {
+            resetModalValidation();
+            var errorList = [];
+
+            if (!$('#UploadUpdateMethod').val()) {
+                errorList.push("Update Method is Required.");
+            }
+            if (!$('#UploadSourceId').val()) {
+                errorList.push("Source is Required.");
+            }
+            if (!$('#files').val()) {
+                errorList.push("File Upload is Required.");
+            }
+
+            if (errorList.length > 0) {
+                text = "<ul>";
+                for (i = 0; i < errorList.length; i++) {
+                    text += "<li>" + errorList[i] + "</li>";
+                }
+                text += "</ul>";
+                $('#uploadFileError').append(text);
+                $('#uploadFileError').show();
+                return false;
+            }
+        });
+
+        var selDiv = "";
+        document.addEventListener("DOMContentLoaded", init, false);
+        function init() {
+            var control = document.querySelector('#files');
+            if (control) {
+                document.querySelector('#files').addEventListener('change', handleFileSelect, false);
+                selDiv = document.querySelector("#selectedFiles");
+            }
+        }
+        function handleFileSelect(e) {
+            if (!e.target.files) return;
+            selDiv.innerHTML = "";
+            var files = e.target.files;
+            var list = "";
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+
+                // Prevent exceeds file size from uploading
+                var fileSize = f.size / 1024 / 1024 / 1024; // in GB
+                if (fileSize >= 2) {
+                    $("#errorSizeExceeds").css("display", "block");
+                    $("#errorSizeExceeds").text('Maximum allowed size is : 2 GB');
+                    //reset file upload control
+                    e.target.value = null;
+                    return;
+                } else {
+                    $("#errorSizeExceeds").css("display", "none");
+                }
+
+                list += "<li>" + f.name + "</li>";
+            }
+            selDiv.innerHTML = "<ul>" + list + "</ul>";
+        }
+    </script>
+}

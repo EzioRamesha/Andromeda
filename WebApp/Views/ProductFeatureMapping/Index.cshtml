@@ -1,0 +1,899 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.TreatyBenefitCodeMappingViewModel>
+
+@{
+    ViewBag.Title = "Product Feature Mapping";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+
+    PagedList.IPagedList<WebApp.Models.TreatyBenefitCodeMappingViewModel> ListingList = ViewBag.ListingList as PagedList.IPagedList<WebApp.Models.TreatyBenefitCodeMappingViewModel>;
+    PagedList.IPagedList<WebApp.Models.TreatyBenefitCodeMappingUploadViewModel> UploadList = ViewBag.UploadList as PagedList.IPagedList<WebApp.Models.TreatyBenefitCodeMappingUploadViewModel>;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" class="@(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "active" : "")  underline-tab" href="#listing">Listing</a></li>
+            <li class="nav-item"><a data-toggle="tab" class="@(ViewBag.ActiveTab == 2 ? "active" : "") underline-tab" href="#upload">Upload</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "show active" : "")" id="listing" role="tabpanel" aria-labelledby="listing-tab">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="form-group row pl-3" style="margin-bottom: 50px;">
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2 text-right btn-row-inline">
+                        <div class="file btn btn-upload" data-loading-text="Processing...<span></span>" style="display: inline-flex;">
+                            <label>UPLOAD</label>
+                            @using (Html.BeginForm("Upload", "ProductFeatureMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <input type="file" id="dataFile" name="upload" accept=".csv" onchange="this.form.submit()" />
+                            }
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                DOWNLOAD AS
+                            </button>
+                            <div class="dropdown-menu">
+                                @Html.ActionLink("All", "Download", new { type = 1 }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Filtered", "Download", new
+                                {
+                                    type = 2,
+                                    CedantId = routeValue["CedantId"],
+                                    CedingPlanCode = routeValue["CedingPlanCode"],
+                                    Description = routeValue["Description"],
+                                    CedingBenefitTypeCode = routeValue["CedingBenefitTypeCode"],
+                                    CedingBenefitRiskCode = routeValue["CedingBenefitRiskCode"],
+                                    CedingTreatyCode = routeValue["CedingTreatyCode"],
+                                    CampaignCode = routeValue["CampaignCode"],
+                                    ReinsEffDatePolStartDate = routeValue["ReinsEffDatePolStartDate"],
+                                    ReinsEffDatePolEndDate = routeValue["ReinsEffDatePolEndDate"],
+                                    ReinsBasisCodePickListDetailId = routeValue["ReinsBasisCodePickListDetailId"],
+                                    AttainedAgeFrom = routeValue["AttainedAgeFrom"],
+                                    AttainedAgeTo = routeValue["AttainedAgeTo"],
+                                    ReportingStartDate = routeValue["ReportingStartDate"],
+                                    ReportingEndDate = routeValue["ReportingEndDate"],
+                                    UnderwriterRatingFrom = routeValue["UnderwriterRatingFrom"],
+                                    UnderwriterRatingTo = routeValue["UnderwriterRatingTo"],
+                                    OriSumAssuredFrom = routeValue["OriSumAssuredFrom"],
+                                    OriSumAssuredTo = routeValue["OriSumAssuredTo"],
+                                    ReinsuranceIssueAgeFrom = routeValue["ReinsuranceIssueAgeFrom"],
+                                    ReinsuranceIssueAgeTo = routeValue["ReinsuranceIssueAgeTo"],
+                                    BenefitId = routeValue["BenefitId"],
+                                    TreatyCodeId = routeValue["TreatyCodeId"],
+                                    ProfitCommPickListDetailId = routeValue["ProfitCommPickListDetailId"],
+                                    MaxExpiryAge = routeValue["MaxExpiryAge"],
+                                    MinIssueAge = routeValue["MinIssueAge"],
+                                    MaxIssueAge = routeValue["MaxIssueAge"],
+                                    MaxUwRating = routeValue["MaxUwRating"],
+                                    ApLoading = routeValue["ApLoading"],
+                                    MinAar = routeValue["MinAar"],
+                                    MaxAar = routeValue["MaxAar"],
+                                    AblAmount = routeValue["AblAmount"],
+                                    RetentionShare = routeValue["RetentionShare"],
+                                    RetentionCap = routeValue["RetentionCap"],
+                                    RiShare = routeValue["RiShare"],
+                                    RiShareCap = routeValue["RiShareCap"],
+                                    RiShare2 = routeValue["RiShare2"],
+                                    RiShareCap2 = routeValue["RiShareCap2"],
+                                    ServiceFee = routeValue["ServiceFee"],
+                                    WakalahFee = routeValue["WakalahFee"],
+                                    EffectiveDate = routeValue["EffectiveDate"],
+                                }, new { @class = "dropdown-item" })
+                                @Html.ActionLink("Template", "Download", new { type = 3 }, new { @class = "dropdown-item" })
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Create")" class="btn btn-add">
+                            ADD NEW
+                        </a>
+                    </div>
+                </div>
+                @using (Html.BeginForm("Index", "ProductFeatureMapping", FormMethod.Get))
+                {
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-2">
+                            <div class="form-group row pl-3" style="margin-bottom: 50px;">
+                                @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                                <div class="col-sm-4">
+                                    @Html.DropDownList("CedantId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getTreatyCode(this.value)" })
+                                </div>
+                                <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().CedingPlanCode)
+                                    </th>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
+                                    </th>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().CedingBenefitTypeCode)
+                                    </th>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().CedingBenefitRiskCode)
+                                    </th>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().CedingTreatyCode)
+                                    </th>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().CampaignCode)
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortReinsEffDatePolStartDate;
+                                            @Shared.Html.Sorter(ViewBag, "Policy Reinsurance Effective Start Date", "ReinsEffDatePolStartDate", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortReinsEffDatePolEndDate;
+                                            @Shared.Html.Sorter(ViewBag, "Policy Reinsurance Effective End Date", "ReinsEffDatePolEndDate", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @Html.DisplayNameFor(model => model.FirstOrDefault().ReinsBasisCodePickListDetailId)
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortAttainedAgeFrom;
+                                            @Shared.Html.Sorter(ViewBag, "Insured Attained Age From", "AttainedAgeFrom", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortAttainedAgeTo;
+                                            @Shared.Html.Sorter(ViewBag, "Insured Attained Age To", "AttainedAgeTo", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortReportingStartDate;
+                                            @Shared.Html.Sorter(ViewBag, "Reporting Start Date", "ReportingStartDate", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortReportingEndDate;
+                                            @Shared.Html.Sorter(ViewBag, "Reporting End Date", "ReportingEndDate", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortUnderwriterRatingFrom;
+                                            @Shared.Html.Sorter(ViewBag, "Underwriter Rating From", "UnderwriterRatingFrom", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortUnderwriterRatingTo;
+                                            @Shared.Html.Sorter(ViewBag, "Underwriter Rating To", "UnderwriterRatingTo", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortOriSumAssuredFrom;
+                                            @Shared.Html.Sorter(ViewBag, "Ori Sum Assured From", "OriSumAssuredFrom", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortOriSumAssuredTo;
+                                            @Shared.Html.Sorter(ViewBag, "Ori Sum Assured To", "OriSumAssuredTo", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortReinsuranceIssueAgeFrom;
+                                            @Shared.Html.Sorter(ViewBag, "Reinsurance Issue Age From", "ReinsuranceIssueAgeFrom", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortReinsuranceIssueAgeTo;
+                                            @Shared.Html.Sorter(ViewBag, "Reinsurance Issue Age To", "ReinsuranceIssueAgeTo", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortTreatyCodeId;
+                                            @Shared.Html.Sorter(ViewBag, "Treaty Code", "TreatyCodeId", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortBenefitId;
+                                            @Shared.Html.Sorter(ViewBag, "MLRe Benefit Code", "BenefitId", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortProfitCommPickListDetailId;
+                                            @Shared.Html.Sorter(ViewBag, "Profit Commission", "ProfitCommPickListDetailId", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortMaxExpiryAge;
+                                            @Shared.Html.Sorter(ViewBag, "Maximum Age At Expiry", "MaxExpiryAge", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortMinIssueAge;
+                                            @Shared.Html.Sorter(ViewBag, "Minimum Issue Age", "MinIssueAge", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortMaxIssueAge;
+                                            @Shared.Html.Sorter(ViewBag, "Maximum Issue Age", "MaxIssueAge", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortMaxUwRating;
+                                            @Shared.Html.Sorter(ViewBag, "Maximum Underwriting Rating", "MaxUwRating", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortApLoading;
+                                            @Shared.Html.Sorter(ViewBag, "AP Loading", "ApLoading", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortMinAar;
+                                            @Shared.Html.Sorter(ViewBag, "Minimum AAR", "MinAar", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortMaxAar;
+                                            @Shared.Html.Sorter(ViewBag, "Maximum AAR", "MaxAar", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortAblAmount;
+                                            @Shared.Html.Sorter(ViewBag, "ABL Amount", "AblAmount", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortRetentionShare;
+                                            @Shared.Html.Sorter(ViewBag, "Retention Share", "RetentionShare", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortRetentionCap;
+                                            @Shared.Html.Sorter(ViewBag, "Retention Cap", "RetentionCap", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortRiShare;
+                                            @Shared.Html.Sorter(ViewBag, "RI Share 1", "RiShare", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortRiShareCap;
+                                            @Shared.Html.Sorter(ViewBag, "RI Share Cap 1", "RiShareCap", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortRiShare2;
+                                            @Shared.Html.Sorter(ViewBag, "RI Share 2", "RiShare2", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortRiShareCap2;
+                                            @Shared.Html.Sorter(ViewBag, "RI Share Cap 2", "RiShareCap2", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortServiceFee;
+                                            @Shared.Html.Sorter(ViewBag, "Service Fee", "ServiceFee", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortWakalahFee;
+                                            @Shared.Html.Sorter(ViewBag, "Wakalah Fee", "WakalahFee", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="w-10">
+                                        @{
+                                            routeValue["SortOrder"] = ViewBag.SortEffectiveDate;
+                                            @Shared.Html.Sorter(ViewBag, "Treaty/Product Effective Date", "EffectiveDate", @Url.Action("Index", routeValue))
+                                        }
+                                    </th>
+                                    <th class="text-center w-5">
+                                        Action
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+                                    @Html.Hidden("TreatyCodeId", (string)routeValue["TreatyCodeId"])
+                                    <th>
+                                        @Html.TextBox("CedingPlanCode", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("Description", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("CedingBenefitTypeCode", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("CedingBenefitRiskCode", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("CedingTreatyCode", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("CampaignCode", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReinsEffDatePolStartDate", null, new { id = "ReinsEffDatePolStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReinsEffDatePolEndDate", null, new { id = "ReinsEffDatePolEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReinsEffDatePolEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReinsBasisCodePickListDetailId", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("AttainedAgeFrom", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("AttainedAgeTo", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReportingStartDate", null, new { id = "ReportingStartDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReportingStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReportingEndDate", null, new { id = "ReportingEndDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('ReportingEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("UnderwriterRatingFrom", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("UnderwriterRatingTo", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("OriSumAssuredFrom", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("OriSumAssuredTo", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReinsuranceIssueAgeFrom", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReinsuranceIssueAgeTo", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("TreatyCodeIds", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @multiple = "multiple", title = "Please select", @data_selected_text_format = "count > 1" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("BenefitId", (List<SelectListItem>)ViewBag.DropDownBenefits, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ProfitCommPickListDetailId", (List<SelectListItem>)ViewBag.DropDownProfitComms, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("MaxExpiryAge", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("MinIssueAge", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("MaxIssueAge", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("MaxUwRating", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ApLoading", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("MinAar", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("MaxAar", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("AblAmount", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RetentionShare", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RetentionCap", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiShare", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiShareCap", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiShare2", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiShareCap2", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ServiceFee", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("WakalahFee", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("EffectiveDate", null, new { id = "EffectiveDate", @class = "form-control", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveDate')" />
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            @if (ListingList.Count > 0)
+                            {
+                                foreach (var item in ListingList)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Shared.Util.GetTruncatedValue(item.CedingPlanCode)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Description)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.GetTruncatedValue(item.CedingBenefitTypeCode)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.GetTruncatedValue(item.CedingBenefitRiskCode)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.GetTruncatedValue(item.CedingTreatyCode)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.GetTruncatedValue(item.CampaignCode)
+                                        </td>
+                                        <td>
+                                            @if (item.ReinsEffDatePolStartDate.HasValue)
+                                            {
+                                                @item.ReinsEffDatePolStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReinsEffDatePolEndDate.HasValue)
+                                            {
+                                                @item.ReinsEffDatePolEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReinsBasisCodePickListDetail != null)
+                                            {
+                                                @item.ReinsBasisCodePickListDetail.ToString();
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.AttainedAgeFrom)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.AttainedAgeTo)
+                                        </td>
+                                        <td>
+                                            @if (item.ReportingStartDate.HasValue)
+                                            {
+                                                @item.ReportingStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReportingEndDate.HasValue)
+                                            {
+                                                @item.ReportingEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.UnderwriterRatingFrom)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.UnderwriterRatingTo)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.OriSumAssuredFrom)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.OriSumAssuredTo)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.ReinsuranceIssueAgeFrom)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.ReinsuranceIssueAgeTo)
+                                        </td>
+                                        <td>
+                                            @if (item.TreatyCode != null)
+                                            {
+                                                @item.TreatyCode.ToString();
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.Benefit != null)
+                                            {
+                                                @item.Benefit.ToString();
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ProfitCommPickListDetail != null)
+                                            {
+                                                @item.ProfitCommPickListDetail.ToString();
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.MaxExpiryAge)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.MinIssueAge)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.MaxIssueAge)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.MaxUwRating)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.ApLoading)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.MinAar)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.MaxAar)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.AblAmount)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.RetentionShare)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.RetentionCap)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.RiShare)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.RiShareCap)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.RiShare2)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.RiShareCap2)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.ServiceFee)
+                                        </td>
+                                        <td class="text-right">
+                                            @Shared.Util.DoubleToString(item.WakalahFee)
+                                        </td>
+                                        <td>
+                                            @if (item.EffectiveDate.HasValue)
+                                            {
+                                                @item.EffectiveDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                    @Html.ActionLink("Delete", "Delete", new { id = item.Id }, new { @class = "dropdown-item" })
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="40" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+
+                        </table>
+                    </div>
+                }
+
+                <div class="pagination-footer btn-row">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(ListingList, Page => Url.Action("Index", new
+                            {
+                                CedantId = routeValue["CedantId"],
+                                CedingPlanCode = routeValue["CedingPlanCode"],
+                                Description = routeValue["Description"],
+                                CedingBenefitTypeCode = routeValue["CedingBenefitTypeCode"],
+                                CedingBenefitRiskCode = routeValue["CedingBenefitRiskCode"],
+                                CedingTreatyCode = routeValue["CedingTreatyCode"],
+                                CampaignCode = routeValue["CampaignCode"],
+                                ReinsEffDatePolStartDate = routeValue["ReinsEffDatePolStartDate"],
+                                ReinsEffDatePolEndDate = routeValue["ReinsEffDatePolEndDate"],
+                                ReinsBasisCodePickListDetailId = routeValue["ReinsBasisCodePickListDetailId"],
+                                AttainedAgeFrom = routeValue["AttainedAgeFrom"],
+                                AttainedAgeTo = routeValue["AttainedAgeTo"],
+                                ReportingStartDate = routeValue["ReportingStartDate"],
+                                ReportingEndDate = routeValue["ReportingEndDate"],
+                                UnderwriterRatingFrom = routeValue["UnderwriterRatingFrom"],
+                                UnderwriterRatingTo = routeValue["UnderwriterRatingTo"],
+                                OriSumAssuredFrom = routeValue["OriSumAssuredFrom"],
+                                OriSumAssuredTo = routeValue["OriSumAssuredTo"],
+                                ReinsuranceIssueAgeFrom = routeValue["ReinsuranceIssueAgeFrom"],
+                                ReinsuranceIssueAgeTo = routeValue["ReinsuranceIssueAgeTo"],
+                                BenefitId = routeValue["BenefitId"],
+                                TreatyCodeId = routeValue["TreatyCodeId"],
+                                ProfitCommPickListDetailId = routeValue["ProfitCommPickListDetailId"],
+                                MaxExpiryAge = routeValue["MaxExpiryAge"],
+                                MinIssueAge = routeValue["MinIssueAge"],
+                                MaxIssueAge = routeValue["MaxIssueAge"],
+                                MaxUwRating = routeValue["MaxUwRating"],
+                                ApLoading = routeValue["ApLoading"],
+                                MinAar = routeValue["MinAar"],
+                                MaxAar = routeValue["MaxAar"],
+                                AblAmount = routeValue["AblAmount"],
+                                RetentionShare = routeValue["RetentionShare"],
+                                RetentionCap = routeValue["RetentionCap"],
+                                RiShare = routeValue["RiShare"],
+                                RiShareCap = routeValue["RiShareCap"],
+                                RiShare2 = routeValue["RiShare2"],
+                                RiShareCap2 = routeValue["RiShareCap2"],
+                                ServiceFee = routeValue["ServiceFee"],
+                                WakalahFee = routeValue["WakalahFee"],
+                                EffectiveDate = routeValue["EffectiveDate"],
+                                SortOrder = ViewBag.SortOrder,
+                                Page,
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-20">
+                                    Date & Time Uploaded
+                                </th>
+                                <th class="w-25">
+                                    File Name
+                                </th>
+                                <th class="w-15">
+                                    Submitted By
+                                </th>
+                                <th class="w-10">
+                                    Status
+                                </th>
+                                <th class="w-5 text-center">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Index", "ProductFeatureMapping", FormMethod.Get))
+                                {
+                                    @Html.Hidden("UploadSortOrder", (string)ViewBag.UploadSortOrder)
+                                    @Html.Hidden("ActiveTab", 2)
+                                    <th>
+                                        @Html.TextBox("UploadCreatedAt", null, new { @class = "form-control", placeholder = "DD MM YYYY", @onclick = "openDatePicker(this.id)" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('UploadCreatedAt')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("UploadFileName", null, new { @class = "form-control", placeholder = "Type here" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("UploadSubmittedBy", (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("UploadStatus", (List<SelectListItem>)ViewBag.UploadStatusItems, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (UploadList.Count > 0)
+                            {
+                                foreach (var item in UploadList)
+                                {
+                                    <tr>
+                                        <td>@(item.CreatedAt != null ? item.CreatedAt.ToString(Shared.Util.GetDateTimeFormat()) : null)</td>
+                                        <td>@item.FileName</td>
+                                        <td>
+                                            @Services.Identity.UserService.GetNameById(item.CreatedById)
+                                        </td>
+                                        <td>
+                                            <span class="@BusinessObject.TreatyBenefitCodeMappingUploadBo.GetStatusClass(item.Status)">
+                                                @BusinessObject.TreatyBenefitCodeMappingUploadBo.GetStatusName(item.Status)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (item.Status == BusinessObject.RateTableMappingUploadBo.StatusFailed)
+                                            {
+                                                <span class="badge badge-failed" onclick="uploadError(@item.Id)">Download Error</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @{
+                    ViewBag.CurrentPageNumber = UploadList.PageNumber;
+                    ViewBag.CurrentPageItems = UploadList.Count;
+                    ViewBag.PageSize = UploadList.PageSize;
+                    ViewBag.Total = ViewBag.UploadTotal;
+                }
+                <div class="pagination-footer btn-row">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(UploadList, Page => Url.Action("Index", new
+                       {
+                           UploadCreatedAt = routeValue["UploadCreatedAt"],
+                           UploadFileName = routeValue["UploadFileName"],
+                           UploadSubmittedBy = routeValue["UploadSubmittedBy"],
+                           UploadStatus = routeValue["UploadStatus"],
+                           UploadSortOrder = ViewBag.UploadSortOrder,
+                           UploadPage = Page,
+                           ActiveTab = 2
+                       }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        var getTreatyCodeByCedantUrl = '@Url.Action("Index", "TreatyCode")';
+        var selectedTreatyCode = '@ViewBag.routeValue["TreatyCodeId"]';
+        var DownloadErrorUrl = "@(Url.Action("DownloadError"))";
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#ReinsEffDatePolStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReinsEffDatePolEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReportingStartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#ReportingEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#EffectiveDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+
+            var cedantId = 0;
+            if ($('#CedantId').val() != 'NULL') {
+                cedantId = $('#CedantId').val();
+            }
+            getTreatyCode(cedantId);
+
+            $('#TreatyCodeIds').on('change', function () {
+                var arr = $(this).val().join(",");
+                $('#TreatyCodeId').val(arr);
+            });
+        });
+
+        function uploadError(id) {
+            window.location.href = DownloadErrorUrl + "?id=" + id;
+        }
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function getTreatyCode(selectedCedantId) {
+            $.ajax({
+                url: getTreatyCodeByCedantUrl,
+                type: "POST",
+                data: {
+                    CedantId: selectedCedantId,
+                    indexItem: true,
+                },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    var TreatyCodes = data.TreatyCodes;
+                    refreshDropDownTreatyCodeItems('TreatyCodeIds', TreatyCodes, selectedTreatyCode, 'Code', 'Description')
+                }
+            });
+        }
+
+        function refreshDropDownTreatyCodeItems(id, items, selectedId, first, second = "", style = true) {
+            $(`#${id} option`).remove();
+            items.forEach(function (obj) {
+                var text = obj[first];
+                if (second && obj[second])
+                    text += ` - ${obj[second]}`;
+                $(`#${id}`).append(new Option(text, obj.Id, false));
+            });
+            if (selectedId !== '') {
+                var selectedIdArr = selectedId.split(',');
+                $(`#${id}`).selectpicker('val', selectedIdArr)
+            }
+            if (style) {
+                $(`#${id}`).selectpicker('refresh');
+            }
+        }
+    </script>
+}

@@ -1,0 +1,918 @@
+﻿@{
+    ViewBag.Title = "Product & Benefit Details";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Product & Benefit Details</h4>
+            </div>
+        </div>
+        <div class="card-body card-body-dashboard" v-cloak>
+            <div class="table-responsive my-3">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="w-15 bh-white"></th>
+                            <th v-for="(comparison, index) in Comparisons" class="w-15">
+                                {{ comparison.Name }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                            <td v-for="(comparison, index) in Comparisons" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec' } : {} ]" >
+                                <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                    <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Insured Group Name</td>
+                            <td v-for="(comparison, index) in Comparisons" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec' } : {} ]">
+                                <select v-model="comparison.InsuredGroupName" class="form-control" v-on:change="changeInsuredGroupName(index)">
+                                    <option v-for="insuredGroupNameDropDown in comparison.InsuredGroupNameDropDowns" :value="insuredGroupNameDropDown.Value">{{ insuredGroupNameDropDown.Text }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Coverage Start Date</td>
+                            <td v-for="(comparison, index) in Comparisons" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec' } : {} ]">
+                                @*<div class="input-w-icon">
+            <input v-model="comparison.CoverageStartDate" :id="['coverageStartDate' + index]" class="form-control" placeholder="DD MM YYYY" autocomplete="off" v-on:click="openDatePicker(index)" v-on:change="changeCoverageStartDate(index)" />
+            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnElement('comparison.CoverageStartDate')" />
+        </div>*@
+                                <select v-model="comparison.CoverageStartDate" class="form-control" v-on:change="changeCoverageStartDate(index)">
+                                    <option v-for="coverageStartDateDropDown in comparison.CoverageStartDateDropDowns" :value="coverageStartDateDropDown.Value">{{ coverageStartDateDropDown.Text }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Group Referral Description</td>
+                            <td v-for="(comparison, index) in Comparisons" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec' } : {} ]">
+                                <select v-model="comparison.Description" class="form-control" v-on:change="changeDescription(index)">
+                                    <option v-for="descriptionDropDown in comparison.DescriptionDropDowns" :value="descriptionDropDown.Value">{{ descriptionDropDown.Text }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                            <td v-for="(comparison, index) in Comparisons" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec' } : {} ]">
+                                <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                    <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="w-150 text-right">
+                <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+            </div>
+
+            <div v-if="IsGenerated">
+                <div class="table-responsive my-3">
+                    <table class="table table-hover" id="outputTable">
+                        <thead>
+                            <tr>
+                                <th class="w-15">Group Referral ID</th>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50 font-weight-bold">
+                                    {{ groupReferralVersion.TreatyPricingGroupReferralBo?.Code }}
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;" colspan="11">Details</td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Insured Group Name</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : { 'word-break' : 'break-word' } ]">
+                                    {{ groupReferralVersion.TreatyPricingGroupReferralBo?.InsuredGroupNameBo?.Name }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Referred Type</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : { 'word-break' : 'break-word' } ]">
+                                    {{ groupReferralVersion.ReferredTypePickListDetailBo?.Description }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Type of Request</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : { 'word-break' : 'break-word' } ]">
+                                    {{ groupReferralVersion.RequestTypePickListDetailBo?.Description }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Type of Premium</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word' } ]">
+                                    {{ groupReferralVersion.PremiumTypePickListDetailBo?.Description }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expected Annual Gross / Risk Premium</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.GrossRiskPremium }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expected Annual Reinsurance Premium</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.ReinsurancePremium }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expected Annual Gross / Risk Premium (GTL)</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.GrossRiskPremiumGTL }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expected Annual Gross / Risk Premium (GHS)</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.GrossRiskPremiumGHS }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expected Annual Reinsurance Premium (GTL)</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.ReinsurancePremiumGTL }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expected Annual Reinsurance Premium (GHS)</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.ReinsurancePremiumGHS }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Compulsory / Voluntary</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.CompulsoryOrVoluntary }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.UnderwritingMethod }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Group Referral Remarks</td>
+                                <td v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersion.Remarks }}
+                                </td>
+                            </tr>
+                            <tr hidden>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive my-3">
+                    <table class="table table-hover" v-for="benefitNames in GroupReferralVersionBenefitNames" id="outputTable2">
+                        <thead>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold w-15" style="background-color: #f3f8fe; font-size: large;">
+                                    {{ benefitNames }}
+                                </td>
+                                <td style="word-break:break-word; background-color: #f3f8fe;" v-for="(groupReferralVersion, index) in GroupReferralVersions" class="w-50 font-weight-bold">
+                                    {{ groupReferralVersion.TreatyPricingGroupReferralBo?.Code }}<br />{{ groupReferralVersion.TreatyPricingGroupReferralBo?.InsuredGroupNameBo?.Name }}
+                                </td>
+                            </tr>
+                            @*<tr>
+            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">RI Arrangement</td>
+            <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50">
+                {{ groupReferralVersionBenefit.ReinsuranceArrangementPickListDetailBo?.Description }}
+            </td>
+        </tr>*@
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">RI Arrangement</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.ReinsuranceArrangementPickListDetailBo?.Description }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Age Definition</td>
+                                <td style="word-break:break-word" v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.AgeBasisPickListDetailBo?.Description }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Minimum Entry Age</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.MinimumEntryAge }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Maximum Entry Age</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.MaximumEntryAge }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Maximum Expiry Age</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.MaximumExpiryAge }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Auto Binding Limit</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.AutoBindingLimit }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Requested FCL</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.RequestedFreeCoverLimitNonCI }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">FCL Age</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.GroupFreeCoverLimitAgeNonCI }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Other Special Arrangement</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.OtherSpecialReinsurnaceArrangementStr }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Other Special Terms</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.OtherSpecialTerms }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Profit Margin (Coins Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.ProfitMargin }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Expense Margin (Coins Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.ExpenseMargin }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Commision Margin (Coins Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.CommissionMargin }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Profit Commision Margin (Coins Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.ProfitCommissionLoading }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Additional Loading (Coins Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.AdditionalLoading }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Ri Discount (Coins Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.CoinsuranceRiDiscount }}
+                                </td>
+                            </tr>
+                            @*<tr>
+            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Cedant's Retention Share (Coins Layer)</td>
+            <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                {{ groupReferralVersionBenefit.CoinsuranceReinsurerShare }}
+            </td>
+        </tr>*@
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Coinsurance Cedant's Retention</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.CoinsuranceCedantRetention }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Coinsurance Reinsurer's Share</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.CoinsuranceReinsurerShare }}
+                                </td>
+                            </tr>
+                            @*<tr>
+            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">MLRe's Share Capping (Coins Layer)</td>
+            <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+            </td>
+        </tr>*@
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Group Profit Commission - Treaty</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    <div v-html="decodeCk(groupReferralVersionBenefit.GroupProfitCommission)"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Group Profit Commission - Requested</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.OverwriteGroupProfitCommissionRemarks }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Overwrite Group Profit Commission</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.IsOverwriteGroupProfitCommissionStr }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Additional Loading (YRT Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.AdditionalLoadingYRTLayer }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">RI Discount (YRT Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.RiDiscount }}
+                                </td>
+                            </tr>
+                            @*<tr>
+            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Cedant's Retention Share (YRT Layer)</td>
+            <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                {{ groupReferralVersionBenefit.ReinsuranceShare }}
+            </td>
+        </tr>*@
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Cedant's Retention (YRT layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.CedantRetention }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">Reinsurance's Share (YRT Layer)</td>
+                                <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+                                    {{ groupReferralVersionBenefit.ReinsuranceShare }}
+                                </td>
+                            </tr>
+                            @*<tr>
+            <td class="w-15 font-weight-bold" style="background-color: #f3f8fe;">MLRe's Share Capping (YRT Layer)</td>
+            <td v-for="(groupReferralVersionBenefit, index) in GroupReferralVersionBenefits" v-if="groupReferralVersionBenefit.BenefitBo?.Description === benefitNames" class="w-50" :style="[backgroundColor(index) ? { 'background-color': '#ccdcec', 'word-break' : 'break-word' } : {'word-break' : 'break-word'} ]">
+            </td>
+        </tr>*@
+                            <tr hidden>
+                                <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Comparison 1", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        //CoverageStartDate: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate: "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: null,
+                        GroupReferralId: 0,
+                        InsuredGroupNameDropDowns: DropDownEmpty, InsuredGroupName: "",
+                        CoverageStartDateDropDowns: DropDownEmpty, CoverageStartDate : "",
+                        DescriptionDropDowns: DropDownEmpty, Description: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", GroupReferralVersionId: 0,
+                    },
+                ],
+                GroupReferralVersions: [
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                    { TreatyPricingGroupReferralBos: [] },
+                ],
+                GroupReferralVersionBenefits: [
+                ],
+                GroupReferralVersionBenefitNames: [
+                ],
+                IsGenerated: false,
+            },
+            methods: {
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.InsuredGroupName = "";
+                    comparison.CoverageStartDate = "";
+                    comparison.Description = "";
+                    comparison.Version = "";
+                    comparison.GroupReferralVersionId = 0;
+
+                    var insuredGroupNameDropDowns = comparison.InsuredGroupNameDropDowns;
+                    var descriptionDropDowns = comparison.DescriptionDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateGroupReferralData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            insuredGroupNameDropDowns = data.insuredGroupNameDropDowns;
+                        }
+                    });
+
+                    comparison.InsuredGroupNameDropDowns = insuredGroupNameDropDowns;
+                    comparison.DescriptionDropDowns = descriptionDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeInsuredGroupName: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.CoverageStartDate = "";
+                    comparison.Description = "";
+                    comparison.Version = "";
+
+                    var descriptionDropDowns = comparison.DescriptionDropDowns;
+                    var coverageStartDateDropDowns = comparison.CoverageStartDateDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateGroupReferralData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            insuredGroupNameId: comparison.InsuredGroupName,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            descriptionDropDowns = data.descriptionDropDowns,
+                            coverageStartDateDropDowns = data.coverageStartDateDropDowns
+                        }
+                    });
+
+                    comparison.CoverageStartDateDropDowns = coverageStartDateDropDowns;
+                    comparison.DescriptionDropDowns = descriptionDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeCoverageStartDate: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    // Reset Value
+                    comparison.Description = "";
+                    comparison.Version = "";
+
+                    var descriptionDropDowns = comparison.DescriptionDropDowns;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateGroupReferralData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            insuredGroupNameId: comparison.InsuredGroupName,
+                            coverageStartDate: comparison.CoverageStartDate
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            descriptionDropDowns = data.descriptionDropDowns
+                        }
+                    });
+
+                    comparison.DescriptionDropDowns = descriptionDropDowns;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeDescription: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Version = "";
+
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateGroupReferralData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            insuredGroupNameId: comparison.InsuredGroupName,
+                            coverageStartDate: comparison.CoverageStartDate,
+                            description: comparison.Description,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versionDropDowns = data.groupReferralVersions;
+                            groupReferralVersionId = data.groupReferralVersionId;
+                        }
+                    });
+
+                    comparison.GroupReferralVersionId = groupReferralVersionId;
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    var groupReferralVersionId = comparison.GroupReferralVersionId;
+                    var groupReferralId = comparison.GroupReferralId;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateGroupReferralData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            insuredGroupNameId: comparison.InsuredGroupName,
+                            coverageStartDate: comparison.CoverageStartDate,
+                            description: comparison.Description,
+                            version: comparison.Version
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            groupReferralVersionId = data.groupReferralVersionId;
+                            groupReferralId = data.groupReferralId;
+                        }
+                    });
+
+                    comparison.GroupReferralVersionId = groupReferralVersionId;
+                    comparison.GroupReferralId = groupReferralId;
+
+                    console.log(comparison.GroupReferralVersionId);
+                },
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var groupReferralVersionIds = [];
+                    var errorList = [];
+
+                    comparisons.forEach(function (comparison, index) {
+                        if (index == 0 && !comparison.Cedant) {
+                            errorList.push("Please select filter parameters in " + comparison.Name + ".");
+                        }
+                        if (comparison.Cedant) {
+                            if (!comparison.InsuredGroupName) {
+                                errorList.push("Please select Insured Group Name for " + comparison.Name + ".");
+                            }
+                            if (!comparison.CoverageStartDate) {
+                                errorList.push("Please input Coverage Start Date for " + comparison.Name + ".");
+                            }
+                            if (!comparison.Description) {
+                                errorList.push("Please select a Description for " + comparison.Name + ".");
+                            }
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+                        }
+                    });
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    comparisons.forEach(function (comparison) {
+                        groupReferralVersionIds.push(comparison.GroupReferralVersionId);
+                    });
+
+                    var groupReferralVersions = this.GroupReferralVersions;
+                    var groupReferralVersionBenefits = this.GroupReferralVersionBenefits;
+                    var groupReferralVersionBenefitNames = this.GroupReferralVersionBenefitNames;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateProductAndBenefitDetails", "Report"))",
+                        type: "POST",
+                        data: {
+                            groupReferralVersionIds: groupReferralVersionIds,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            groupReferralVersions = data.groupReferralVersions;
+                            groupReferralVersionBenefits = data.groupReferralVersionBenefits;
+                            groupReferralVersionBenefitNames = data.benefitNames;
+                        },
+                    });
+
+                    this.GroupReferralVersions = groupReferralVersions;
+                    this.GroupReferralVersionBenefits = groupReferralVersionBenefits;
+                    this.GroupReferralVersionBenefitNames = groupReferralVersionBenefitNames;
+                    this.IsGenerated = true;
+                },
+                // get background color
+                backgroundColor: function (index) {
+                    if (index == 0 || index == 2 || index == 4 || index == 6 || index == 8) {
+                        return true
+                    }
+                    else {
+                        return false
+                    }
+                },
+                // decode ckeditor
+                decodeCk: function (ckeditor) {
+                    if (ckeditor) {
+                        return decodeURIComponent(ckeditor)
+                    }
+                    else {
+                        return ''
+                    }
+
+                },
+                // date picker
+                openDatePicker: function (index) {
+
+                    var id = "#coverageStartDate" + index;
+                    if ($(id).data("datepicker") != null) {
+                        $(id).datepicker("destroy");
+                    }
+
+                    $(id).datepicker({
+                        format: DateFormatDatePickerJs,
+                        autoclose: true,
+                    });
+
+                    var changeDummyValue = this.changeDummyValue;
+                    var changeCoverageStartDate = this.changeCoverageStartDate;
+
+                    $(id).on('changeDate', function () {
+                        changeDummyValue($(id).val(), index);
+                        changeCoverageStartDate(index);
+                    });
+
+                    $(id).focus();
+                },
+                changeDummyValue: function (value, index) {
+                    this.Comparisons[index].CoverageStartDate = value;
+                    console.log(this.Comparisons[index].CoverageStartDate);
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Group Referral ID";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable2 tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "Hips",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                }
+                //openDatePicker: function (field) {
+                //    var config = {
+                //        format: DateFormatDatePickerJs,
+                //        autoclose: true,
+                //    };
+
+                //    var id = '#' + field;
+
+                //    if (id.includes("Quarter")) {
+                //        var config = {
+                //            format: QuarterDateFormat,
+                //            minViewMode: 1,
+                //            autoclose: true,
+                //            language: "qtrs",
+                //            forceParse: false
+                //        };
+                //    }
+
+                //    if (typeof $(id).data("datepicker") === 'undefined') {
+                //        $(id).datepicker(config);
+
+                //        if (id.includes("Quarter")) {
+
+                //            $(id).on('show', function (e) {
+                //                $('.datepicker').addClass('quarterpicker');
+                //            });
+                //        }
+                //    }
+
+                   // $(id).focus();
+            },
+            created: function () {
+            },
+        });
+</script>
+}

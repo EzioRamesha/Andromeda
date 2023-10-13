@@ -1,0 +1,242 @@
+﻿@using PagedList.Mvc
+@model WebApp.Models.SanctionBatchViewModel
+
+@{
+    ViewBag.Title = "Sanction Upload";
+    ViewBag.Action = "View";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    PagedList.IPagedList<WebApp.Models.SanctionViewModel> DetailList = ViewBag.DetailList as PagedList.IPagedList<WebApp.Models.SanctionViewModel>;
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    routeValue["id"] = Url.RequestContext.RouteData.Values["id"];
+    var disabled = ViewBag.ReadOnly != null && ViewBag.ReadOnly;
+    var maxNameCount = ViewBag.MaxNameCount;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                <span class="@BusinessObject.Sanctions.SanctionBatchBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.Sanctions.SanctionBatchBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SourceId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.SourceId, (List<SelectListItem>)ViewBag.DropDownSources, htmlAttributes: new { @class = "form-control selectpicker", disabled = "disabled" })
+                        @Html.HiddenFor(model => model.SourceId)
+                        @Html.ValidationMessageFor(model => model.SourceId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.UploadedAt, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.UploadedAtStr, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.HiddenFor(model => model.UploadedAt)
+                        @Html.ValidationMessageFor(model => model.UploadedAt, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.Label("Errors", htmlAttributes: new { @class = "col-form-label" })
+                        <textarea class="form-control" rows="5" readonly style="resize: none;">@(ViewBag.Errors)</textarea>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <br />
+        <br />
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-10">
+                            @Html.DisplayNameFor(modelItem => DetailList.FirstOrDefault().PublicationInformation)
+                        </th>
+                        <th class="w-5">
+                            @Html.DisplayNameFor(modelItem => DetailList.FirstOrDefault().Category)
+                        </th>
+                        <th class="w-5">
+                            @Html.DisplayNameFor(modelItem => DetailList.FirstOrDefault().RefNumber)
+                        </th>
+                        <th class="w-15">
+                            Name
+                        </th>
+                        <th class="w-15">
+                            Identity
+                        </th>
+                        <th class="w-10">
+                            Date of Birth
+                        </th>
+                        <th class="w-10">
+                            Year of Birth
+                        </th>
+                        <th class="w-10">
+                            Country
+                        </th>
+                        <th class="w-15">
+                            Address
+                        </th>
+                        <th class="w-25">
+                            Comment
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (DetailList.Count > 0)
+                    {
+                        foreach (var item in DetailList)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.PublicationInformation)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Category)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.RefNumber)
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var sanctionName in item.SanctionNames)
+                                            {
+                                                <li>@Html.Raw(sanctionName.Name)</li>
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var SanctionIdentity in item.SanctionIdentities)
+                                            {
+                                                <li>@Html.Raw(SanctionIdentity.IdType + ": " + SanctionIdentity.IdNumber)</li>
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var SanctionBirthDate in item.SanctionBirthDates)
+                                            {
+                                                if (SanctionBirthDate.DateOfBirth.HasValue)
+                                                {
+                                                    <li>@Html.Raw(SanctionBirthDate.DateOfBirth.Value.ToString(Shared.Util.GetDateFormat()))</li>
+                                                }
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var SanctionBirthDate in item.SanctionBirthDates)
+                                            {
+                                                if (SanctionBirthDate.YearOfBirth.HasValue)
+                                                {
+                                                    <li>@Html.Raw(SanctionBirthDate.YearOfBirth)</li>
+                                                }
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var SanctionCountry in item.SanctionCountries)
+                                            {
+                                                <li>@Html.Raw(SanctionCountry.Country)</li>
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var SanctionAddress in item.SanctionAddresses)
+                                            {
+                                                <li>@Html.Raw(SanctionAddress.Address)</li>
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @{
+                                            foreach (var SanctionComment in item.SanctionComments)
+                                            {
+                                                <li>@Html.Raw(SanctionComment.Comment)</li>
+                                            }
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="11" class="no-data">No available data found.</td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        </div>
+
+        @{
+            ViewBag.CurrentPageNumber = DetailList.PageNumber;
+            ViewBag.CurrentPageItems = DetailList.Count;
+            ViewBag.PageSize = DetailList.PageSize;
+            ViewBag.Total = ViewBag.DetailTotal;
+        }
+        <div class="pagination-footer position-relative">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8" id="claimRegisterPager">
+                    @Html.PagedListPager(DetailList, Page => Url.Action("Edit", new
+                    {
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row form-row-btn">
+            <div class="form-group col-md-12 btn-row">
+                @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                @Html.ActionLink("DOWNLOAD FILE", "Download", new { id = Model.Id }, new { @class = "btn btn-submit float-right" })
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

@@ -1,0 +1,165 @@
+﻿@using WebApp.Models
+@model LoginViewModel
+@{
+    ViewBag.Title = "Sign In";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        @ViewBag.Title - @ConfigurationManager.AppSettings["AppName"]
+    </title>
+    <link rel="icon" type="image/png" href="~/Image/MLRe-favicon.png" />
+
+    @Styles.Render("~/Content/font-face.css")
+
+    @Styles.Render("~/bundles/css")
+
+    <link href="@Url.Content("~/Content/font-awesome/css/all.min.css")" rel="stylesheet" type="text/css" />
+
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+
+<body>
+    <div id="mmenu_screen" style="width: 100%; margin: 0 auto;">
+        <div class="container-login">
+            <div class="wrap-login">
+
+                @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "col-lg-6 login-form validate-form", role = "form" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div style="height: 80vh; display: table-cell; vertical-align: middle; width: 900px;">
+                        <div class="form-row wrap-form" style="margin-bottom: 50px;">
+                            <div class="form-group col-md-8 p-5 text-center d-lg-none d-block" style="padding-top: 0 !important;">
+                                <img src="~/Image/MLRe Logo-white.png" class="img-login" />
+                            </div>
+                        </div>
+                        <div class="form-row wrap-form" style="margin-bottom: 100px;">
+                            <div class="form-group col-md-8 p-5 text-center">
+                                <img src="~/Image/ARAGON_Logo-Login.png" class="img-login" />
+                            </div>
+                        </div>
+
+                        <div class="form-row wrap-form">
+                            <div class="form-group col-md-8 text-left">
+                                @Html.LabelFor(m => m.Email)
+                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "eg: johndoe123", autocomplete = "off" })
+                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-row wrap-form" style="margin-top: 20px;">
+                            <div class="form-group col-md-8 text-left">
+                                @Html.LabelFor(m => m.Password)
+                                <div class="input-w-icon">
+                                    @Html.TextBoxFor(m => m.Password, new { @class = "form-control hidePassword", placeholder = "••••••••••", onkeypress = "capsLockCheck(event)", autocomplete = "off" })
+                                    <span toggle="#Password" id="pass-status" class="fa fa-eye-slash field-icon" aria-hidden="true" />
+                                </div>
+                                <span class="text-danger" id="capsLockWarning" style="display: none;">Caps lock is on</span>
+                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-row wrap-form">
+                            @*
+                                <div class="form-group col-md-4 small">
+                                    @Html.CheckBoxFor(m => m.RememberMe)
+                                    @Html.LabelFor(m => m.RememberMe)
+                                </div>
+                            *@
+                            <div class="form-group col-md-8 text-right small">
+                                <a href="@(Url.Action("ForgotPassword"))">
+                                    Forgot Password
+                                </a> / <a href="@(Url.Action("RequestPassword"))">Request Password</a>
+                            </div>
+                        </div>
+                        <div class="form-row wrap-form">
+                            <div class="form-group col-md-8 p-5 text-center" style="padding-top: 1rem !important;">
+                                <button type="submit" class="btn btn-submit">LOGIN</button>
+                            </div>
+                        </div>
+                        <div class="form-row wrap-form mt-4">
+                            <div class="form-group col-md-8 text-center error-msg">
+                                @*style="background-color: rgba(255, 255, 255, 0.2); border-radius: 5px;"*@
+                                @if (Html.ViewData.ModelState.ContainsKey(string.Empty))
+                                {
+                                    @Html.ValidationSummary(true, "", new { @class = "text-danger text-left" })
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+
+                    @*
+                        <section id="socialLoginForm">
+                            @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
+                        </section>
+
+                        <p>
+                            @Html.ActionLink("Register as a new user", "Register")
+                        </p>
+                    *@
+
+                    @* Enable this once you have account confirmation enabled for password reset functionality
+                        <p>
+                            @Html.ActionLink("Forgot your password?", "ForgotPassword")
+                        </p>
+                    *@
+                }
+
+                <div class="col-lg-6 d-none d-lg-block login-img">
+                    <div class="p-5 text-center" style="padding-bottom: 0 !important;">
+                        <img src="~/Image/MLRe-logo.png" class="img-login" />
+                    </div>
+                    <div class="p-5 text-center" style="padding-bottom: 0 !important;">
+                        <img src="~/Image/MLRe_Welcome_Illustration.png" class="img-login" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/vue")
+
+    <script type="text/javascript">
+        $("#pass-status").click(function () {
+            $(this).toggleClass("fa-eye fa-eye-slash");
+            var input = $($(this).attr("toggle"));
+            input.toggleClass("hidePassword");
+
+            setPasswordHide();
+        });
+
+        $(document).ready(function () {
+            setPasswordHide();
+        });
+
+        function setPasswordHide() {
+            var x = document.getElementById("Password");
+            if ($('#Password').hasClass("hidePassword")) {
+                var style = window.getComputedStyle(x);
+                if (!style.webkitTextSecurity) {
+                    x.setAttribute("type", "password");
+                }
+            } else {
+                x.setAttribute("type", "text");
+            }
+        }
+
+        function capsLockCheck(e) {
+            kc = e.keyCode ? e.keyCode : e.which;
+            sk = e.shiftKey ? e.shiftKey : ((kc == 16) ? true : false);
+            if (((kc >= 65 && kc <= 90) && !sk) || ((kc >= 97 && kc <= 122) && sk))
+                $('#capsLockWarning').show();
+            else
+                $('#capsLockWarning').hide();
+        }
+    </script>
+</body>
+</html>

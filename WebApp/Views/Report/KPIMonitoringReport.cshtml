@@ -1,0 +1,294 @@
+﻿@{
+    ViewBag.Title = "KPI Monitoring Report";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>KPI Monitoring Report</h4>
+            </div>
+
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        <div class="col-form-label">
+                            Effective Start Date
+                        </div>
+                        <div class="input-w-icon">
+                            <input id="StartDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" />
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('StartDate')" />
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        <div class="col-form-label">
+                            Effective End Date
+                        </div>
+                        <div class="input-w-icon">
+                            <input id="EndDate" class="form-control" placeholder="DD MM YYYY" autocomplete="off" />
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EndDate')" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance Type</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Business Origin</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Counter Party</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Party</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Document Type</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Document Number</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Description</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Effective Date</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Request Date</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sent Date to Reviewer (1st version)</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sent Date to Client (1st version)</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Latest Revision Date</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Signed Date</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Days (First Draft to Reviewer)</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Days (First Draft to Cedant)</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Days (Signed)</td>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Follow Up Frequency</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="treatyPricingTreatyWorkflowBo in TreatyPricingTreatyWorkflowBos">
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.ReinsuranceTypePickListDetailBo?.Description }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.BusinessOriginPickListDetailBo?.Description }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.CounterParty }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.InwardRetroParty }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.DocumentTypeName }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.DocumentId }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.Description }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.EffectiveAtStr }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.RequestDate }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.DateSentToReviewer1st }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.DateSentToClient1st }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.LatestRevisionDate }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.SignedDate }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.Days1stDraftToReviewer }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.Days1stDraftToCedant }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.DaysSigned }}
+                                    </td>
+                                    <td class="w-10">
+                                        {{ treatyPricingTreatyWorkflowBo.FollowUpFrequency }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        $(document).ready(function () {
+            dateOffAutoComplete();
+
+            $('#StartDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#EndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+        });
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                TreatyPricingTreatyWorkflowBos: "",
+                StartDate: "",
+                EndDate: "",
+                IsGenerated: false,
+            },
+            methods: {
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+
+                    var errorList = [];
+                    var treatyPricingTreatyWorkflowBos = this.TreatyPricingTreatyWorkflowBos;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateKPIMonitoringReport", "Report"))",
+                        type: "POST",
+                        data: {
+                            effStartDate: $("#StartDate").val(),
+                            effEndDate: $("#EndDate").val(),
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            treatyPricingTreatyWorkflowBos = data.treatyPricingTreatyWorkflowBos;
+                            error = data.error;
+                        }
+                    });
+
+                    if (error != null) {
+                        errorList.push(error);
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    this.TreatyPricingTreatyWorkflowBos = treatyPricingTreatyWorkflowBos;
+                    this.IsGenerated = true;
+
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Campaign ID";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "KPIMonitoring",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                }
+            }
+        })
+
+</script>
+
+}

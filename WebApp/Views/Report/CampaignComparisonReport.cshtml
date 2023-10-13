@@ -1,0 +1,1192 @@
+﻿@{
+    ViewBag.Title = "Campaign Comparison";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Campaign Comparison</h4>
+            </div>
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="table-responsive my-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10 bh-white"></th>
+                                <th v-for="(comparison, index) in Comparisons" class="w-10">
+                                    {{ comparison.Name }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign ID</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.CampaignId" class="form-control" v-on:change="changeCampaignId(index)">
+                                        <option v-for="campaignIdDropDown in comparison.CampaignIdDropDowns" :value="campaignIdDropDown.Value">{{ campaignIdDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Type</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.CampaignType" :id="['campaignType' + index + 'TokenField']" class="form-control" v-on:keyup="changeCampaignType(index)" placeholder="Type here">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Status" class="form-control">
+                                        <option v-for="statusDropDown in comparison.StatusDropDowns" :value="statusDropDown.Value" v-on:change="changeStatus(index)">{{ statusDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Product ID / Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.Product" :id="['product' + index + 'TokenField']" class="form-control" v-on:keyup="changeProduct(index)" placeholder="Type here">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Remarks</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.BenefitRemarks" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.DistributionChannel" :id="['distributionChannel' + index + 'TokenField']" class="form-control" v-on:keyup="changeDistributionChannel(index)" placeholder="Type here">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select class="form-control" v-model="comparison.IfOthers" v-on:change="changeIfOthers(index)">
+                                        <option value="">Please Select</option>
+                                        <option value="true">As Per Existing</option>
+                                        <option value="false">Others</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">Campaign ID</th>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20 font-weight-bold">
+                                        {{ campaign.TreatyPricingCampaignBo?.Code }}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.TreatyPricingCedantBo?.Code }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Status</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.TreatyPricingCedantBo?.Code }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Type</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.Type }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product ID & Name</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.TreatyPricingCampaignProduct }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Name</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.Name }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Purpose</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.Purpose }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Period</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.Period }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Duration</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.Duration }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Target Take Up Rate</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.TargetTakeUpRate }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Expected Average Sum Assured</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.AverageSumAssuredStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Expected Number of Policy</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.NoOfPolicy }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Expected RI Premium Receivable</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.RiPremiumReceivableStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Remarks</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingCampaignBo?.Remarks }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.VersionStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Person In-Charge</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.PersonInChargeBo?.FullName }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefits</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerBenefitStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Remarks</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.BenefitRemarks }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company's Retention</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerCedantRetentionStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.CedantRetention }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">MLRe's Share</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMlreShareStr }}
+                                        {{ campaign.MlreShare }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MlreShare }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerDistributionChannelStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.DistributionChannel }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Age Basis</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerAgeBasisStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.AgeBasisPickListDetailBo?.Description }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Minimum Entry Age</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMinEntryAgeStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MinEntryAge }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Minimum Entry Age</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMinEntryAgeStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MinEntryAge }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Entry Age</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMaxEntryAgeStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MaxEntryAge }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Expiry Age</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMaxExpiryAgeStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MaxExpiryAge }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Minimum Sum Assured</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMinSumAssuredStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MinSumAssured }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Sum Assured</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMaxSumAssuredStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.MaxSumAssured }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance Rate</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerReinsuranceRateStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.ReinsRateTreatyPricingRateTableSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance Discount</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerReinsuranceDiscountStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.ReinsDiscountTreatyPricingRateTableSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Profit Commission</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerProfitCommStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingProfitCommissionSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Campaign Funding by MLRe</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.ComplimentarySumAssured }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Complimentary Sum Assured</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.CampaignFundByMlre }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerUnderwritingMethodStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.UnderwritingMethod }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Questions</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerUnderwritingQuestionStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingUwQuestionnaireSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Medical Table</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerMedicalTableStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingMedicalTableSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Financial Table</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerFinancialTableStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingFinancialTableSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Aggregation Notes</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerAggregationNotesStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.AggregationNotes }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Advantage Program</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerAdvantageProgramStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.TreatyPricingAdvantageProgramSelectStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Waiting Period</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerWaitingPeriodStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.WaitingPeriod }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Survival Period</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.IsPerSurvivalPeriodStr }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.SurvivalPeriod }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Other Campaign Criteria</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.AdditionalRemark }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Additional Remark</td>
+                                    <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                        {{ campaign.OtherCampaignCriteria }}
+                                    </td>
+                                </tr>
+                                @*<tr>
+                                        <td class="font-weight-bold" style="background-color: #f3f8fe;">Linked Products</td>
+                                        <td v-for="(campaign, index) in Campaigns" class="w-20">
+                                            {{ campaign.TreatyPricingCampaignBo?.TreatyPricingCampaignProduct }}
+                                        </td>
+                                    </tr>*@
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingCedants));
+    var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        function change() {
+            console.log(app.IfOthers);
+        }
+
+    function initTokenfield(index) {
+        var campaignTypeCount = 0;
+        var productCount = 0;
+        var distributionChannelCount = 0;
+
+        $(document).ready(function () {
+            $('#campaignType' + index + 'TokenField')
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (campaignTypeCount != 0) {
+                        $.each(existingTokens, function (el, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+                .on('tokenfield:createdtoken', function (e) {
+                    var valid = app.Comparisons[index].CampaignTypes.includes(e.attrs.value)
+                    if (!valid) {
+                        $(e.relatedTarget).addClass('invalid');
+                    }
+                    campaignTypeCount += 1;
+                    $("#campaignType" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                    app.Comparisons[index].CampaignType = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                })
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = app.Comparisons[index].CampaignTypes.includes(e.attrs.value)
+                    if (!valid) {
+                        e.preventDefault();
+                    }
+                })
+                .on('tokenfield:removedtoken', function (e) {
+                    campaignTypeCount -= 1;
+                    if (campaignTypeCount == 0) {
+                        $("#campaignType" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                    app.Comparisons[index].CampaignType = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                })
+                .tokenfield({
+                    autocomplete: {
+                        source: app.Comparisons[index].CampaignTypes,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+
+            $('#product' + index + 'TokenField')
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (productCount != 0) {
+                        $.each(existingTokens, function (el, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+                .on('tokenfield:createdtoken', function (e) {
+                    var valid = app.Comparisons[index].Products.includes(e.attrs.value)
+                    if (!valid) {
+                        $(e.relatedTarget).addClass('invalid');
+                    }
+                    productCount += 1;
+                    $("#product" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                    app.Comparisons[index].Product = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                })
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = app.Comparisons[index].Products.includes(e.attrs.value)
+                    if (!valid) {
+                        e.preventDefault();
+                    }
+                })
+                .on('tokenfield:removedtoken', function (e) {
+                    productCount -= 1;
+                    if (productCount == 0) {
+                        $("#product" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                    app.Comparisons[index].Product = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                })
+                .tokenfield({
+                    autocomplete: {
+                        source: app.Comparisons[index].Products,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+
+            $('#distributionChannel' + index + 'TokenField')
+                .on('tokenfield:createtoken', function (e) {
+                    var existingTokens = $(this).tokenfield('getTokens');
+                    if (productCount != 0) {
+                        $.each(existingTokens, function (el, token) {
+                            if (token.value === e.attrs.value) {
+                                e.preventDefault();
+                            }
+                        });
+                    }
+                })
+                .on('tokenfield:createdtoken', function (e) {
+                    var valid = app.Comparisons[index].DistributionChannels.includes(e.attrs.value)
+                    if (!valid) {
+                        $(e.relatedTarget).addClass('invalid');
+                    }
+                    distributionChannelCount += 1;
+                    $("#distributionChannel" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                    app.Comparisons[index].DistributionChannel = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                    app.changeDistributionChannel(index);
+                })
+                .on('tokenfield:edittoken', function (e) {
+                    var valid = app.Comparisons[index].DistributionChannels.includes(e.attrs.value)
+                    if (!valid) {
+                        e.preventDefault();
+                    }
+                    app.changeDistributionChannel(index);
+                })
+                .on('tokenfield:removedtoken', function (e) {
+                    distributionChannelCount -= 1;
+                    if (distributionChannelCount == 0) {
+                        $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    }
+                    app.Comparisons[index].DistributionChannel = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                    app.changeDistributionChannel(index);
+                })
+                .tokenfield({
+                    autocomplete: {
+                        source: app.Comparisons[index].DistributionChannels,
+                        delay: 100
+                    },
+                    showAutocompleteOnFocus: true
+                });
+        });
+    }
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Comparison 1", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: "",
+                        CampaignIdDropDowns: DropDownEmpty, CampaignId: "",
+                        CampaignTypes: [], CampaignType: "",
+                        StatusDropDowns: DropDownEmpty, Status: "",
+                        Products: [], Product: "",
+                        BenefitRemarks: "",
+                        DistributionChannels: [], DistributionChannel: "",
+                        IfOthers: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", CampaignVersionId: 0,
+                    },
+                ],
+                Campaigns: [
+                ],
+                IsGenerated: false,
+            },
+            methods: {
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.CampaignId = "";
+                    comparison.CampaignType = "";
+                    $('#campaignType' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#campaignType" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Status = "";
+                    comparison.Product = "";
+                    $('#product' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#product" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.BenefitRemarks = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.IfOthers = "";
+                    comparison.Version = "";
+                    comparison.CampaignVersionId = 0;
+
+                    var campaignIdDropDowns = comparison.CampaignIdDropDowns;
+                    var campaignTypes = comparison.CampaignTypes;
+                    var statusDropDowns = comparison.StatusDropDowns;
+                    var products = comparison.Products;
+                    var distributionChannels = comparison.DistributionChannels;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateCampaignComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            campaignIdDropDowns = data.campaignIdDropDowns;
+                            campaignTypes = data.campaignTypes;
+                            statusDropDowns = data.statusDropDowns;
+                            products = data.campaignProducts;
+                            distributionChannels = data.distributionChannels;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.CampaignIdDropDowns = campaignIdDropDowns;
+                    comparison.CampaignTypes = campaignTypes;
+                    $('#campaignType' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: campaignTypes });
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.Products = products;
+                    $('#product' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: products });
+                    comparison.DistributionChannels = distributionChannels;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannels });
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeCampaignId: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.CampaignType = "";
+                    $('#campaignType' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#campaignType" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Status = "";
+                    comparison.Product = "";
+                    $('#product' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#product" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.BenefitRemarks = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.IfOthers = "";
+                    comparison.Version = "";
+                    comparison.CampaignVersionId = 0;
+
+                    var campaignTypes = comparison.CampaignTypes;
+                    var statusDropDowns = comparison.StatusDropDowns;
+                    var products = comparison.Products;
+                    var distributionChannels = comparison.DistributionChannels;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateCampaignComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            campaignTypes = data.campaignTypes;
+                            statusDropDowns = data.statusDropDowns;
+                            products = data.campaignProducts;
+                            distributionChannels = data.distributionChannels;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.CampaignTypes = campaignTypes;
+                    $('#campaignType' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: campaignTypes });
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.Products = products;
+                    $('#product' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: products });
+                    comparison.DistributionChannels = distributionChannels;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannels });
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeCampaignId: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.CampaignType = "";
+                    $('#campaignType' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#campaignType" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Status = "";
+                    comparison.Product = "";
+                    $('#product' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#product" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.BenefitRemarks = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.IfOthers = "";
+                    comparison.Version = "";
+                    comparison.CampaignVersionId = 0;
+
+                    var campaignTypes = comparison.CampaignTypes;
+                    var statusDropDowns = comparison.StatusDropDowns;
+                    var products = comparison.Products;
+                    var distributionChannels = comparison.DistributionChannels;
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateCampaignComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            campaignId: comparison.CampaignId,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            campaignTypes = data.campaignTypes;
+                            statusDropDowns = data.statusDropDowns;
+                            products = data.campaignProducts;
+                            distributionChannels = data.distributionChannels;
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.CampaignTypes = campaignTypes;
+                    $('#campaignType' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: campaignTypes });
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.StatusDropDowns = statusDropDowns;
+                    comparison.Products = products;
+                    $('#product' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: products });
+                    comparison.DistributionChannels = distributionChannels;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannels });
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeDistributionChannel: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.IfOthers = "",
+                    comparison.Version = "",
+                    comparison.CampaignVersionId = 0;
+
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateCampaignComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            campaignId: comparison.CampaignId,
+                            distributionChannel: comparison.DistributionChannel,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeIfOthers: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Version = "",
+                    comparison.CampaignVersionId = 0;
+
+                    var versionDropDowns = comparison.VersionDropDowns;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateCampaignComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            campaignId: comparison.CampaignId,
+                            distributionChannel: comparison.DistributionChannel,
+                            ifOthers: comparison.IfOthers
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versionDropDowns = data.versionDropDowns;
+                        }
+                    });
+
+                    comparison.VersionDropDowns = versionDropDowns;
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.PersonInCharge = "";
+                    var campaignVersionId = 0;
+
+                    $.ajax({
+                        url: "@(Url.Action("GetCampaignVersionId", "Report"))",
+                        type: "POST",
+                        data: {
+                            campaignId: comparison.CampaignId,
+                            version: comparison.Version,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            campaignVersionId = data.campaignVersionId;
+                        }
+                    });
+
+                    comparison.CampaignVersionId = campaignVersionId;
+
+                },
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var campaignVersionIds = [];
+                    var errorList = [];
+
+                    comparisons.forEach(function (comparison, index) {
+                        if (index == 0 && !comparison.Cedant) {
+                            errorList.push("Please select filter parameters in " + comparison.Name + ".");
+                        }
+                        if (comparison.Cedant) {
+                            if (!comparison.CampaignId) {
+                                errorList.push("Please select Campaign ID for " + comparison.Name + ".");
+                            }
+                            //if (!comparison.Status) {
+                            //    errorList.push("Please select Status for " + comparison.Name + ".");
+                            //}
+                            //if (comparison.DistributionChannel) {
+                            //    var isValid = true;
+                            //    var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            //        return item.trim();
+                            //    });
+                            //    distributionChannelArr.forEach(function (value) {
+                            //        if (!comparison.DistributionChannels.includes(value)) {
+                            //            isValid = false;
+                            //        }
+                            //    });
+                            //    if (!isValid)
+                            //        errorList.push("Please fill in correct Distribution Channel for " + comparison.Name + ".");
+                            //}
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+                        }
+                    });
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    comparisons.forEach(function (comparison) {
+                        campaignVersionIds.push(comparison.CampaignVersionId);
+                    });
+
+                    var campaigns = this.campaigns;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateCampaignComparison", "Report"))",
+                        type: "POST",
+                        data: {
+                            campaignVersionIds: campaignVersionIds,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            campaigns = data.campaigns;
+                        },
+                    });
+
+                    this.Campaigns = campaigns;
+                    this.IsGenerated = true;
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Campaign ID";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $('#outputTable tbody tr').each(function () {
+                            var header = $(this).find('td').eq(0).text().trim();
+                            var column1 = $(this).find('td').eq(1).text().trim();
+                            var column2 = $(this).find('td').eq(2).text().trim();
+                            var column3 = $(this).find('td').eq(3).text().trim();
+                            var column4 = $(this).find('td').eq(4).text().trim();
+                            var column5 = $(this).find('td').eq(5).text().trim();
+                            var column6 = $(this).find('td').eq(6).text().trim();
+                            var column7 = $(this).find('td').eq(7).text().trim();
+                            var column8 = $(this).find('td').eq(8).text().trim();
+                            var column9 = $(this).find('td').eq(9).text().trim();
+                            var column10 = $(this).find('td').eq(10).text().trim();
+                            var row = header
+                                + "|" + column1 + "|" + column2 + "|" + column3 + "|" + column4 + "|" + column5
+                                + "|" + column6 + "|" + column7 + "|" + column8 + "|" + column9 + "|" + column10;
+                            rows.push(row);
+
+                            //console.log(row);
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                type: "Campaign",
+                                rows: rows,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                }
+            },
+            created: function () {
+                var i = 0;
+                this.Comparisons.forEach(function (comparison) {
+                    if (comparison != null) {
+                        initTokenfield(i);
+                        i++;
+                    }
+                });
+            }
+        })
+
+</script>
+
+}

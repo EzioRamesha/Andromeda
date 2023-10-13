@@ -1,0 +1,216 @@
+﻿@{
+    ViewBag.Title = "Group Referral Report";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Group Referral Report</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <div for="typeOfReport" class="col-form-label">
+                                Type of Report
+                            </div>
+                            <select class="form-control" name="typeOfReport" id="TypeOfReport" onchange="displayFirstQuotation()" v-model="TypeOfReport">
+                                <option value="1">Weekly</option>
+                                <option value="2">Monthly</option>
+                                <option value="3">Quarterly</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-4" id="showWeek">
+                            <div class="col-form-label">First Quotation Sent Week</div>
+                            <div class="input-w-icon">
+                                <input id="FirstQuotationSentWeek" class="form-control" placeholder="1" autocomplete="off"  v-model="FirstQuotationSentWeek" />
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4" style="display: none;" id="showMonth">
+                            <div for="firstQuotationSentMonth" class="col-form-label">
+                                First Quotation Sent Month
+                            </div>
+                            <select class="form-control" name="firstQuotationSentMonth" v-model="FirstQuotationSentMonth">
+                                <option value="">Please Select</option>
+                                <option value="1">January</option>
+                                <option value="2">Febuary</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">Obtober</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4" style="display: none;" id="showQuarter">
+                            <div for="firstQuotationSentQuarter" class="col-form-label">
+                                First Quotation Sent Quarter
+                            </div>
+                            <select class="form-control" name="firstQuotationSentQuarter" v-model="FirstQuotationSentQuarter">
+                                <option value="">Please Select</option>
+                                <option value="1">Q1</option>
+                                <option value="2">Q2</option>
+                                <option value="3">Q3</option>
+                                <option value="4">Q4</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <div for="firstQuotationSentYear" class="col-form-label">
+                                First Quotation Sent Year
+                            </div>
+                            <select class="form-control" name="firstQuotationSentYear" v-model="FirstQuotationSentYear">
+                                <option value="">Please Select</option>
+                                <option value="2010">2010</option>
+                                <option value="2011">2011</option>
+                                <option value="2012">2012</option>
+                                <option value="2013">2013</option>
+                                <option value="2014">2014</option>
+                                <option value="2015">2015</option>
+                                <option value="2016">2016</option>
+                                <option value="2017">2017</option>
+                                <option value="2018">2018</option>
+                                <option value="2019">2019</option>
+                                <option value="2020">2020</option>
+                                <option value="2021">2021</option>
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                                <option value="2031">2031</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="w-100 text-right">
+                        <button type="button" class="btn btn-download" v-on:click="generate()">GENERATE</button>
+                    </div>
+
+                    <div id="reportBody">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var Cedants = @Html.Raw(Json.Encode(ViewBag.Cedants));
+
+        var cedantCount = 0;
+
+        $(document).ready(function () {
+            initializeTokenField('#cedingCompanies', Cedants, 'cedantCount');
+        });
+
+        function displayFirstQuotation() {
+            if ($("#TypeOfReport").val() == 1) {
+                $("#showWeek").css('display', 'block');
+                $("#showMonth").css('display', 'none');
+                $("#showQuarter").css('display', 'none');
+            }
+            else if ($("#TypeOfReport").val() == 2) {
+                $("#showWeek").css('display', 'none');
+                $("#showMonth").css('display', 'block');
+                $("#showQuarter").css('display', 'none');
+            }
+            else if ($("#TypeOfReport").val() == 3) {
+                $("#showWeek").css('display', 'none');
+                $("#showMonth").css('display', 'none');
+                $("#showQuarter").css('display', 'block');
+            }
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                TypeOfReport: 1,
+                FirstQuotationSentWeek: "",
+                FirstQuotationSentMonth: "",
+                FirstQuotationSentQuarter: "",
+                FirstQuotationSentYear: 2020
+            },
+            methods: {
+                generate: function () {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                    var errorList = [];
+
+                    if (this.TypeOfReport == 1) {
+                        if (this.FirstQuotationSentWeek == null || this.FirstQuotationSentWeek == "") {
+                            errorList.push("First Quotation Sent Week is required.");
+                        }
+                    } else if ($("#TypeOfReport").val() == 2) {
+                        if (this.FirstQuotationSentMonth == null || this.FirstQuotationSentMonth == "") {
+                            errorList.push("First Quotation Sent Month is required.");
+                        }
+                    } else if ($("#TypeOfReport").val() == 3) {
+                        if (this.FirstQuotationSentQuarter == null || this.FirstQuotationSentQuarter == "") {
+                            errorList.push("First Quotation Sent Quarter is required.");
+                        }
+                    }
+
+                    if (this.FirstQuotationSentYear < 1990) {
+                        errorList.push("First Quotation Sent Year is required.");
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    } else {
+                    $.ajax({
+                        url: "@(Url.Action("GenerateGroupReferralReport", "Report"))",
+                        type: "POST",
+                        data: {
+                            typeOfReport: this.TypeOfReport,
+                            firstQuotationSentWeek: this.FirstQuotationSentWeek,
+                            firstQuotationSentMonth: this.FirstQuotationSentMonth,
+                            firstQuotationSentQuarter: this.FirstQuotationSentQuarter,
+                            firstQuotationSentYear: this.FirstQuotationSentYear,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                        }
+                    }).done(function (result) {
+                        $("#reportBody").html(result);
+                    });
+                    }
+                }
+            },
+            created: function () {
+            },
+            updated() {
+            }
+        });
+</script>
+}

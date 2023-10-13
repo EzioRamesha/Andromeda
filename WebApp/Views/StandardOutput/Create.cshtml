@@ -1,0 +1,62 @@
+﻿@model WebApp.Models.StandardOutputViewModel
+
+@{
+    ViewBag.Title = "Standard Output";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control-plaintext" value="@BusinessObject.StandardOutputBo.GetCodeByType(1)">
+                    </div>
+                    <div class="form-group col-md-6">
+                        @Html.LabelFor(model => model.DataType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.DataType, (List<SelectListItem>)ViewBag.DataTypeItems, htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.DataType, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6">&nbsp;</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                    </div>
+                    <div class="form-group col-md-6 text-right">
+                        <button type="submit" class="btn btn-submit">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,1657 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.TreatyPricingGroupReferralViewModel>
+
+@{
+    ViewBag.Title = "Group Referral";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    var ActiveTab = (int)routeValue["ActiveTab"];
+
+    var ActiveTabList = BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.ActiveTabList;
+    var ActiveTabUpload = BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.ActiveTabUpload;
+    PagedList.IPagedList<BusinessObject.TreatyPricing.TreatyPricingGroupReferralFileBo> UploadedList = ViewBag.UploadedList as PagedList.IPagedList<BusinessObject.TreatyPricing.TreatyPricingGroupReferralFileBo>;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right  btn-row-inline">
+                <button class="btn btn-add" onclick="resetAddNewModal()" data-toggle="modal" data-target="#addNewModal">ADD NEW GROUP</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        @Html.Partial("_LoadingSpinner")
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item"><a data-toggle="tab" href="#list" class="@(ActiveTab == ActiveTabList ? "active" : "") underline-tab">List</a></li>
+            <li class="nav-item"><a class="@(ActiveTab == ActiveTabUpload ? "active" : "") underline-tab" data-toggle="tab" href="#upload">Upload</a></li>
+        </ul>
+
+        <div class="tab-content underline-tab-content">
+            <div class="tab-pane fade @(ActiveTab == ActiveTabList ? "show active" : "")" id="list" role="tabpanel" aria-labelledby="list-tab">
+                <div class="text-right" style="margin-bottom: 20px;display: none;" id="optionDiv2">
+                    <button id="cancelBtn" class="btn btn-edit" type="button">CANCEL QUICK EDIT</button>
+                    <div style="display: inline-flex;">
+                        @using (Html.BeginForm("EditIndex", "TreatyPricingGroupReferral", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.Hidden("RiGroupSlipItems")
+                            <button class="btn btn-add" style="width: auto;" id="updateBtn">SAVE</button>
+                        }
+                    </div>
+
+                </div>
+                <div class="text-right" style="margin-bottom: 20px;" id="optionDiv1">
+                    <button id="editBtn" class="btn btn-edit" type="button" @(Model.Count == 0 ? "disabled='disabled'" : "")>QUICK EDIT</button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            DOWNLOAD AS
+                        </button>
+                        <div class="dropdown-menu">
+                            @Html.ActionLink("All", "DownloadListing", new { type = 1 }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                            @Html.ActionLink("Filtered", "DownloadListing", new
+                            {
+                                type = 2,
+                                GRCedantId = routeValue["GRCedantId"],
+                                GRInsuredGroupNameId = routeValue["GRInsuredGroupNameId"],
+                                IndustryNameId = routeValue["IndustryNameId"],
+                                ReferredTypeId = routeValue["ReferredTypeId"],
+                                RiGroupSlipPIC = routeValue["RiGroupSlipPIC"],
+                                RiGroupSlipStatusId = routeValue["RiGroupSlipStatusId"],
+                                GroupMasterLetterId = routeValue["GroupMasterLetterId"],
+                                StatusId = routeValue["StatusId"],
+                                GroupReferralCode = routeValue["GroupReferralCode"],
+                                GroupReferralDescription = routeValue["GroupReferralDescription"],
+                                RiGroupSlipCode = routeValue["RiGroupSlipCode"],
+                                RiGroupSlipConfirmationDate = routeValue["RiGroupSlipConfirmationDate"],
+                                FirstReferralDate = routeValue["FirstReferralDate"],
+                                CoverageStartDate = routeValue["CoverageStartDate"],
+                                CoverageEndDate = routeValue["CoverageEndDate"],
+                                RequestTypeId = routeValue["RequestTypeId"],
+                                VersionNo = routeValue["VersionNo"],
+                                GroupReferralPIC = routeValue["GroupReferralPIC"],
+                                GroupSize = routeValue["GroupSize"],
+                                GrossRiskPremium = routeValue["GrossRiskPremium"],
+                                ReinsurancePremium = routeValue["ReinsurancePremium"],
+                                WonVersion = routeValue["WonVersion"],
+                                QuotationTAT = routeValue["QuotationTAT"],
+                                InternalTAT = routeValue["InternalTAT"],
+                                Score = routeValue["Score"],
+                                WorkflowStatusId = routeValue["WorkflowStatusId"],
+                                ChecklistPending = routeValue["ChecklistPending"],
+                            }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="GRTable">
+                        <thead>
+                            <tr>
+                                <th class="w-20">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGRCedantId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Ceding Company", "GRCedantId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGRInsuredGroupNameId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Insured Group Name", "GRInsuredGroupNameId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortIndustryNameId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Industry Name", "IndustryNameId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortReferredTypeId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Referred Type", "ReferredTypeId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortRequestTypeId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Type of Request", "RequestTypeId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGroupSize;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Expected Group Size", "GroupSize", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGrossRiskPremium;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Expected Annual Gross/Risk Premium", "GrossRiskPremium", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortReinsurancePremium;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Expected Annual Reinsurance Premium", "ReinsurancePremium", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGroupReferralCode;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Group Referral ID", "GroupReferralCode", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-20">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGroupReferralDescription;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Group Referral Description", "GroupReferralDescription", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortVersionNo;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Quotation Latest Version", "VersionNo", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGroupReferralPIC;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Group Referral PIC", "GroupReferralPIC", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortRiGroupSlipCode;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "RI Group Slip ID", "RiGroupSlipCode", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortRiGroupSlipPIC;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "RI Group Slip PIC", "RiGroupSlipPIC", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortRiGroupSlipStatusId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "RI Group Slip Status", "RiGroupSlipStatusId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-15">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortRiGroupSlipConfirmationDate;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "RI Group Slip Confirmation Date", "RiGroupSlipConfirmationDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortGroupMasterLetterId;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Group Master Letter ID", "GroupMasterLetterId", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortFirstReferralDate;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "First Referral Date", "FirstReferralDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortCoverageStartDate;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Coverage Start Date", "CoverageStartDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortCoverageEndDate;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Coverage End Date", "CoverageEndDate", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortQuotationTAT;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Current Quotation TAT", "QuotationTAT", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortInternalTAT;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Current Internal TAT", "InternalTAT", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    @{
+                                        routeValue["SortOrder"] = ViewBag.SortScore;
+                                        routeValue["TabIndex"] = ActiveTabList;
+                                        @Shared.Html.Sorter(ViewBag, "Score", "Score", @Url.Action("Index", routeValue))
+                                    }
+                                </th>
+                                <th class="w-10">
+                                    Status
+                                </th>
+                                <th class="w-10">
+                                    Workflow Status
+                                </th>
+                                <th class="w-10">
+                                    Won Version
+                                </th>
+                                <th class="w-10">
+                                    Checklist
+                                </th>
+                                <th class="text-center w-5">
+                                    Action
+                                </th>
+                            </tr>
+                            <tr>
+                                @using (Html.BeginForm("Index", "TreatyPricingGroupReferral", FormMethod.Get))
+                                {
+                                    @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+                                    @Html.Hidden("Results1Page", routeValue["Results1Page"])
+                                    @Html.Hidden("Results2Page", routeValue["Results2Page"])
+                                    @Html.Hidden("TabIndex", ActiveTabList)
+                                    <th>
+                                        @Html.DropDownList("GRCedantId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("GRInsuredGroupNameId", (List<SelectListItem>)ViewBag.DropDownInsuredGroupNames, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("IndustryNameId", (List<SelectListItem>)ViewBag.DropDownIndustryNames, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ReferredTypeId", (List<SelectListItem>)ViewBag.DropDownReferredTypes, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RequestTypeId", (List<SelectListItem>)ViewBag.DropDownRequests, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("GroupSize", null, new { @class = "form-control prevent-disable", placeholder = "Type Here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("GrossRiskPremium", null, new { @class = "form-control prevent-disable", placeholder = "Type Here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("ReinsurancePremium", null, new { @class = "form-control prevent-disable", placeholder = "Type Here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("GroupReferralCode", null, new { @class = "form-control prevent-disable", placeholder = "Type Here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("GroupReferralDescription", null, new { @class = "form-control prevent-disable", placeholder = "Type Here" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("VersionNo", null, new { @class = "form-control prevent-disable", placeholder = "Type Here", type = "number" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("GroupReferralPIC", (List<SelectListItem>)ViewBag.UsersGR, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiGroupSlipCode", null, new { @class = "form-control prevent-disable", placeholder = "Type Here" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiGroupSlipPIC", (List<SelectListItem>)ViewBag.UsersRiGroupSlip, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("RiGroupSlipStatusId", (List<SelectListItem>)ViewBag.DropDownRiGroupSlipStatus, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("RiGroupSlipConfirmationDate", null, new { id = "RiGroupSlipConfirmationDate", @class = "form-control prevent-disable", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('RiGroupSlipConfirmationDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("GroupMasterLetterId", (List<SelectListItem>)ViewBag.DropDownGroupMasterLetters, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("FirstReferralDate", null, new { id = "FirstReferralDate", @class = "form-control prevent-disable", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('FirstReferralDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("CoverageStartDate", null, new { id = "CoverageStartDate", @class = "form-control prevent-disable", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('CoverageStartDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("CoverageEndDate", null, new { id = "CoverageEndDate", @class = "form-control prevent-disable", placeholder = "DD MM YYYY" })
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('CoverageEndDate')" />
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("QuotationTAT", (List<SelectListItem>)ViewBag.DropDownTATDays, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("InternalTAT", (List<SelectListItem>)ViewBag.DropDownTATDays, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("Score", null, new { @class = "form-control prevent-disable", placeholder = "Type Here", type = "number" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("StatusId", (List<SelectListItem>)ViewBag.DropDownGRStatus, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("WorkflowStatusId", (List<SelectListItem>)ViewBag.DropDownWorkflowStatus, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBox("WonVersion", null, new { @class = "form-control prevent-disable", placeholder = "Type Here", type = "number" })
+                                    </th>
+                                    <th>
+                                        @Html.DropDownList("ChecklistPending", (List<SelectListItem>)ViewBag.DropDownPendingChecklists, htmlAttributes: new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                    </th>
+                                    <th class="text-center align-middle">
+                                        <div class="btn-row-action">
+                                            <a href="@Url.Action("Index", new { Results2Page = routeValue["Results2Page"], TabIndex = ActiveTabList })" class="btn btn-circle" title="Clear">
+                                                <span class="fas fa-backspace" />
+                                            </a>
+                                            <button type="submit" title="Search" class="btn-circle prevent-disable"><span class="fas fa-search" /></button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody id="edit">
+                            @if (Model.Count > 0)
+                            {
+                                int i = 0;
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.HiddenFor(modelItem => item.Id)
+                                            @if (item.Cedant != null)
+                                            {
+                                                @(string.Format("{0} - {1}", item.Cedant.Code, item.Cedant.Name))
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.InsuredGroupName != null)
+                                            {
+                                                @(item.InsuredGroupName.Name)
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.IndustryNamePickListDetail != null)
+                                            {
+                                                @(item.IndustryNamePickListDetail.Description)
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.ReferredTypePickListDetail != null)
+                                            {
+                                                @(item.ReferredTypePickListDetail.Description)
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.RequestTypePickListDetail != null)
+                                            {
+                                                @(item.RequestTypePickListDetail.Description)
+                                            }
+                                        </td>
+                                        <td>
+                                            @Shared.Util.DoubleToString(item.GroupSize, 0)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.DoubleToString(item.GrossRiskPremium, 2)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.DoubleToString(item.ReinsurancePremium, 2)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Code)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Description)
+                                        </td>
+                                        <td>
+                                            @string.Format("v{0}.0", item.Version)
+                                        </td>
+                                        <td>
+                                            @if (item.GroupReferralPersonInCharge != null)
+                                            {
+                                                @(item.GroupReferralPersonInCharge.FullName)
+                                            }
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.RiGroupSlipIdCode)
+                                        </td>
+                                        <td>
+                                            @if (item.HasRiGroupSlip)
+                                            {
+                                                <div class="ToggleRiGroupSlipEdit">
+                                                    @if (item.RiGroupSlipPersonInCharge != null)
+                                                    {
+                                                        @(item.RiGroupSlipPersonInCharge.FullName)
+                                                    }
+                                                </div>
+                                                <div class="ToggleRiGroupSlipEdit" style="display: none;">
+                                                    <select v-model="groupReferralItem(@(i), 'RiGroupSlipPersonInChargeId')" class="form-control selectpicker" ref="select" :id="'RiGroupSlipPersonInChargeId[@(i)]'" :name="'RiGroupSlipPersonInChargeId[@(i)]'" data-container="body" v-on:change="itemOnChange(@(i), 'RiGroupSlipPersonInChargeId', $event)">
+                                                        <option v-for="user in DropDownUsers" :value="user.Value">{{ user.Text }}</option>
+                                                    </select>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                @Html.DisplayFor(modelItem => item.RiGroupSlipPersonInChargeId)
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.HasRiGroupSlip)
+                                            {
+                                                <div class="ToggleRiGroupSlipEdit">
+                                                    <span class="@BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetRiGroupSlipStatusClass(item.RiGroupSlipStatus)">
+                                                        @BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetRiGroupSlipStatusName(item.RiGroupSlipStatus)
+                                                    </span>
+                                                </div>
+                                                <div class="ToggleRiGroupSlipEdit" style="display: none;">
+                                                    <select v-model="groupReferralItem(@(i), 'RiGroupSlipStatus')" class="form-control selectpicker" ref="select" :id="'RiGroupSlipStatus[@(i)]'" :name="'RiGroupSlipStatus[@(i)]'" data-container="body" v-on:change="itemOnChange(@(i), 'RiGroupSlipStatus', $event)">
+                                                        <option v-for="slipStatus in DropDownRiGroupSlipStatus" :value="slipStatus.Value">{{ slipStatus.Text }}</option>
+                                                    </select>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    <span class="@BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetRiGroupSlipStatusClass(item.RiGroupSlipStatus)">
+                                                        @BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetRiGroupSlipStatusName(item.RiGroupSlipStatus)
+                                                    </span>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.HasRiGroupSlip)
+                                            {
+                                                <div class="ToggleRiGroupSlipEdit">
+                                                    @if (item.RiGroupSlipConfirmationDate.HasValue)
+                                                    {
+                                                        @item.RiGroupSlipConfirmationDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                    }
+                                                </div>
+                                                <div class="ToggleRiGroupSlipEdit" style="display: none;">
+                                                    <input v-model.lazy="groupReferralItem(@(i), 'RiGroupSlipConfirmationDate')" class="form-control" :name="'RiGroupSlipConfirmationDate[@(i)]'" v-on:click="openDatePicker('GroupReferral_RiGroupSlipConfirmationDate_@(i)')" :id="'GroupReferral_RiGroupSlipConfirmationDate_@(i)'" placeholder="DD MM YYYY" autocomplete="off" />
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                if (item.RiGroupSlipConfirmationDate.HasValue)
+                                                {
+                                                    @item.RiGroupSlipConfirmationDate.Value.ToString(Shared.Util.GetDateFormat())
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.GroupMasterLetter != null)
+                                            {
+                                                @(item.GroupMasterLetter.Code)
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.FirstReferralDate.HasValue)
+                                            {
+                                                @item.FirstReferralDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.CoverageStartDate.HasValue)
+                                            {
+                                                @item.CoverageStartDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.CoverageEndDate.HasValue)
+                                            {
+                                                @item.CoverageEndDate.Value.ToString(Shared.Util.GetDateFormat())
+                                            }
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.QuotationTAT)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.InternalTAT)
+                                        </td>
+                                        <td>
+                                            @Shared.Util.DoubleToString(item.AverageScore, 2)
+                                        </td>
+                                        <td class="va-middle">
+                                            <span class="@BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetStatusClass(item.Status)">
+                                                @BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetStatusName(item.Status)
+                                            </span>
+                                        </td>
+                                        <td class="va-middle">
+                                            <span class="@BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetWorkflowStatusClass(item.WorkflowStatus)">
+                                                @BusinessObject.TreatyPricing.TreatyPricingGroupReferralBo.GetWorkflowStatusName(item.WorkflowStatus)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(item.WonVersion))
+                                            {
+                                                @(string.Format("v{0}.0", item.WonVersion))
+                                            }
+                                        </td>
+                                        <td>
+                                            @{
+                                                int count = 0;
+                                                if (item.ChecklistPendingUnderwriting) { count++; }
+                                                if (item.ChecklistPendingHealth) { count++; }
+                                                if (item.ChecklistPendingClaims) { count++; }
+                                                if (item.ChecklistPendingBD) { count++; }
+                                                if (item.ChecklistPendingCR) { count++; }
+
+                                                @(string.Format("{0} Pending(s)", count))
+
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="@Url.Action("Edit", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-pencil-alt fa-lg"></span></a>
+                                        </td>
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="28" class="no-data">No available data found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-footer">
+                    <div class="row">
+                        <div class="col-md-4">
+                            @Html.Partial("_PageInfo")
+                        </div>
+                        <div class="col-md-8">
+                            @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                            {
+                                GRCedantId = routeValue["GRCedantId"],
+                                GRInsuredGroupNameId = routeValue["GRInsuredGroupNameId"],
+                                IndustryNameId = routeValue["IndustryNameId"],
+                                ReferredTypeId = routeValue["ReferredTypeId"],
+                                RiGroupSlipPIC = routeValue["RiGroupSlipPIC"],
+                                RiGroupSlipStatusId = routeValue["RiGroupSlipStatusId"],
+                                GroupMasterLetterId = routeValue["GroupMasterLetterId"],
+                                StatusId = routeValue["StatusId"],
+                                GroupReferralCode = routeValue["GroupReferralCode"],
+                                GroupReferralDescription = routeValue["GroupReferralDescription"],
+                                RiGroupSlipCode = routeValue["RiGroupSlipCode"],
+                                RiGroupSlipConfirmationDate = routeValue["RiGroupSlipConfirmationDate"],
+                                FirstReferralDate = routeValue["FirstReferralDate"],
+                                CoverageStartDate = routeValue["CoverageStartDate"],
+                                CoverageEndDate = routeValue["CoverageEndDate"],
+                                RequestTypeId = routeValue["RequestTypeId"],
+                                VersionNo = routeValue["VersionNo"],
+                                GroupReferralPIC = routeValue["GroupReferralPIC"],
+                                GroupSize = routeValue["GroupSize"],
+                                GrossRiskPremium = routeValue["GrossRiskPremium"],
+                                ReinsurancePremium = routeValue["ReinsurancePremium"],
+                                WonVersion = routeValue["WonVersion"],
+                                QuotationTAT = routeValue["QuotationTAT"],
+                                InternalTAT = routeValue["InternalTAT"],
+                                Score = routeValue["Score"],
+                                WorkflowStatusId = routeValue["WorkflowStatusId"],
+                                ChecklistPending = routeValue["ChecklistPending"],
+                                InternalTeam = routeValue["InternalTeam"],
+                                InternalTeamPIC = routeValue["InternalTeamPIC"],
+                                InternalTeamStatusId = routeValue["InternalTeamStatusId"],
+                                SortOrder = ViewBag.SortOrder,
+                                Results1Page = Page,
+                                Results2Page = routeValue["Results2Page"],
+                                TabIndex = ActiveTabList,
+                            }), Shared.Html.GetPagedListRenderOptions())
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade @(ActiveTab == ActiveTabUpload ? "show active" : "")" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                <div id="UploadErrors" class="alert alert-danger" role="alert" style="display: none;">
+                    <ul>
+                        <li v-for="(error, index) in Errors">{{ error }}</li>
+                    </ul>
+                </div>
+
+                <div class="form-horizontal">
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1 pb-0">
+                            <span class="font-weight-bold">@Html.Label("Download File", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label" })
+                                    <select v-model="DownloadParams.CedantId" class="form-control selectpicker" ref="select" id="PreferredCedantId" name="PreferredCedantId" data-container="body">
+                                        <option v-for="cedant in DropDownCedants" :value="cedant.Value">{{ cedant.Text }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="row">
+                                        <div class="col">@Html.Label("Coverage Start Date", htmlAttributes: new { @class = "col-form-label" })</div>
+                                        <div class="col text-right">
+                                            <div class="custom-control custom-switch pl-2">
+                                                @Html.Label("Include Blank Date", htmlAttributes: new { @class = "col-form-label mr-3" })
+                                                <label class="col-form-label mr-2 pt-0 va-middle" style="position: relative;" for="CoverageBlankDate">No</label>
+                                                <input type="checkbox" class="custom-control-input" id="CoverageBlankDate" v-model="DownloadParams.IncludeBlankCoverageDate" />
+                                                <label class="custom-control-label pb-1 va-middle" for="CoverageBlankDate">Yes</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <div class="input-group">
+                                                <input v-model.lazy="DownloadParams.CoverageStartDate" class="form-control" :name="'DownloadParam_CoverageStartDate'" v-on:click="openDatePicker('DownloadParam_CoverageStartDate')" :id="'DownloadParam_CoverageStartDate'" placeholder="DD MM YYYY" autocomplete="off" />
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">-</span>
+                                                </div>
+                                                <input v-model.lazy="DownloadParams.CoverageEndDate" class="form-control" :name="'DownloadParam_CoverageEndDate'" v-on:click="openDatePicker('DownloadParam_CoverageEndDate')" :id="'DownloadParam_CoverageEndDate'" placeholder="DD MM YYYY" autocomplete="off" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="row">
+                                        <div class="col">@Html.Label("Request Received Date", htmlAttributes: new { @class = "col-form-label" })</div>
+                                        <div class="col text-right">
+                                            <div class="custom-control custom-switch pl-2">
+                                                @Html.Label("Include Blank Date", htmlAttributes: new { @class = "col-form-label mr-3" })
+                                                <label class="col-form-label mr-2 pt-0 va-middle" style="position: relative;" for="RequestReceivedBlankDate">No</label>
+                                                <input type="checkbox" class="custom-control-input" id="RequestReceivedBlankDate" v-model="DownloadParams.IncludeBlankRequestReceivedDate" />
+                                                <label class="custom-control-label pb-1 va-middle" for="RequestReceivedBlankDate">Yes</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <div class="input-group">
+                                                <input v-model.lazy="DownloadParams.RequestReceivedStartDate" class="form-control" name="RequestReceivedStartDate" v-on:click="openDatePicker('RequestReceivedStartDate')" id="RequestReceivedStartDate" placeholder="DD MM YYYY" autocomplete="off" />
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">-</span>
+                                                </div>
+                                                <input v-model.lazy="DownloadParams.RequestReceivedEndDate" class="form-control" name="RequestReceivedEndDate" v-on:click="openDatePicker('RequestReceivedEndDate')" id="RequestReceivedEndDate" placeholder="DD MM YYYY" autocomplete="off" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right mt-2">
+                                <button type="button" class="btn btn-add" style="width: auto;" id="downloadBtn" v-on:click="searchByDownloadParams()">DOWNLOAD</button>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2 pb-0">
+                            <span class="font-weight-bold">@Html.Label("Upload File", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    @Html.Label("Upload File From Cedant To Update GR Status", htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="file is-boxed">
+                                        <label class="file-label">
+                                            <input class="form-control-file" type="file" id="files" name="upload" accept=".xlsx, .xls">
+                                            Drag and Drop File Here or <u>Browse your file</u>
+                                            <br />
+                                            <span class="file-desc">
+                                                Allowed file format: .xls .xlsx
+                                            </span>
+                                            <br />
+                                            <span class="file-desc">
+                                                File size is up to 2GB
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div id="selectedFiles" class="file-list-display group-referral-files"></div>
+                                    <div class="text-right mt-2">
+                                        <button type="button" class="btn btn-add" style="width: auto;" v-on:click="uploadFile()">UPLOAD</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12 pb-0">
+                            <span class="font-weight-bold">@Html.Label("Uploaded File", htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div id="UploadedFileList">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-45">Filename</th>
+                                                <th class="w-20">Upload Date & Time</th>
+                                                <th class="w-20">Uploaded by</th>
+                                                <th class="w-10">Status</th>
+                                                <th class="w-5">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (UploadedList.Count > 0)
+                                            {
+                                                foreach (var item in UploadedList)
+                                                {
+                                                    <tr>
+                                                        <td>@item.FileName</td>
+                                                        <td>@item.CreatedAt.ToString(Shared.Util.GetDateTimeFormat())</td>
+                                                        <td>@item.CreatedBy</td>
+                                                        <td>@BusinessObject.TreatyPricing.TreatyPricingGroupReferralFileBo.GetStatusName(item.Status)</td>
+                                                        <td class="text-center">
+                                                            <div class="btn-group">
+                                                                <button type="button" class="btn btn-action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                    <span class="fas fa-ellipsis-v dropbtn" />
+                                                                </button>
+                                                                <div class="dropdown-menu">
+                                                                    @if (item.Status == BusinessObject.TreatyPricing.TreatyPricingGroupReferralFileBo.StatusFailed)
+                                                                    {
+                                                                        <a class="dropdown-item" href="javascript:void(0);" @*data-toggle="modal" data-target="#errorModal"*@ v-on:click="getErrors('@item.Id')">View Error</a>
+                                                                    }
+                                                                    <a class="dropdown-item" href="@Url.Action("DownloadUpload", new { id = item.Id })">Download File</a>
+                                                                    <a class="dropdown-item" href="javascript:void(0);" v-on:click="deleteUpload('@item.Id')">Delete File</a>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="5" class="no-data">No available data found.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="pagination-footer">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            @{
+                                                ViewBag.CurrentPageNumber = UploadedList.PageNumber;
+                                                ViewBag.CurrentPageItems = UploadedList.Count;
+                                                ViewBag.PageSize = UploadedList.PageSize;
+                                                ViewBag.Total = ViewBag.TotalUploaded;
+                                            }
+                                            @Html.Partial("_PageInfo")
+                                        </div>
+                                        <div class="col-md-8">
+                                            @Html.PagedListPager(UploadedList, Page => Url.Action("Index", new
+                                            {
+                                                GRCedantId = routeValue["GRCedantId"],
+                                                GRInsuredGroupNameId = routeValue["GRInsuredGroupNameId"],
+                                                IndustryNameId = routeValue["IndustryNameId"],
+                                                ReferredTypeId = routeValue["ReferredTypeId"],
+                                                RiGroupSlipPIC = routeValue["RiGroupSlipPIC"],
+                                                RiGroupSlipStatusId = routeValue["RiGroupSlipStatusId"],
+                                                GroupMasterLetterId = routeValue["GroupMasterLetterId"],
+                                                StatusId = routeValue["StatusId"],
+                                                GroupReferralCode = routeValue["GroupReferralCode"],
+                                                GroupReferralDescription = routeValue["GroupReferralDescription"],
+                                                RiGroupSlipCode = routeValue["RiGroupSlipCode"],
+                                                RiGroupSlipConfirmationDate = routeValue["RiGroupSlipConfirmationDate"],
+                                                FirstReferralDate = routeValue["FirstReferralDate"],
+                                                CoverageStartDate = routeValue["CoverageStartDate"],
+                                                CoverageEndDate = routeValue["CoverageEndDate"],
+                                                RequestTypeId = routeValue["RequestTypeId"],
+                                                VersionNo = routeValue["VersionNo"],
+                                                GroupReferralPIC = routeValue["GroupReferralPIC"],
+                                                GroupSize = routeValue["GroupSize"],
+                                                GrossRiskPremium = routeValue["GrossRiskPremium"],
+                                                ReinsurancePremium = routeValue["ReinsurancePremium"],
+                                                WonVersion = routeValue["WonVersion"],
+                                                QuotationTAT = routeValue["QuotationTAT"],
+                                                InternalTAT = routeValue["InternalTAT"],
+                                                WorkflowStatusId = routeValue["WorkflowStatusId"],
+                                                ChecklistPending = routeValue["ChecklistPending"],
+                                                InternalTeam = routeValue["InternalTeam"],
+                                                InternalTeamPIC = routeValue["InternalTeamPIC"],
+                                                InternalTeamStatusId = routeValue["InternalTeamStatusId"],
+                                                SortOrder = ViewBag.SortOrder,
+                                                Results1Page = routeValue["Results1Page"],
+                                                Results2Page = Page,
+                                                TabIndex = ActiveTabUpload,
+                                            }), Shared.Html.GetPagedListRenderOptions())
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModal" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Error Message</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <textarea class="form-control" rows="5" readonly style="resize: none;">@*{{ UploadGroupError }}*@</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Create", "TreatyPricingGroupReferral"))
+{
+    <div class="modal fade" id="addNewModal" tabindex="-1" role="dialog" aria-labelledby="addNewModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewModalTitle">Add New</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="appModal">
+                    <div class="alert alert-danger" id="addNewError" style="display:none;"></div>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.DropDownList("CedantId", (List<SelectListItem>)ViewBag.DropDownActiveCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body", @onchange = "getProducts(this.value)" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("RI Arrangement", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.DropDownList("RiArrangementPickListDetailId", (List<SelectListItem>)ViewBag.DropDownRiArrangements, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Primary Product ID", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.DropDownList("PrimaryTreatyPricingProductSelect", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Secondary Product ID", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("SecondaryTreatyPricingProductSelect", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Duplicate Existing Group Referral", htmlAttributes: new { @class = "col-form-label" })
+                            <div class="row m-0 p-0">
+                                <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                <div class="custom-control custom-switch pl-2">
+                                    @Html.CheckBox("HasDuplicateGroupReferral", new { @class = "custom-control-input", id = "HasDuplicateGroupReferral", @onchange = "resetGroupDuplicate(this.checked)" })
+                                    <label class="custom-control-label" for="HasDuplicateGroupReferral">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Group Referral ID / Name", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("DuplicateGroupReferralId", (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Insured Group Name", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.DropDownList("InsuredGroupNameId", (List<SelectListItem>)ViewBag.DropDownActiveInsuredGroupName, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Industry Name", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("IndustryNamePickListDetailId", (List<SelectListItem>)ViewBag.DropDownIndustryNames, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("First Referral Date", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.TextBox("FirstReferralDateStr", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('FirstReferralDateStr')" />
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Coverage Start Date", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.TextBox("CoverageStartDateStr", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('CoverageStartDateStr')" />
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Coverage End Date", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.TextBox("CoverageEndDateStr", null, new { @class = "form-control", placeholder = "DD MM YYYY" })
+                            <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('CoverageEndDateStr')" />
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Referred Type", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("ReferredTypePickListDetailId", (List<SelectListItem>)ViewBag.DropDownReferredTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Group Referral Description", htmlAttributes: new { @class = "col-form-label required" })
+                            @Html.TextArea("Description", new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1", maxlength = @ViewBag.DescriptionMaxLength })
+                        </div>
+                    </div>
+
+                    <div class="from-group mt-4">
+                        <div class="text-right">
+                            <button type="button" v-on:click="searchBenefits()" class="btn btn-submit">SEARCH</button>
+                        </div>
+                        @Html.Label("Product Benefits", htmlAttributes: new { @class = "col-form-label required" })
+                        @Html.Hidden("Benefits")
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="w-20">Benefit Code</th>
+                                        <th class="w-20">Benefit Name</th>
+                                        <th class="w-20">Product ID</th>
+                                        <th class="w-20">Product Name</th>
+                                        <th class="w-10">Product Version</th>
+                                        <th class="w-10">Action &nbsp; <input type="checkbox" @@click='checkAll()' v-model='isCheckAll' :disabled="!ProductBenefits || !ProductBenefits.length" /></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!ProductBenefits || !ProductBenefits.length">
+                                        <td colspan="4" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(benefit, index) in ProductBenefits">
+                                        <td>{{ benefit.BenefitCode }}</td>
+                                        <td>{{ benefit.BenefitName }}</td>
+                                        <td>{{ benefit.ProductCode }}</td>
+                                        <td>{{ benefit.ProductName }}</td>
+                                        <td>{{ 'v' + benefit.ProductVersion + '.0' }}</td>
+                                        <td>
+                                            <input type="checkbox" v-model="selected" :value="benefit.BenefitId" @@change='updateCheckall()' />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-submit" id="saveBtn">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+<script>
+        var GetDropDownProductUrl = "@(Url.Action("GetDropDownProduct"))";
+        var GetDropDownDuplicateGroupReferralUrl = "@(Url.Action("DropDownDuplicateGroupReferral"))";
+        var GetProductBenefitsUrl = "@(Url.Action("GetProductBenefits"))";
+        var DropDownCedants = @Html.Raw(Json.Encode(ViewBag.DropDownCedants));
+        var DropDownRiGroupSlipStatus = @Html.Raw(Json.Encode(ViewBag.DropDownRiGroupSlipStatus));
+        var DropDownUsers = @Html.Raw(Json.Encode(ViewBag.DropDownUsers));
+        var loadingDiv = $("#loadingSpinner");
+
+        var attachHandlers = function () {
+            $('#uploadPager a').click(function () {
+                $('#UploadedFileList').load(this.href, function () {
+                    attachHandlers();
+                });
+                return false;
+            });
+        };
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function getProducts(cedantId) {
+            if (cedantId !== '') {
+                $.ajax({
+                    url: GetDropDownProductUrl,
+                    type: "POST",
+                    data: { cedantId: cedantId },
+                    cache: false,
+                    async: false,
+                    beforeSend: function (data) {
+                        loadingDiv.removeClass('hide-loading-spinner');
+                    },
+                    success: function (data) {
+                        refreshDropDownItems('PrimaryTreatyPricingProductSelect', data.DropDownProducts, '', 'Text', "", true, 'Value', false);
+                        refreshDropDownItems('SecondaryTreatyPricingProductSelect', data.DropDownProducts, '', 'Text', "", true, 'Value', false);
+
+                        loadingDiv.addClass('hide-loading-spinner');
+                    },
+                    error: function (request, error) {
+                        loadingDiv.removeClass('hide-loading-spinner');
+                    }
+                });
+            }
+            else {
+                refreshDropDownItems('PrimaryTreatyPricingProductSelect', [], '', 'Text', "", true, 'Value', false);
+                refreshDropDownItems('SecondaryTreatyPricingProductSelect', [], '', 'Text', "", true, 'Value', false);
+            }
+        }
+
+        function resetAddNewModal() {
+            $('#CedantId').val('');
+            $('#RiArrangementPickListDetailId').val('');
+            $('#HasDuplicateGroupReferral').prop('checked', false);
+            $('#InsuredGroupNameId').val('');
+            $('#IndustryNamePickListDetailid').val('');
+            $('#FirstReferralDateStr').val('');
+            $('#CoverageStartDateStr').val('');
+            $('#CoverageEndDateStr').val('');
+            $('#ReferredTypePickListDetailId').val('');
+            $('#Description').val('');
+
+            $('#CedantId').selectpicker('refresh');
+            $('#RiArrangementPickListDetailId').selectpicker('refresh');
+            $('#InsuredGroupNameId').selectpicker('refresh');
+            $('#IndustryNamePickListDetailid').selectpicker('refresh');
+
+
+            getProducts('');
+            app.ProductBenefits = [];
+
+            resetModalValidation();
+            resetGroupDuplicate(false);
+        }
+
+        function resetGroupDuplicate(checked) {
+            if (!checked) {
+                $('#DuplicateGroupReferralId').prop('disabled', true);
+                $('#DuplicateGroupReferralId').selectpicker('refresh');
+            } else {
+                $('#DuplicateGroupReferralId').prop('disabled', false);
+                $.ajax({
+                    url: GetDropDownDuplicateGroupReferralUrl,
+                    type: "POST",
+                    data: { cedantId: $('#CedantId').val() },
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        refreshDropDownItems('DuplicateGroupReferralId', data.DropDownDuplicateGroupReferrals, '', 'Text', "", true, 'Value', false);
+                    }
+                });
+            }
+        }
+
+        function resetModalValidation() {
+            $('#addNewError').empty();
+            $('#addNewError').hide();
+        }
+
+        var app = new Vue({
+            el: '#appModal',
+            data: {
+                SecondaryProduct: null,
+                ProductBenefits: [],
+                selected: [],
+                isCheckAll: false,
+            },
+            methods: {
+                searchBenefits() {
+                    resetModalValidation();
+                    var benefits = [];
+                    var errorList = [];
+
+                    var primaryProduct = null;
+                    var secondaryProduct = null;
+
+                    if (!$('#PrimaryTreatyPricingProductSelect').val())
+                        errorList.push("Primary Product is Required.");
+                    if ($('#RiArrangementPickListDetailId').val()) {
+                        if ($('#RiArrangementPickListDetailId').val() == '@ViewBag.RIarrangementCoinsuranceYRT' && !$('#SecondaryTreatyPricingProductSelect').val())
+                            errorList.push("Secondary Product is Required.");
+                    }
+                    if ($('#PrimaryTreatyPricingProductSelect').val() == $('#SecondaryTreatyPricingProductSelect').val() && ($('#PrimaryTreatyPricingProductSelect').val() && $('#SecondaryTreatyPricingProductSelect').val()))
+                        errorList.push("Secondary Product cannot be same with Primary Product.");
+
+                    if (errorList.length == 0) {
+                        $.ajax({
+                            url: GetProductBenefitsUrl,
+                            type: "POST",
+                            data: {
+                                primaryProductSelect: $('#PrimaryTreatyPricingProductSelect').val(),
+                            },
+                            cache: false,
+                            async: false,
+                            beforeSend: function (data) {
+                                loadingDiv.removeClass('hide-loading-spinner');
+                            },
+                            success: function (data) {
+                                benefits = data.ProductBenefits;
+
+                                loadingDiv.addClass('hide-loading-spinner');
+                            },
+                            error: function (request, error) {
+                                loadingDiv.removeClass('hide-loading-spinner');
+                            }
+                        });
+
+                        this.ProductBenefits = benefits;
+                    }
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#addNewError').append(text);
+                        $('#addNewError').show();
+                    }
+
+                    return false;
+                },
+                checkAll() {
+                    this.isCheckAll = !this.isCheckAll;
+                    var selectedCheck = new Array();
+                    if (this.isCheckAll) { // Check all
+                        this.ProductBenefits.forEach(function (item) {
+                            selectedCheck.push(item.BenefitId);
+                        });
+                    } else {
+                        selectedCheck = [];
+                    }
+
+                    this.selected = selectedCheck;
+                    this.saveBenefit();
+                },
+                updateCheckall() {
+                    if (this.selected.length == this.ProductBenefits.length) {
+                        this.isCheckAll = true;
+                    } else {
+                        this.isCheckAll = false;
+                    }
+                    this.saveBenefit();
+                },
+                saveBenefit() {
+
+                    $('#Benefits').val(JSON.stringify(this.selected));
+                    //console.log($('#Benefits').val());
+                }
+            },
+        });
+
+        var uploadApp = new Vue({
+            el: '#upload',
+            data: {
+                DownloadParams: {
+                    CedantId: "",
+                    CoverageStartDate: "",
+                    CoverageEndDate: "",
+                    IncludeBlankCoverageDate: false,
+                    RequestReceivedStartDate: "",
+                    RequestReceivedEndDate: "",
+                    IncludeBlankRequestReceivedDate: false,
+                },
+                Errors: [],
+                UploadGroupError: "",
+                DropDownCedants: DropDownCedants,
+            },
+            methods: {
+                // Upload File
+                getErrors: function (fileUploadId) {
+                    var errors = null;
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetUploadErrors", "TreatyPricingGroupReferral")',
+                        data: {
+                            uploadId: fileUploadId
+                        },
+                        success: function (data) {
+                            $('.modal-content .modal-body textarea').val(data.bo.FormattedErrors);
+                            $('#errorModal').modal('show');
+                        }
+                    });
+                },
+                // Download File
+                validateDownloadParams: function () {
+                    this.Errors = [];
+                    var errorList = [];
+
+                    if ((this.DownloadParams.CedantId == null || this.DownloadParams.CedantId == "")
+                        && (this.DownloadParams.CoverageStartDate == null || this.DownloadParams.CoverageStartDate == "") && (this.DownloadParams.CoverageEndDate != null || this.DownloadParams.CoverageEndDate != "")
+                        && (this.DownloadParams.RequestReceivedStartDate == null || this.DownloadParams.RequestReceivedStartDate == "") && (this.DownloadParams.RequestReceivedEndDate != null || this.DownloadParams.RequestReceivedEndDate != "")) {
+                        errorList.push("At least 1 field has to be filled.");
+                    }
+                    else {
+                        //if ((this.DownloadParams.CoverageStartDate == null || this.DownloadParams.CoverageStartDate == "") && (this.DownloadParams.CoverageEndDate != null || this.DownloadParams.CoverageEndDate != "")) {
+                        //    errorList.push("Coverage Start Date is Required.");
+                        //}
+                        //else if ((this.DownloadParams.CoverageStartDate != null || this.DownloadParams.CoverageStartDate != "") && (this.DownloadParams.CoverageEndDate == null || this.DownloadParams.CoverageEndDate == "")) {
+                        //    errorList.push("Coverage End Date is Required.");
+                        //}
+                        if ((this.DownloadParams.CoverageStartDate != null || this.DownloadParams.CoverageStartDate != "") && (this.DownloadParams.CoverageEndDate != null || this.DownloadParams.CoverageEndDate != "")) {
+                            if (Date.parse(this.DownloadParams.CoverageEndDate) <= Date.parse(this.DownloadParams.CoverageStartDate)) {
+                                errorList.push("Coverage Start Date must be ealier than Coverage End Date");
+                                errorList.push("Coverage End Date must be later than Coverage Start Date");
+                            }
+                        }
+
+                        //if ((this.DownloadParams.RequestReceivedStartDate == null || this.DownloadParams.RequestReceivedStartDate == "") && (this.DownloadParams.RequestReceivedEndDate != null || this.DownloadParams.RequestReceivedEndDate != "")) {
+                        //    errorList.push("Request Received Start Date is Required.");
+                        //}
+                        //else if ((this.DownloadParams.RequestReceivedStartDate != null || this.DownloadParams.RequestReceivedStartDate != "") && (this.DownloadParams.RequestReceivedEndDate == null || this.DownloadParams.RequestReceivedEndDate == "")) {
+                        //    errorList.push("Request Received End Date is Required.");
+                        //}
+                        if ((this.DownloadParams.RequestReceivedStartDate != null || this.DownloadParams.RequestReceivedStartDate != "") && (this.DownloadParams.RequestReceivedEndDate != null || this.DownloadParams.RequestReceivedEndDate != "")) {
+                            if (Date.parse(this.DownloadParams.RequestReceivedEndDate) <= Date.parse(this.DownloadParams.RequestReceivedStartDate)) {
+                                errorList.push("Request Received Start Date must be ealier than Request Received End Date");
+                                errorList.push("Request Received End Date must be later than Request Received Start Date");
+                            }
+                        }
+                    }
+
+                    this.Errors = errorList;
+                    return this.Errors.length == 0;
+
+                },
+                searchByDownloadParams: function () {
+                    $("#UploadErrors").hide();
+
+                    if (!this.validateDownloadParams()) {
+                        $("#UploadErrors").show();
+                    }
+                    else {
+                        $("#UploadErrors").hide();
+
+                        var obj = {
+                            CedantId: this.DownloadParams.CedantId,
+                            CoverageStartDate: this.DownloadParams.CoverageStartDate,
+                            CoverageEndDate: this.DownloadParams.CoverageEndDate,
+                            RequestReceivedStartDate: this.DownloadParams.RequestReceivedStartDate,
+                            RequestReceivedEndDate: this.DownloadParams.RequestReceivedEndDate,
+                            CoverageBlankDate: this.DownloadParams.IncludeBlankCoverageDate,
+                            RequestReceivedBlankDate: this.DownloadParams.IncludeBlankRequestReceivedDate,
+                        };
+
+                        var parameters = [];
+                        for (var property in obj) {
+                            if (obj.hasOwnProperty(property)) {
+                                parameters.push(encodeURI(property + '=' + obj[property]));
+                            }
+                        }
+
+                        var url = '@Url.Action("DownloadTrackingCase", "TreatyPricingGroupReferral")' + '?' + parameters.join('&');
+                        window.open(url, '_blank');
+                    }
+                },
+                // Date Picker
+                openDatePicker: function (currentId) {
+                    var idStr = currentId.split("_");
+                    var type = idStr[0];
+                    var field = idStr[1];
+
+                    var id = "#" + currentId;
+                    if ($(id).data("datepicker") != null) {
+                        $(id).datepicker("destroy");
+                    }
+
+                    $(id).datepicker({
+                        format: DateFormatDatePickerJs,
+                        autoclose: true,
+                    });
+
+                    var updateDateValue = this.updateDateValue;
+                    $(id).on('changeDate', function () {
+                        updateDateValue(type, field, $(id).val());
+                    });
+
+                    $(id).focus();
+                },
+                updateDateValue: function (type, field, value) {
+                    var typeStr = type + "s";
+                    this[typeStr][field] = value;
+                },
+                // Upload File
+                uploadFile: function () {
+                    this.Errors = [];
+                    var errorList = [];
+
+                    $("#UploadErrors").hide();
+
+                    var upload = $('#files');
+                    var files = upload[0].files;
+
+                    if (!files) return;
+
+                    if (files.length > 0) {
+                        for (var i = 0; i < files.length; i++) {
+                            var file = files[i];
+                            var filename = file.name;
+
+                            var fileData = new FormData();
+                            fileData.append(filename, file);
+
+                            $.ajax({
+                                url: '@Url.Action("Upload", "TreatyPricingGroupReferral")',
+                                type: "POST",
+                                contentType: false,
+                                processData: false,
+                                cache: false,
+                                async: false,
+                                data: fileData,
+                                success: function (data) {
+                                    if (data.errors.length > 0) {
+                                        for (var error of data.errors) {
+                                            errorList.push(error);
+                                        }
+
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        errorList.push("No files selected.");
+                    }
+
+                    if (errorList.length > 0) {
+                        this.Errors = errorList;
+                        $("#UploadErrors").show();
+                    }
+                    else {
+                        window.location.href = '@Url.Action("Index", new { TabIndex = ActiveTabUpload })';
+                    }
+                },
+                deleteUpload: function (uploadId) {
+                    this.Errors = [];
+                    var errorList = [];
+
+                    $("#UploadErrors").hide();
+
+                    $.ajax({
+                        url: '@Url.Action("DeleteUpload", "TreatyPricingGroupReferral")/' + uploadId,
+                        type: "POST",
+                        success: function (data) {
+                            if (data.errors.length > 0) {
+                                errorList.push(data.errors);
+                            }
+                        }
+                    });
+
+                     if (errorList.length > 0) {
+                        this.Errors = errorList;
+                        $("#UploadErrors").show();
+                    }
+                    else {
+                        window.location.href = '@Url.Action("Index", new { TabIndex = ActiveTabUpload })';
+                    }
+
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+
+        var editApp = new Vue({
+            el: '#edit',
+            data: {
+                GroupReferrals: [],
+                DropDownRiGroupSlipStatus: DropDownRiGroupSlipStatus,
+                DropDownUsers: DropDownUsers,
+            },
+            methods: {
+                // Quick Edit
+                groupReferralItem: function (index, object) {
+                    //console.log(this.GroupReferrals)
+                    if (this.GroupReferrals.length)
+                        return this.GroupReferrals[index][object];
+                    else
+                        return;
+                },
+                itemOnChange: function (index, object, event) {
+
+                    var selectVal = event.target.value;
+                    this.GroupReferrals[index][object] = selectVal;
+                    this.saveEditDetail();
+                },
+                saveEditDetail: function () {
+                    $('#RiGroupSlipItems').val(JSON.stringify(this.GroupReferrals));
+                },
+                // Date Picker
+                openDatePicker: function (currentId) {
+                    var idStr = currentId.split("_");
+                    var type = idStr[0];
+                    var field = idStr[1];
+                    var index = idStr[2];
+
+                    var id = "#" + currentId;
+                    if ($(id).data("datepicker") != null) {
+                        $(id).datepicker("destroy");
+                    }
+
+                    $(id).datepicker({
+                        format: DateFormatDatePickerJs,
+                        autoclose: true,
+                    });
+
+                    var updateDateValue = this.updateDateValue;
+                    $(id).on('changeDate', function () {
+                        updateDateValue(type, field, index, $(id).val());
+                    });
+
+                    $(id).focus();
+                },
+                updateDateValue: function (type, field, index, value) {
+                    var typeStr = type + "s";
+                    this[typeStr][index][field] = value;
+                    this.saveEditDetail();
+                },
+            },
+            created: function () {
+
+                // Add into Group Referral array
+                @foreach(var d in Model)
+                {
+                    @:this.GroupReferrals.push({ Id: "@d.Id", HasRiGroupSlip: "@d.HasRiGroupSlip", RiGroupSlipPersonInChargeId: "@d.RiGroupSlipPersonInChargeId", RiGroupSlipStatus: "@d.RiGroupSlipStatus", RiGroupSlipConfirmationDate: "@(d.RiGroupSlipConfirmationDate?.ToString(Shared.Util.GetDateFormat()))" });
+                }
+                this.saveEditDetail();
+            },
+            updated() {
+                $(this.$refs.select).selectpicker('refresh');
+            }
+        });
+
+        //function Save() {
+        //    console.log(1)
+        //    var data = Array();
+
+        //    $("#GRTable tbody tr").each(function (i, v) {
+        //        var currentRow = $(this);   //0,13,14,15
+
+        //        var id = currentRow.find("td:eq(0) input[type='hidden']").val();
+        //        var riGroupSlipPic = currentRow.find("td:eq(13) select").val();
+        //        var riGroupSlipStatus = currentRow.find("td:eq(14) select").val();
+        //        var riGroupSlipConfirmationDate = currentRow.find("td:eq(15) input[type='text']").val();
+
+        //        data.push({ "Id": id, "RiGroupSlipPersonInChargeId": riGroupSlipPic, "RiGroupSlipStatus": riGroupSlipStatus, "RiGroupSlipConfirmationDate": riGroupSlipConfirmationDate });
+        //    });
+
+        //    $('#RiGroupSlipItems').val(JSON.stringify(data));
+        //    //console.log(data)
+        //}
+
+        var selDiv = "";
+        document.addEventListener("DOMContentLoaded", init, false);
+        function init() {
+            var control = document.querySelector('#files');
+            if (control) {
+                document.querySelector('#files').addEventListener('change', handleFileUpload, false);
+                selDiv = document.querySelector("#selectedFiles");
+            }
+        }
+
+        function handleFileUpload(e) {
+            uploadApp.Errors = [];
+            var errorList = [];
+
+            if (!e.target.files) return;
+            selDiv.innerHTML = "";
+            var files = e.target.files;
+            var list = "";
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+
+                // Prevent exceeds file size from uploading
+                var fileSize = f.size / 1024 / 1024 / 1024; // in GB
+                if (fileSize >= 2) {
+                    errorList.push('Maximum allowed size is : 2 GB');
+                    uploadApp.Errors = errorList;
+                    //reset file upload control
+                    e.target.value = null;
+                    return;
+                }
+
+                list += "<li>" + f.name + "</li>";
+            }
+            selDiv.innerHTML = "<ul>" + list + "</ul>";
+        }
+
+        function ToggleRiGroupSlipEdit() {
+            $('#optionDiv1').hide();
+            $(".ToggleRiGroupSlipEdit").toggle();
+        }
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+            loadingDiv.addClass('hide-loading-spinner');
+
+            $('#RiGroupSlipConfirmationDate, #FirstReferralDate, #CoverageStartDate, #CoverageEndDate').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+            $('#FirstReferralDateStr, #CoverageEndDateStr').datepicker({
+                format: DateFormatDatePickerJs,
+            });
+
+            $('#CoverageStartDateStr').datepicker({
+                format: DateFormatDatePickerJs,
+            })
+            .on('changeDate', function (e) {
+                var dateMomentObject = moment(e.target.value).format('MM/DD/YYYY');
+                var coverageDate = new Date(dateMomentObject);
+                coverageDate.setFullYear(coverageDate.getFullYear() + 1);
+                coverageDate.setDate(coverageDate.getDate() - 1);
+
+                var endDate = moment(coverageDate).format('DD MMM YYYY');
+                $('#CoverageEndDateStr').datepicker('setDate', endDate);
+            });
+
+            $('#Description').autoResize();
+
+            $('#saveBtn').on("click", function () {
+                loadingDiv.removeClass('hide-loading-spinner');
+
+                resetModalValidation();
+                var errorList = [];
+
+                if (!$('#CedantId').val())
+                    errorList.push("Ceding Company is Required.");
+                if (!$('#RiArrangementPickListDetailId').val())
+                    errorList.push("RI Arrangement is Required.");
+                if (!$('#PrimaryTreatyPricingProductSelect').val())
+                    errorList.push("Primary Product is Required.");
+                if ($('#RiArrangementPickListDetailId').val()) {
+                    if ($('#RiArrangementPickListDetailId').val() == '@ViewBag.RIarrangementCoinsuranceYRT' && !$('#SecondaryTreatyPricingProductSelect').val())
+                        errorList.push("Secondary Product is Required.");
+                }
+                if ($('#PrimaryTreatyPricingProductSelect').val() == $('#SecondaryTreatyPricingProductSelect').val() && ($('#PrimaryTreatyPricingProductSelect').val() && $('#SecondaryTreatyPricingProductSelect').val()))
+                    errorList.push("Secondary Product cannot be same with Primary Product.");
+                if (!$('#InsuredGroupNameId').val())
+                    errorList.push("Insured Group Name is Required.");
+                if (!$('#CoverageStartDateStr').val() && $('#CoverageEndDateStr').val()) {
+                    errorList.push("Coverage Start Date is Required.");
+                }
+                else if ($('#CoverageStartDateStr').val() && !$('#CoverageEndDateStr').val()) {
+                    errorList.push("Coverage End Date is Required.");
+                }
+                else if ($('#CoverageStartDateStr').val() && $('#CoverageEndDateStr').val()) {
+                    if (Date.parse($('#CoverageEndDateStr').val()) <= Date.parse($('#CoverageStartDateStr').val())) {
+                        errorList.push("Coverage Start Date must be ealier than Coverage End Date");
+                        errorList.push("Coverage End Date must be later than Coverage Start Date");
+                    }
+                }
+                if (!$('#Description').val())
+                    errorList.push("Group Referral Description is Required.");
+                if (!$('#Benefits').val())
+                    errorList.push("At least 1 Product Benefit needs to be selected");
+
+                if (errorList.length > 0) {
+                    text = "<ul>";
+                    for (i = 0; i < errorList.length; i++) {
+                        text += "<li>" + errorList[i] + "</li>";
+                    }
+                    text += "</ul>";
+                    $('#addNewError').append(text);
+                    $('#addNewError').show();
+
+                    loadingDiv.addClass('hide-loading-spinner');
+                    return false;
+                }
+            });
+
+            attachHandlers();
+
+            $('#editBtn').on("click", function () {
+                $('#optionDiv1').hide();
+                $('#optionDiv2').show();
+                $(".ToggleRiGroupSlipEdit").toggle();
+
+                //$("#GRTable tbody tr").each(function (i, v) {
+                //    var currentRow = $(this);   //0,13,14,15
+
+                //    currentRow.find("td:eq(13) .selectpicker").selectpicker('refresh');
+                //    currentRow.find("td:eq(14) .selectpicker").val(1).selectpicker('refresh');
+                //});
+
+                //$('#RiGroupSlipStatus2').selectpicker('refresh').trigger('change');
+            });
+
+            $('#cancelBtn').on("click", function () {
+                $('#optionDiv2').hide();
+                $('#optionDiv1').show();
+                $(".ToggleRiGroupSlipEdit").toggle();
+            });
+
+            var enableEdit = @(ViewBag.EnableEdit != null ? ViewBag.EnableEdit.ToString().ToLower() : "false");
+            var EnableCompleteChecklist = @(ViewBag.EnableCompleteChecklist != null ? ViewBag.EnableCompleteChecklist.ToString().ToLower() : "false");
+            var EnableUltimaApproverGroupChecklist = @(ViewBag.EnableUltimaApproverGroupChecklist != null ? ViewBag.EnableUltimaApproverGroupChecklist.ToString().ToLower() : "false");
+            var EnableUltimaApproverReviewerChecklist = @(ViewBag.EnableUltimaApproverReviewerChecklist != null ? ViewBag.EnableUltimaApproverReviewerChecklist.ToString().ToLower() : "false");
+            var EnableUltimaApproverHodChecklist = @(ViewBag.EnableUltimaApproverHodChecklist != null ? ViewBag.EnableUltimaApproverHodChecklist.ToString().ToLower() : "false");
+            var EnableUltimaApproverCeoChecklist = @(ViewBag.EnableUltimaApproverCeoChecklist != null ? ViewBag.EnableUltimaApproverCeoChecklist.ToString().ToLower() : "false");
+            if (!enableEdit && (EnableCompleteChecklist || EnableUltimaApproverGroupChecklist || EnableUltimaApproverReviewerChecklist || EnableUltimaApproverHodChecklist || EnableUltimaApproverCeoChecklist)) {
+                disableFields();
+            }
+        });
+
+</script>
+}

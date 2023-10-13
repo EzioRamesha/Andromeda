@@ -1,0 +1,227 @@
+﻿@model WebApp.Models.ClaimRegisterViewModel
+
+@{
+    ViewBag.Title = "Claim Register";
+    ViewBag.Action = "Create";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_LoadingSpinner")
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.ClaimStatus)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.SoaQuarter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.TextBoxFor(model => model.SoaQuarter, new Dictionary<string, object>() { { "class", "form-control" }, { "placeholder", "YYYY MM" }, { "autocomplete", "off" }, { @"v-on:click", @"openDatePicker('SoaQuarter')" }, { @"v-model.lazy", @"ClaimRegister.SoaQuarter" } })
+                        @Html.ValidationMessageFor(model => model.SoaQuarter, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.CedingCompany, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.CedingCompany, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.CedingCompany, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.IsReferralCase, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                        <div class="row m-0 p-0">
+                            <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                            <div class="custom-control custom-switch  pl-2">
+                                @Html.EditorFor(model => model.IsReferralCase, new { htmlAttributes = new { @class = "custom-control-input", @disabled = "disabled" } })
+                                <label class="custom-control-label" for="IsReferralCase">Yes</label>
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.IsReferralCase, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyCode, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyCode, (List<SelectListItem>)ViewBag.DropDownEmpty, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.TreatyCode" })
+                        @Html.ValidationMessageFor(model => model.TreatyCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.RecordType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.RecordType, (List<SelectListItem>)ViewBag.DropDownRecordTypes, htmlAttributes: new { @class = "form-control selectpicker", @v_model = "ClaimRegister.RecordType" })
+                        @Html.ValidationMessageFor(model => model.RecordType, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ClaimTransactionType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.ClaimTransactionType, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.ClaimTransactionType, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row my-4"></div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PicClaimId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.PicClaimId, (List<SelectListItem>)ViewBag.DropDownPicClaims, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.PicClaimId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.PicDaaId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.PicDaaBo.UserName, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+                        @Html.ValidationMessageFor(model => model.PicDaaId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_Details")
+
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        <button type="submit" class="btn btn-submit float-right">SUBMIT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="newClaimModal" tabindex="-1" role="dialog" aria-labelledby="newClaimModal" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add New Claims</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger" id="newClaimError" style="display:none;"></div>
+                            <div class="form-horizontal">
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        @Html.LabelFor(model => model.ClaimTransactionType, htmlAttributes: new { @class = "col-form-label" })
+                                        @Html.EditorFor(model => model.ClaimTransactionType, new { htmlAttributes = new { @class = "form-control", @v_model = "ClaimRegister.ClaimTransactionType", disabled = "disabled" } })
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        <label class="col-form-label">Claim ID</label>
+                                        @Html.DropDownListFor(model => model.OriginalClaimRegisterId, (List<SelectListItem>)ViewBag.DropDownClaimIds, htmlAttributes: new { @class = "form-control chosen", @v_model = "ClaimRegister.OriginalClaimRegisterId" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel mr-auto" })
+                            <button type="button" class="btn btn-submit" onclick="selectClaimId()">SUBMIT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+    @Scripts.Render("~/Scripts/models/ClaimRegister.js")
+    @Scripts.Render("~/Scripts/models/ClaimRegisterClaim.js")
+    <script>
+        var FindClaimRegisterUrl = '@Url.Action("FindClaimRegister", "ClaimRegister")';
+
+        $(document).ready(function () {
+            $("#OriginalClaimRegisterId").chosen({ width: '100%' });
+
+            $("#loadingSpinner").addClass('hide-loading-spinner');
+
+            var originalClaimId = Model.OriginalClaimRegisterId;
+            if (originalClaimId == null || originalClaimId == '')
+                $('#newClaimModal').modal({ keyboard: false, backdrop: 'static' });
+        });
+
+        function selectClaimId() {
+            $('#newClaimError').empty();
+            $('#newClaimError').hide();
+
+            var originalClaimRegisterId = $('#OriginalClaimRegisterId').val();
+            if (originalClaimRegisterId == null || originalClaimRegisterId == '') {
+                $('#newClaimError').append("Claim ID is required");
+                $('#newClaimError').show();
+                return;
+            }
+
+            $("#loadingSpinner").removeClass('hide-loading-spinner');
+
+            var bo = null;
+            $.ajax({
+                url: FindClaimRegisterUrl,
+                type: "POST",
+                data: { id: originalClaimRegisterId },
+                cache: false,
+                async: false,
+                success: function (data) {
+                    bo = data.bo;
+                }
+            });
+
+
+            if (bo) {
+                for (property in bo) {
+                    if (property == 'EntryNo' || property == 'TreatyCode')
+                        continue;
+
+                    var id = '#' + property;
+
+                    if ($(id).length) {
+                        var value = bo[property];
+                        setValue(property, value);
+
+                        if (property == 'CedingCompany') {
+                            getTreatyCodeByCedant(value);
+                            @* getVueTreatyCodeByCedant(value);*@
+
+                            var treatyCode = bo['TreatyCode'];
+                            setValue('TreatyCode', treatyCode);
+                        }
+                    }
+                }
+
+                setValue('ClaimStatus', ClaimStatusRegistered);
+                setValue('OriginalClaimRegisterId', bo.Id);
+                setValue('ClaimTransactionType', ClaimTransactionTypeAdjustment);
+                setValue('SignOffDate', null);
+                setValue('SignOffById', null);
+
+                $('#newClaimModal').modal('hide');
+                $('.selectpicker').selectpicker('refresh');
+            } else {
+                $('#newClaimError').append("Claim ID is required");
+                $('#newClaimError').show();
+            }
+
+            $("#loadingSpinner").addClass('hide-loading-spinner');
+        }
+
+        function setValue(property, value) {
+            var id = '#' + property;
+
+            $(id).val(value);
+            app.ClaimRegister[property] = value;
+        }
+    </script>
+}

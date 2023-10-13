@@ -1,0 +1,1614 @@
+﻿@using PagedList.Mvc
+@model WebApp.Models.RiDataBatchViewModel
+
+@{
+    ViewBag.Title = "RI Data Batch";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    PagedList.IPagedList<WebApp.Models.RiDataListingViewModel> RiDataList = ViewBag.RiDataList as PagedList.IPagedList<WebApp.Models.RiDataListingViewModel>;
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    routeValue["id"] = Url.RequestContext.RouteData.Values["id"];
+    var disabled = ViewBag.Disabled || ViewBag.ReadOnly;
+    var ReadOnly = (ViewBag.ReadyOnly != null ? ViewBag.ReadOnly : false);
+
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6"><h4>@ViewBag.Action @ViewBag.Title</h4></div>
+            <div class="col-6 text-right">
+                @if (Model.ProcessWarehouseStatus > BusinessObject.RiDatas.RiDataBatchBo.ProcessWarehouseStatusNotApplicable)
+                {
+                    <span class="@BusinessObject.RiDatas.RiDataBatchBo.GetProcessWarehouseStatusClass(Model.ProcessWarehouseStatus) mr-2">
+                        @BusinessObject.RiDatas.RiDataBatchBo.GetProcessWarehouseStatusName(Model.ProcessWarehouseStatus)
+                    </span>
+                }
+                <span class="@BusinessObject.RiDatas.RiDataBatchBo.GetStatusClass(Model.Status)">
+                    @BusinessObject.RiDatas.RiDataBatchBo.GetStatusName(Model.Status)
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @Html.Partial("_LoadingSpinner")
+
+        @using (Html.BeginForm("Edit", "RiData", FormMethod.Post, new { enctype = "multipart/form-data", id = "editForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.ModuleId)
+            @Html.HiddenFor(model => model.CedantId)
+            @Html.Hidden("TreatyId", Model.RiDataConfigBo.TreatyId)
+            @Html.HiddenFor(model => model.Quarter)
+            @Html.HiddenFor(model => model.Status)
+            @Html.HiddenFor(model => model.ProcessWarehouseStatus)
+            @Html.HiddenFor(model => model.Mode)
+            @Html.HiddenFor(model => model.FileType)
+            @Html.HiddenFor(model => model.RecordType)
+            @Html.HiddenFor(model => model.ReceivedAtStr)
+            @Html.HiddenFor(model => model.SoaDataBatchId)
+            @Html.HiddenFor(model => model.IgnoreFinaliseIds)
+
+            if (ViewBag.Disabled)
+            {
+                @Html.HiddenFor(model => model.Worksheet)
+                @Html.HiddenFor(model => model.Delimiter)
+                @Html.HiddenFor(model => model.HasHeader)
+                @Html.HiddenFor(model => model.HeaderRow)
+                @Html.HiddenFor(model => model.StartRow)
+                @Html.HiddenFor(model => model.EndRow)
+                @Html.HiddenFor(model => model.StartColumn)
+                @Html.HiddenFor(model => model.EndColumn)
+                @Html.HiddenFor(model => model.IsColumnToRowMapping)
+                @Html.HiddenFor(model => model.NumberOfRowMapping)
+                @Html.HiddenFor(model => model.IsDataCorrection)
+            }
+
+            <div class="form-horizontal">
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@string.Format("{0} - {1}", Model.CedantBo.Code, Model.CedantBo.Name)">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyId, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" id="TreatyName" value="@(Model.RiDataConfigBo.TreatyBo != null ? string.Format("{0} - {1}", Model.RiDataConfigBo.TreatyBo.TreatyIdCode, Model.RiDataConfigBo.TreatyBo.Description) : "")">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Quarter, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@Model.Quarter">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.RecordType, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@BusinessObject.RiDatas.RiDataBatchBo.GetRecordTypeName(Model.RecordType)">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.ConfigId, htmlAttributes: new { @class = "col-form-label" })
+                        @if (!disabled)
+                        {
+                            @Html.DropDownListFor(model => model.ConfigId, (List<SelectListItem>)ViewBag.ConfigItems, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "getConfigData(this.value)" })
+                            @Html.ValidationMessageFor(model => model.ConfigId, "", new { @class = "text-danger" })
+                        }
+                        else
+                        {
+                            @Html.HiddenFor(model => model.ConfigId)
+                            <input type="text" readonly class="form-control" value="@string.Format("{0} - {1}", Model.RiDataConfigBo.Code, Model.RiDataConfigBo.Name)">
+                        }
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.ReceivedAtStr, htmlAttributes: new { @class = "col-form-label" })
+                        <input type="text" readonly class="form-control" value="@Model.ReceivedAtStr">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.HiddenFor(model => model.PersonInChargeId)
+                        <input type="text" readonly class="form-control" value="@Model.PersonInChargeBo.FullName">
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                </div>
+
+                <div class="form-row mt-4" id="app">
+                    <div class="form-group col-md-12" style="padding-bottom: 0;">
+                        <span class="font-weight-bold">@Html.Label("SOA Data", htmlAttributes: new { @class = "col-form-label" })</span>
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                @Html.Label("SOA Data Matching Status", htmlAttributes: new { @class = "col-form-label" })
+                                <div class="input-group">
+                                    <input class="form-control" id="SoaRiDataMatchStr" readonly v-model="SoaDataMatchStatus" />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-generate" type="button" v-on:click="viewSoaDataBatch()" :disabled="RiDataBatchModel.SoaDataBatchId == null ? true : false"><i class="fas fa-search"></i></button>
+                                        <input type="button" class="btn btn-generate" id="matchSoaData" data-toggle="modal" data-target="#matchSoaDataModal" value="Match SOA Data" v-on:click="searchSoaDataBatch()" />
+                                    </div>
+                                </div>
+                                @Html.ValidationMessageFor(model => model.SoaDataBatchId, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                        </div>
+
+                        <div class="modal fade" id="matchSoaDataModal" tabindex="-1" role="dialog" aria-labelledby="matchSoaDataModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Match SOA Data</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div v-if="MatchSoaDataBatchesValidation.length" class="alert alert-danger" role="alert">
+                                            <ul>
+                                                <li v-for="(validation, index) in MatchSoaDataBatchesValidation">{{validation}}</li>
+                                            </ul>
+                                        </div>
+                                        <div class="table-responsive" v-if="SoaDataBatches.length != 0">
+                                            <table class="table table-hover">
+                                                <thead style="width: unset">
+                                                    <tr>
+                                                        <th class="w-40">Ceding Company</th>
+                                                        <th class="w-40">Treaty ID</th>
+                                                        <th class="w-15">Quarter</th>
+                                                        <th class="w-5">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-if="SoaDataBatches.length == 0">
+                                                        <td colspan="4" class="no-data">No available data found.</td>
+                                                    </tr>
+                                                    <tr v-for="(soaData, index) in SoaDataBatches">
+                                                        <td>{{ soaData.CedantBo.Name }}</td>
+                                                        <td>{{ soaData.TreatyBo.TreatyIdCode }}</td>
+                                                        <td>{{ soaData.Quarter }}</td>
+                                                        <td><input type="radio" name="checkedSoadata" :value="index" :checked="soaData.Id == RiDataBatchModel.SoaDataBatchId"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                                        <button type="button" class="btn btn-submit" v-on:click="createSoaDataBatch()">AUTO CREATE</button>
+                                        <button type="button" class="btn btn-submit" v-on:click="selectSoaDataBatch()" :disabled="SoaDataBatches.length == 0">SELECT</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-row mt-4">
+                    <div class="form-group col-md-12" style="padding-bottom: 0;">
+                        <span class="font-weight-bold">@Html.Label("Data File Upload", htmlAttributes: new { @class = "col-form-label" })</span>
+                        <div id="ConfigDetail">
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.Label("File Type", htmlAttributes: new { @class = "col-form-label" })
+                                    <input type="text" readonly class="form-control" id="FileTypeName" value="@Model.RiDataConfigBo.FileTypeName">
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2" id="FileType1">
+                                    @Html.LabelFor(model => model.Worksheet, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.Worksheet, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.Worksheet, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2" id="FileType2">
+                                    @Html.LabelFor(model => model.Delimiter, htmlAttributes: new { @class = "col-form-label" })
+                                    @if (!disabled)
+                                    {
+                                        @Html.DropDownListFor(model => model.Delimiter, (List<SelectListItem>)ViewBag.DelimiterItems, htmlAttributes: new { @class = "form-control selectpicker" })
+                                        @Html.ValidationMessageFor(model => model.Delimiter, "", new { @class = "text-danger" })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" readonly class="form-control" id="DelimiterName" value="@Model.DelimiterName">
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.HasHeader, htmlAttributes: new { @class = "col-form-label" })
+                                    @if (!disabled)
+                                    {
+                                        @Html.DropDownListFor(model => model.HasHeader, (List<SelectListItem>)ViewBag.HasHeaderItems, htmlAttributes: new { @class = "form-control selectpicker", @onchange = "showHeader(this.value)" })
+                                    }
+                                    else
+                                    {
+                                        <input type="text" readonly class="form-control" id="HasHeaderName" value="@Model.HasHeaderName">
+                                    }
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2" id="HeaderYes">
+                                    @Html.LabelFor(model => model.HeaderRow, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.HeaderRow, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.HeaderRow, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.StartRow, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.StartRow, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.StartRow, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.EndRow, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.EndRow, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.EndRow, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.StartColumn, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.StartColumn, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.StartColumn, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.EndColumn, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.EndColumn, disabled ? (object)new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } } : new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                                    @Html.ValidationMessageFor(model => model.EndColumn, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.IsColumnToRowMapping, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Disable</p> </div>
+                                        <div class="custom-control custom-switch" style="padding-left:1rem;">
+                                            @Html.CheckBoxFor(model => model.IsColumnToRowMapping, new { @class = "custom-control-input", id = "IsColumnToRowMappingSwitch", @disabled = "disabled" })
+                                            <label class="custom-control-label" for="IsColumnToRowMappingSwitch" style="color: #004BA2;">Enable</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">
+                                    @Html.LabelFor(model => model.IsDataCorrection, htmlAttributes: new { @class = "col-form-label" })
+                                    <div class="row m-0 p-0">
+                                        <div> <p style="color: #004BA2;">Disable</p> </div>
+                                        <div class="custom-control custom-switch" style="padding-left:1rem;">
+                                            @Html.CheckBoxFor(model => model.IsDataCorrection, new { @class = "custom-control-input", id = "IsDataCorrectionSwitch", @disabled = "disabled" })
+                                            <label class="custom-control-label" for="IsDataCorrectionSwitch" style="color: #004BA2;">Enable</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row" id="RowMapping">
+                                <div class="form-group col-md-6 mid-line-1">
+                                    @Html.LabelFor(model => model.NumberOfRowMapping, htmlAttributes: new { @class = "col-form-label" })
+                                    @Html.EditorFor(model => model.NumberOfRowMapping, new { htmlAttributes = new { @readonly = "readonly", @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.NumberOfRowMapping, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!ViewBag.Disabled)
+                {
+                    <div class="form-row">
+                        <div class="form-group col-md-6 mid-line-1">
+                            @Html.Label("Upload File", htmlAttributes: new { @class = "col-form-label" })
+                            <div class="file is-boxed">
+                                <label class="file-label">
+                                    <input class="form-control-file" type="file" id="files" name="upload" multiple>
+                                    Drag and Drop File Here or <u>Browse your file</u>
+                                    <br />
+                                    <span class="file-desc">
+                                        Allowed file format: .csv, .txt, .xls, .xlsx, .pro, .rpt, .xlsb, .xlsm
+                                    </span>
+                                    <br />
+                                    <span class="file-desc">
+                                        File size is up to 2GB
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="selectedFiles" class="file-list-display"></div>
+                            <div class="field-validation-error text-danger" id="errorSizeExceeds" style="display: none;"></div>
+                            @Html.ValidationMessageFor(model => model.Upload, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="form-group col-md-6 mid-line-2">&nbsp;</div>
+                    </div>
+
+                    <div class="form-row mt-4">
+                        <div class="form-group col-md-12">
+                            <span class="font-weight-bold">@Html.LabelFor(model => model.OverrideProperties, htmlAttributes: new { @class = "col-form-label" })</span>
+                            <div class="table-responsive" style="margin-bottom: 0;">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-50">
+                                                Label
+                                            </th>
+                                            <th class="w-50">
+                                                Value
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            foreach (var item in ViewBag.OverridePropertiesList)
+                                            {
+                                                string FieldName = BusinessObject.StandardOutputBo.GetCodeByType(int.Parse(item.Key));
+                                                int DataType = BusinessObject.StandardOutputBo.GetDataTypeByType(int.Parse(item.Key));
+                                                <tr>
+                                                    <td>
+                                                        @BusinessObject.StandardOutputBo.GetTypeName(int.Parse(item.Key))
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            switch (DataType)
+                                                            {
+                                                                case BusinessObject.StandardOutputBo.DataTypeDate:
+                                                                    @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control", placeholder = "DD MM YYYY", @Value = item.Value } })
+                                                                    <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('@FieldName')" />
+                                                                    break;
+                                                                case BusinessObject.StandardOutputBo.DataTypeString:
+                                                                    @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", @Value = item.Value } })
+                                                                    break;
+                                                                case BusinessObject.StandardOutputBo.DataTypeAmount:
+                                                                    if (int.Parse(item.Key) == BusinessObject.StandardOutputBo.TypeCurrencyRate)
+                                                                    {
+                                                                        @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00" } })
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <div class="input-group mb-2">
+                                                                            <div class="input-group-prepend">
+                                                                                <div class="input-group-text">MYR</div>
+                                                                            </div>
+                                                                            @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "0.00" } })
+                                                                        </div>
+                                                                    }
+                                                                    break;
+                                                                case BusinessObject.StandardOutputBo.DataTypePercentage:
+                                                                    <div class="input-group mb-2">
+                                                                        <div class="input-group-prepend">
+                                                                            <div class="input-group-text">%</div>
+                                                                        </div>
+                                                                        @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                                                                    </div>
+                                                                    break;
+                                                                case BusinessObject.StandardOutputBo.DataTypeInteger:
+                                                                    if (item.Key == BusinessObject.StandardOutputBo.TypeRecordType.ToString())
+                                                                    {
+                                                                        var recordTypes = new List<SelectListItem> { };
+                                                                        recordTypes.Add(new SelectListItem { Text = "Please select", Value = "" });
+                                                                        for (int i = 1; i <= BusinessObject.RiDatas.RiDataBatchBo.RecordTypeMax; i++)
+                                                                        {
+                                                                            recordTypes.Add(new SelectListItem { Text = BusinessObject.RiDatas.RiDataBatchBo.GetRecordTypeName(i), Value = i.ToString(), Selected = i.ToString() == item.Value });
+                                                                        }
+                                                                        @Html.DropDownList(FieldName, recordTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @Html.Editor(FieldName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here", type = "number", @Value = item.Value } })
+                                                                    }
+                                                                    break;
+                                                                case BusinessObject.StandardOutputBo.DataTypeDropDown:
+                                                                    IList<BusinessObject.PickListDetailBo> pickListDetails = Services.PickListDetailService.GetByStandardOutputId(int.Parse(item.Key));
+                                                                    var listItems = pickListDetails.Select(i => new SelectListItem
+                                                                    {
+                                                                        Value = i.Code,
+                                                                        Text = string.Format("{0} - {1}", i.Code, i.Description),
+                                                                        Selected = i.Code == item.Value
+                                                                    });
+
+                                                                    @Html.DropDownList(FieldName, listItems, "Please select", htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                    break;
+                                                                case BusinessObject.StandardOutputBo.DataTypeBoolean:
+                                                                    var items = new List<SelectListItem> { };
+                                                                    items.Add(new SelectListItem { Text = "Please select", Value = "" });
+                                                                    items.Add(new SelectListItem { Text = "False", Value = "false", Selected = "false" == item.Value });
+                                                                    items.Add(new SelectListItem { Text = "True", Value = "true", Selected = "true" == item.Value });
+                                                                    @Html.DropDownList(FieldName, items, "Please select", htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                                                                    break;
+                                                                default:
+                                                                    break;
+                                                            }
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <input type="submit" id="submit-form" style="display: none;" />
+            </div>
+        }
+
+        <div class="form-horizontal mt-4">
+            <div class="form-row">
+                <div class="form-group col-md 12">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item"><a data-toggle="tab" href="#riData" class="@(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "active" : "") underline-tab">RI Data</a></li>
+                        <li class="nav-item"><a class="@(ViewBag.ActiveTab == 2 ? "active" : "") underline-tab" data-toggle="tab" href="#fileHistory">File History</a></li>
+                        <li class="nav-item"><a class="@(ViewBag.ActiveTab == 3 ? "active" : "") underline-tab" data-toggle="tab" href="#status">Status History</a></li>
+                        <li class="nav-item"><a class="@(ViewBag.ActiveTab == 4 ? "active" : "") underline-tab" data-toggle="tab" href="#remarkHistory">Remark</a></li>
+                    </ul>
+
+                    <div class="tab-content underline-tab-content">
+                        <div class="tab-pane fade @(ViewBag.ActiveTab == null || ViewBag.ActiveTab == 1 ? "show active" : "")" id="riData" role="tabpanel" aria-labelledby="riData-tab">
+
+                            <div class="text-right" style="margin-bottom: 20px;">
+                                @if (ViewBag.EditRiData)
+                                {
+                                    <a href="@Url.Action("Details", new { id = 0, ridataBatchId = Model.Id })" class="btn btn-submit">CREATE NEW ADJUSTMENT</a>
+                                }
+                                else
+                                {
+                                    <span class="btn btn-submit isDisabled">CREATE NEW ADJUSTMENT</span>
+                                }
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-download dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        DOWNLOAD AS
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        @Html.ActionLink("All", "Download", new { type = 1, id = Model.Id }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                                        @Html.ActionLink("Filtered", "Download", new
+                                        {
+                                            type = 2,
+                                            id = Model.Id,
+                                            PolicyNumber = routeValue["PolicyNumber"],
+                                            TreatyCode = routeValue["TreatyCode"],
+                                            InsuredName = routeValue["InsuredName"],
+                                            TransactionTypeCodeId = routeValue["TransactionTypeCodeId"],
+                                            ReinsBasicCodeId = routeValue["ReinsBasicCodeId"],
+                                            ReportPeriodMonth = routeValue["ReportPeriodMonth"],
+                                            ReportPeriodYear = routeValue["ReportPeriodYear"],
+                                            RiskPeriodMonth = routeValue["RiskPeriodMonth"],
+                                            RiskPeriodYear = routeValue["RiskPeriodYear"],
+                                            MappingStatus = routeValue["MappingStatus"],
+                                            PreComputation1Status = routeValue["PreComputation1Status"],
+                                            PreComputation2Status = routeValue["PreComputation2Status"],
+                                            PreValidationStatus = routeValue["PreValidationStatus"],
+                                            ConflictType = routeValue["ConflictType"],
+                                            PostComputationStatus = routeValue["PostComputationStatus"],
+                                            PostValidationStatus = routeValue["PostValidationStatus"],
+                                            FinaliseStatus = routeValue["FinaliseStatus"],
+                                            WarehouseProcessStatus = routeValue["WarehouseProcessStatus"],
+                                        }, new { @class = "dropdown-item", onclick = "startDownload(this)", target = "_blank" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10">
+                                                Record Type
+                                            </th>
+                                            <th class="w-10">
+                                                File ID
+                                            </th>
+                                            <th class="w-10">
+                                                Original Entry
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortPolicyNumber;
+                                                    @Shared.Html.Sorter(ViewBag, "Policy Number", "PolicyNumber", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortTreatyCode;
+                                                    @Shared.Html.Sorter(ViewBag, "Treaty Code", "TreatyCode", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortTransactionTypeCode;
+                                                    @Shared.Html.Sorter(ViewBag, "Transaction Type Code", "TransactionTypeCode", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortReinsBasicCode;
+                                                    @Shared.Html.Sorter(ViewBag, "Reinsurance Basic Code", "ReinsBasicCode", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortReportPeriodMonth;
+                                                    @Shared.Html.Sorter(ViewBag, "Report Period Month", "ReportPeriodMonth", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortReportPeriodYear;
+                                                    @Shared.Html.Sorter(ViewBag, "Report Period Year", "ReportPeriodYear", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortRiskPeriodMonth;
+                                                    @Shared.Html.Sorter(ViewBag, "Risk Period Month", "RiskPeriodMonth", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortRiskPeriodYear;
+                                                    @Shared.Html.Sorter(ViewBag, "Risk Period Year", "RiskPeriodYear", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                @{
+                                                    routeValue["SortOrder"] = ViewBag.SortInsuredName;
+                                                    @Shared.Html.Sorter(ViewBag, "Insured Name", "InsuredName", @Url.Action("Edit", routeValue))
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Mapping Status
+                                                @if (Model.TotalMappingFailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalMappingFailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Pre-Computation 1 Status
+                                                @if (Model.TotalPreComputation1FailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalPreComputation1FailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Pre-Computation 2 Status
+                                                @if (Model.TotalPreComputation2FailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalPreComputation2FailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Pre-Validation Status
+                                                @if (Model.TotalPreValidationFailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalPreValidationFailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Conflict
+                                                @if (Model.TotalConflict > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalConflict</span>
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Post-Computation Status
+                                                @if (Model.TotalPostComputationFailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalPostComputationFailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10">
+                                                Post-Validation Status
+                                                @if (Model.TotalPostValidationFailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalPostValidationFailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10" style="display: @(ViewBag.ShowFinaliseStatus == true ? "" : "none")">
+                                                Finalise Status
+                                                @if (Model.TotalFinaliseFailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalFinaliseFailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-10" style="display: @(ViewBag.ShowProcessWarehouseStatus == true ? "" : "none")">
+                                                Warehouse Status
+                                                @if (Model.TotalProcessWarehouseFailedStatus > 0)
+                                                {
+                                                    <span class="badge badge-failed">@Model.TotalProcessWarehouseFailedStatus</span>
+                                                }
+                                            </th>
+                                            <th class="w-5">Ignore Finalise @*&nbsp; @Html.CheckBoxFor(model => model.IgnoreFinaliseCheckAll, ViewBag.Disabled ? (object)new { @disabled = "disabled" } : new { @class = "", @onchange = "checkAllCheckbox(this.checked)" })*@</th>
+                                            <th class="text-center w-5">
+                                                Action
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            @using (Html.BeginForm("Edit", "RiData", new { id = Model.Id }, FormMethod.Get))
+                                            {
+                                                @Html.Hidden("SortOrder", (string)ViewBag.SortOrder)
+                                                @Html.Hidden("ConflictType", (string)routeValue["ConflictType"])
+                                                <th></th>
+                                                <th></th>
+                                                <th></th>
+                                                <th>
+                                                    @Html.TextBox("PolicyNumber", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                                </th>
+                                                <th>
+                                                    @Html.TextBox("TreatyCode", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("TransactionTypeCodeId", (List<SelectListItem>)ViewBag.DropDownTransactionTypeCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("ReinsBasicCodeId", (List<SelectListItem>)ViewBag.DropDownReinsBasisCodes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("ReportPeriodMonth", (List<SelectListItem>)ViewBag.PeriodMonthItems, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.Editor("ReportPeriodYear", new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY", autocomplete = "off" } })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("RiskPeriodMonth", (List<SelectListItem>)ViewBag.PeriodMonthItems, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.Editor("RiskPeriodYear", new { htmlAttributes = new { @class = "form-control", placeholder = "YYYY", autocomplete = "off" } })
+                                                </th>
+                                                <th>
+                                                    @Html.TextBox("InsuredName", null, new { @class = "form-control prevent-disable", placeholder = "Type here" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("MappingStatus", (List<SelectListItem>)ViewBag.DropDownMappingStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("PreComputation1Status", (List<SelectListItem>)ViewBag.DropDownPreComputation1Status, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("PreComputation2Status", (List<SelectListItem>)ViewBag.DropDownPreComputation2Status, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("PreValidationStatus", (List<SelectListItem>)ViewBag.DropDownPreValidationStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("ConflictTypes", (List<SelectListItem>)ViewBag.DropDownConflictTypes, new { @class = "form-control selectpicker prevent-disable", @data_container = "body", @multiple = "multiple", title = "Please select", @data_selected_text_format = "count > 1" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("PostComputationStatus", (List<SelectListItem>)ViewBag.DropDownPostComputationStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>
+                                                    @Html.DropDownList("PostValidationStatus", (List<SelectListItem>)ViewBag.DropDownPostValidationStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th style="display: @(ViewBag.ShowFinaliseStatus == true ? "" : "none")">
+                                                    @Html.DropDownList("FinaliseStatus", (List<SelectListItem>)ViewBag.DropDownFinaliseStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th style="display: @(ViewBag.ShowProcessWarehouseStatus == true ? "" : "none")">
+                                                    @Html.DropDownList("WarehouseProcessStatus", (List<SelectListItem>)ViewBag.DropDownProcessWarehouseStatus, new { @class = "form-control selectpicker prevent-disable", @data_container = "body" })
+                                                </th>
+                                                <th>@Html.CheckBox("IgnoreFinalise", ViewBag.EditRiData == true ? (object)new { @class = "checkbox", @onchange = "checkCheckbox(this.checked, this.value)" } : new { @disabled = "disabled", @class = "checkbox" })</th>
+                                                <th class="text-center">
+                                                    <div class="btn-row-action">
+                                                        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-circle" title="Clear">
+                                                            <span class="fas fa-backspace" />
+                                                        </a>
+                                                        <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                                    </div>
+                                                </th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (RiDataList.Count > 0)
+                                        {
+                                            foreach (var item in RiDataList)
+                                            {
+                                                <tr>
+                                                    <td>@BusinessObject.RiDatas.RiDataBatchBo.GetRecordTypeName(item.RecordType)</td>
+                                                    <td>@item.Id</td>
+                                                    <td>@item.OriginalEntryId</td>
+                                                    <td>@item.PolicyNumber</td>
+                                                    <td>@item.TreatyCode</td>
+                                                    <td>@item.TransactionTypeCode</td>
+                                                    <td>@item.ReinsBasicCode</td>
+                                                    <td>@item.ReportPeriodMonth</td>
+                                                    <td>@item.ReportPeriodYear</td>
+                                                    <td>@item.RiskPeriodMonth</td>
+                                                    <td>@item.RiskPeriodYear</td>
+                                                    <td>@item.InsuredName</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetMappingStatusName(item.MappingStatus)</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetPreComputation1StatusName(item.PreComputation1Status)</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetPreComputation2StatusName(item.PreComputation2Status)</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetPreValidationStatusName(item.PreValidationStatus)</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetConflictTypeName(item.ConflictType)</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetPostComputationStatusName(item.PostComputationStatus)</td>
+                                                    <td>@BusinessObject.RiDatas.RiDataBo.GetPostValidationStatusName(item.PostValidationStatus)</td>
+                                                    <td style="display: @(ViewBag.ShowFinaliseStatus == true ? "" : "none")">@BusinessObject.RiDatas.RiDataBo.GetFinaliseStatusName(item.FinaliseStatus)</td>
+                                                    <td style="display: @(ViewBag.ShowProcessWarehouseStatus == true ? "" : "none")">@BusinessObject.RiDatas.RiDataBo.GetProcessWarehouseStatusName(item.ProcessWarehouseStatus)</td>
+                                                    <td>@Html.CheckBox("IgnoreFinalise", ViewBag.EditRiData == true ? (object)new { @class = "checkbox check", @onchange = "checkCheckbox(this.checked, this.value)", @Value = item.Id } : new { @disabled = "disabled", @class = "checkbox check" })</td>
+                                                    @*<td><input type="checkbox" class="checkbox" checked="@item.IgnoreFinalise" @(ViewBag.Disabled ? "disabled" : "") onchange="checkCheckbox(this.checked);" /></td>*@
+                                                    <td class="text-center">
+                                                        <a href="@Url.Action("Details", new { id = item.Id, ridataBatchId = item.RiDataBatchId })" title="Edit">
+                                                            <span class="fas fa-pencil-alt" />
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="22" class="no-data">No available data found.</td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @{
+                                ViewBag.CurrentPageNumber = RiDataList.PageNumber;
+                                ViewBag.CurrentPageItems = RiDataList.Count;
+                                ViewBag.PageSize = RiDataList.PageSize;
+                                ViewBag.Total = ViewBag.RiDataTotal;
+                            }
+                            <div class="pagination-footer">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        @Html.Partial("_PageInfo")
+                                    </div>
+                                    <div class="col-md-8" id="ridataPager">
+                                        @Html.PagedListPager(RiDataList, Page => Url.Action("Edit", new
+                                        {
+                                            PolicyNumber = routeValue["PolicyNumber"],
+                                            TreatyCode = routeValue["TreatyCode"],
+                                            InsuredName = routeValue["InsuredName"],
+                                            TransactionTypeCodeId = routeValue["TransactionTypeCodeId"],
+                                            ReinsBasicCodeId = routeValue["ReinsBasicCodeId"],
+                                            ReportPeriodMonth = routeValue["ReportPeriodMonth"],
+                                            ReportPeriodYear = routeValue["ReportPeriodYear"],
+                                            RiskPeriodMonth = routeValue["RiskPeriodMonth"],
+                                            RiskPeriodYear = routeValue["RiskPeriodYear"],
+                                            MappingStatus = routeValue["MappingStatus"],
+                                            PreComputation1Status = routeValue["PreComputation1Status"],
+                                            PreComputation2Status = routeValue["PreComputation2Status"],
+                                            PreValidationStatus = routeValue["PreValidationStatus"],
+                                            ConflictType = routeValue["ConflictType"],
+                                            PostComputationStatus = routeValue["PostComputationStatus"],
+                                            PostValidationStatus = routeValue["PostValidationStatus"],
+                                            FinaliseStatus = routeValue["FinaliseStatus"],
+                                            WarehouseProcessStatus = routeValue["WarehouseProcessStatus"],
+                                            IgnoreFinalise = routeValue["IgnoreFinalise"],
+                                            IgnoreFinaliseIds = routeValue["IgnoreFinaliseIds"],
+                                            SortOrder = ViewBag.SortOrder,
+                                            Page,
+                                        }), Shared.Html.GetPagedListRenderOptions())
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="tab-pane fade @(ViewBag.ActiveTab == 2 ? "show active" : "")" id="fileHistory" role="tabpanel" aria-labelledby="fileHistory-tab">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="display:none"></th>
+                                            <th class="w-5">No</th>
+                                            <th class="w-25">Configuration</th>
+                                            <th class="w-20">File Name</th>
+                                            <th class="w-10">Exclude</th>
+                                            <th class="w-10">Date Uploaded</th>
+                                            <th class="w-10">File</th>
+                                            <th class="w-10">Error</th>
+                                            <th class="w-10">Edit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!FileHistories.length">
+                                            <td colspan="6" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(fileHistory, index) in FileHistories">
+                                            <td style="display:none">
+                                                <input type="hidden" v-model="fileHistory.Id" class="form-control" :name="'fileHistory.Id[' + index + ']'" />
+                                            </td>
+                                            <td>{{ index+1 }}</td>
+                                            <td><a v-bind:href="urlConfigLink(index)" target="_blank" class="linkbtn">{{ fileHistory.RiDataConfigBo.Code }} - {{ fileHistory.RiDataConfigBo.Name }}</a></td>
+                                            <td>{{ fileHistory.RawFileBo.FileName }}</td>
+                                            <td><input type="checkbox" :value="fileHistory.Id" v-model="checkedExclude" :change="check()" @(ViewBag.Disabled ? "disabled" : "") /></td>
+                                            <td>{{ fileHistory.CreatedAtStr }}</td>
+                                            <td><a v-bind:href="urlDownloadLink(index)" title="Download"><span class="fas fa-download" /></a></td>
+                                            <td><a href="#errorDataFileModal" data-toggle="modal" data-target="#errorDataFileModal" v-if="fileHistory.Errors" v-on:click="getErrors(index)" disabled="@ViewBag.Disabled"><span class="fas fa-exclamation-triangle"></span></a></td>
+                                            <td><a v-bind:href="urlEditLink(index)" title="Edit"><span class="fas fa-pencil-alt" /></a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="modal fade" id="errorDataFileModal" tabindex="-1" role="dialog" aria-labelledby="errorDataFileModal" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Errors</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <ul>
+                                                <li v-for="(error, index) in ErrorsMsg" class="text-danger">{{ error }}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="tab-pane fade @(ViewBag.ActiveTab == 3 ? "show active" : "")" id="status" role="tabpanel" aria-labelledby="status-tab">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-30">Status</th>
+                                            <th class="w-30">Update Date & time</th>
+                                            <th class="w-30">Updated By</th>
+                                            <th class="w-10">Log File</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-if="!StatusHistories.length">
+                                            <td colspan="4" class="no-data">No available data found.</td>
+                                        </tr>
+                                        <tr v-for="(statusHistory, index) in StatusHistories">
+                                            <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName}}</span></td>
+                                            <td>{{ statusHistory.CreatedAtStr }}</td>
+                                            <td>{{ statusHistory.CreatedByName }}</td>
+                                            <td>
+                                                <span v-for="log in logFile(index)">
+                                                    <a v-bind:href="urlDownloadLink(index)" title="DOWNLOAD SUMMARY FILE">
+                                                        <span class="fas fa-download" />
+                                                    </a>
+                                                </span>
+                                                <span v-for="debugLog in debugLogFile(index)">
+                                                    <a v-bind:href="urlDebugDownloadLink(index)" title="DOWNLOAD DEBUG LOG FILE">
+                                                        <span class="fas fa-file-download" />
+                                                    </a>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade @(ViewBag.ActiveTab == 4 ? "show active" : "")" id="remarkHistory" role="tabpanel" aria-labelledby="remark-tab">
+                            @Html.Partial("_Remark", new ViewDataDictionary { { "dropdownRemarkStatus", ViewBag.StatusItems } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                    @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                    <div class="row m-0 p-0 float-right">
+                        @if (!ViewBag.Disabled)
+                        {
+                            <div class="mr-1">
+                                <label for="submit-form" class="btn btn-submit" tabindex="0">SAVE</label>
+                            </div>
+                            <div class="mr-1">
+                                <input id="submitForPreProcessingBtn" type="button" onclick="submitForPreProcessing();" class="btn btn-submit float-right" style="width: auto;" @(ViewBag.DisabledSubmitByConfigStatus == true ? "disabled" : "") value="SUBMIT FOR PRE PROCESSING" />
+                            </div>
+                        }
+                        @if (ViewBag.DisabledSubmitForPostProccessing)
+                        {
+                            <input id="submitForPostProcessingBtn" type="button" onclick="submitForPostProcessing();" class="btn btn-submit" style="width: auto;height: 25px;" @(ViewBag.DisabledSubmitByConfigStatus == true ? "disabled" : "") value="SUBMIT FOR POST PROCESSING" />
+                        }
+                        @if (ViewBag.DisabledSubmitForFinalise)
+                        {
+                            <div class="ml-1">
+                                <input id="submitForFinaliseBtn" type="button" onclick="submitForFinalise();" class="btn btn-submit" style="width: auto;height: 25px;" @(ViewBag.DisabledSubmitByConfigStatus == true ? "disabled" : "") value="SUBMIT FOR FINALISE" />
+                            </div>
+                        }
+                        @if (Model.ProcessWarehouseStatus == BusinessObject.RiDatas.RiDataBatchBo.ProcessWarehouseStatusFailed)
+                        {
+                            <div class="ml-1">
+                                <input type="button" onclick="submitToWarehouse();" class="btn btn-submit prevent-disable" style="width: auto;height: 25px;" value="PROCESS TO WAREHOUSE" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="submitPreComfirmationModal" tabindex="-1" role="dialog" aria-labelledby="submitPreComfirmationModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Pre-Process Confirmation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>All RI Data will be deleted and retrieved from source again manually edited data will be overwritten when you reprocess the RI Data.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                        <button type="button" class="btn btn-submit" id="submit">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="submitPostComfirmationModal" tabindex="-1" role="dialog" aria-labelledby="submitPostComfirmationModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Post-Process Confirmation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Some fields in RI Data will be cleared and computed based on the Post-Computation in config when you reprocess the RI Data.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal">CANCEL</button>
+                        <button type="button" class="btn btn-submit" id="submit">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/textarea-autoresize.js")
+
+    <script type="text/javascript">
+        var Model = @Html.Raw(Json.Encode(Model));
+        var GetConfigCodeUrl = "@(Url.Action("GetConfigByCedant"))";
+        var GetConfigUrl = "@(Url.Action("GetConfigDetails"))";
+        var SearchSoaDataUrl = "@(Url.Action("SearchSoaDataBatch"))";
+        var CreateSoaDataUrl = "@(Url.Action("CreateSoaDataBatch"))";
+        var DateTimeFormat = "@(Shared.Util.GetDateTimeFormatMomentJs())";
+        var RIDataModel = @Html.Raw(Json.Encode(Model));
+        var FileHistories = @Html.Raw(Json.Encode(ViewBag.FileHistories));
+        var CheckedExclude = @Html.Raw(Json.Encode(ViewBag.CheckedExcludes));
+        var UploadModeList = @Html.Raw(Json.Encode(ViewBag.UploadModeList));
+        var StatusHistories = @Html.Raw(Json.Encode(ViewBag.StatusHistories));
+        var StatusHistoryStatusList = @Html.Raw(Json.Encode(ViewBag.StatusHistoryStatusList));
+        var RIDataBatchStatusFileHistories = @Html.Raw(Json.Encode(ViewBag.RIDataBatchStatusFileHistories));
+        var RIDataBatchStatusDebugFileHistories = @Html.Raw(Json.Encode(ViewBag.RIDataBatchStatusDebugFileHistories));
+        var StatusDraft = @BusinessObject.RiDatas.RiDataBo.StatusDraft;
+        var StatusPreSuccess = '@BusinessObject.RiDatas.RiDataBatchBo.StatusPreSuccess';
+        var StatusPostSuccess = '@BusinessObject.RiDatas.RiDataBatchBo.StatusPostSuccess';
+        var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+        var AddRemarkUrl = "@(Url.Action("Create", "Remark"))";
+        var AuthUserName = "@ViewBag.AuthUserName";
+        var ModelId = @Model.Id;
+        var ModuleId = @Model.ModuleId;
+        var ReadOnly = @(ViewBag.Disabled != null ? ViewBag.Disabled.ToString().ToLower() : "false");
+        var loadingDiv = $("#loadingSpinner");
+        var ViewSoaDataBatchUrl = "@(Url.Action("Edit", "SoaData"))";
+
+        var selectedConflictType = '@ViewBag.routeValue["ConflictType"]';
+
+        $(document).ready(function () {
+            dateOffAutoComplete();
+            loadingDiv.addClass('hide-loading-spinner');
+
+            var readOnly = ReadOnly;
+            if (readOnly) {
+                disableFields();
+                $('.bootstrap-select button').prop("disabled", false);
+                $('button[type="submit"].btn-circle').prop("disabled", false);
+                if ('@Model.SoaDataBatchId.HasValue')
+                    $('button.btn-generate').removeAttr("disabled");
+            }
+
+            $('#ConflictTypes').on('change', function () {
+                var arr = $(this).val().join(",");
+                $('#ConflictType').val(arr);
+            });
+
+            refreshConflictTypeDropDown();
+        });
+
+        function startDownload(download) {
+            loadingDiv.removeClass('hide-loading-spinner');
+            var downloadToken = (new Date()).getTime();
+
+            if (download.href.includes("downloadToken=")) {
+                download.href = download.href.replace(/(downloadToken=).*?/,'$1' + downloadToken + '$2')
+            } else {
+                download.href += "&downloadToken=" + downloadToken;
+            }
+
+            var cookiePattern = new RegExp( ( "downloadToken=" + downloadToken ), "i" );
+            var cookieTimer = setInterval(checkCookies, 500);
+            var refreshSession = setInterval(
+                function () {
+                    $.ajax({
+                        url: "@(Url.Action("RefreshUserSession", "Account"))",
+                        type: "POST",
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            if (data.logout == true) {
+                                window.location.href = "@(Url.Action("Login", "Account"))";
+                            }
+                        },
+                    });
+                }, 60 * 1000
+            );
+
+            function checkCookies() {
+                if (document.cookie.search(cookiePattern) >= 0) {
+                    loadingDiv.addClass('hide-loading-spinner');
+                    clearInterval(cookieTimer);
+                    clearInterval(refreshSession);
+                }
+            }
+        }
+
+        var fileHistory = new Vue({
+            el: '#fileHistory',
+            data: {
+                FileHistories: FileHistories,
+                UploadModeList: UploadModeList,
+                checkedExclude: CheckedExclude,
+                ErrorsMsg: [],
+            },
+            methods: {
+                check: function () {
+                    if (this.checkedExclude != null) {
+                        $("#Mode").val(this.checkedExclude.join(","));
+                    }
+                },
+                urlConfigLink: function (index) {
+                    var item = this.FileHistories[index];
+                    var url = '@Url.Action("Edit", "RiDataConfig")' + '/' + item.RiDataConfigId;
+                    return url
+                },
+                urlDownloadLink: function (index) {
+                    var item = this.FileHistories[index];
+                    var url = '@Url.Action("FileDownload", "RiData")?rawFileId=' + item.RawFileBo.Id;
+                    return url
+                },
+                urlEditLink: function (index) {
+                    var item = this.FileHistories[index];
+                    var url = '@Url.Action("EditRiDataFile", "RiData")' + '/' + item.Id;
+                    return url
+                },
+                getErrors: function (index) {
+                    var item = this.FileHistories[index];
+                    if (item.Errors != null) {
+                        this.ErrorsMsg = JSON.parse(item.Errors);
+                    }
+                },
+            },
+        });
+
+        var status = new Vue({
+            el: '#status',
+            data: {
+                StatusHistories: StatusHistories,
+                StatusHistoryStatusList: StatusHistoryStatusList,
+                LogBatchStatusFile: RIDataBatchStatusFileHistories,
+                DebugLogBatchStatusFile: RIDataBatchStatusDebugFileHistories,
+                HasLog: false,
+            },
+            methods: {
+                logFile: function (index) {
+                    var item = this.StatusHistories[index];
+                    if (item != null && item.Id != '') {
+                        return this.LogBatchStatusFile.filter(function (logBatchStatusFileItem) {
+                            return logBatchStatusFileItem.StatusHistoryId === item.Id;
+                        })
+                    }
+                },
+                debugLogFile: function (index) {
+                    var item = this.StatusHistories[index];
+                    if (item != null && item.Id != '') {
+                        return this.DebugLogBatchStatusFile.filter(function (debugLogBatchStatusFileItem) {
+                            return debugLogBatchStatusFileItem.StatusHistoryId === item.Id;
+                        })
+                    }
+                },
+                urlDownloadLink: function (index) {
+                    var item = this.StatusHistories[index];
+                    if (item != null && item.Id != '') {
+                        var url = '@Url.Action("LogFileDownload", "RiData")?riDataBatchId=@Model.Id' + "&statusHistoryId=" + item.Id;
+                        return url
+                    }
+                },
+                urlDebugDownloadLink: function (index) {
+                    var item = this.StatusHistories[index];
+                    if (item != null && item.Id != '') {
+                        var url = '@Url.Action("DebugLogFileDownload", "RiData")?riDataBatchId=@Model.Id' + "&statusHistoryId=" + item.Id;
+                        return url
+                    }
+                },
+            },
+        });
+
+        var remarkHistory = new Vue({
+            el: '#remarkHistory',
+            data: {
+                Remarks: Remarks,
+                RemarkModal: {
+                    CreatedByName: AuthUserName ? AuthUserName : null,
+                    Status: StatusDraft ? StatusDraft : null,
+                    CreatedAtStr: null,
+                    Content: null,
+                },
+                StatusList: StatusHistoryStatusList,
+                RiData: RIDataModel,
+
+                textAreaWidth: 150,
+                textAreaHeight: 21,
+            },
+            methods: {
+                // Remark
+                resetRemarkInfo: function () {
+                    this.RemarkModal.CreatedAtStr = moment().format(DateTimeFormat);
+                    this.RemarkModal.Status = this.RiData.Status;
+                    this.RemarkModal.ModuleId = this.RiData.ModuleId;
+                    this.RemarkModal.ObjectId = this.RiData.Id;
+                    this.RemarkModal.Content = null;
+                },
+                addRemark: function () {
+                    var remark = createRemark(this.RemarkModal);
+
+                    if (remark) {
+                        this.Remarks.unshift(Object.assign({}, remark));
+                    }
+                },
+                autoExpandTextarea: function (id) {
+                    var tArea = $('#' + id);
+                    this.textAreaWidth = tArea.width();
+                    this.textAreaHeight = tArea.height();
+                    tArea.autoResize();
+                    tArea.trigger('keyup');
+
+                    tArea.on('keypress', function (evt) {
+                        var evt = (evt) ? evt : ((event) ? event : null);
+                        if (evt.keyCode == 13)
+                            return false;
+                    });
+                },
+                autoCollapseTextarea: function (id) {
+                    var tArea = $('#' + id);
+                    tArea.height(this.textAreaHeight);
+                },
+            },
+        });
+
+        function submitForPreProcessing() {
+            $('#Status').val('@BusinessObject.RiDatas.RiDataBatchBo.StatusSubmitForPreProcessing');
+            var notice = @ViewBag.NoticeRemoveRiDataMessage.ToString().ToLower();
+            if (notice) {
+                $('#submitPreComfirmationModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                }).on('click', '#submit', function () {
+                    $('#editForm').submit();
+                });
+            }
+            else {
+                $('#editForm').submit();
+            }
+        }
+
+        function submitForPostProcessing() {
+            $('#Status').val('@BusinessObject.RiDatas.RiDataBatchBo.StatusSubmitForPostProcessing');
+            var notice = @ViewBag.NoticeRemoveRiDataMessage.ToString().ToLower();
+            if (notice) {
+                $('#submitPostComfirmationModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                }).on('click', '#submit', function () {
+                    $('#editForm').submit();
+                });
+            }
+            else {
+                $('#editForm').submit();
+            }
+        }
+
+        function submitForFinalise() {
+            $('#Status').val('@BusinessObject.RiDatas.RiDataBatchBo.StatusSubmitForFinalise');
+            $('#editForm').submit();
+        }
+
+        function submitToWarehouse() {
+            $('#ProcessWarehouseStatus').val('@BusinessObject.RiDatas.RiDataBatchBo.ProcessWarehouseStatusProcessFailed');
+            $('#editForm').submit();
+        }
+
+    $(document).ready(function () {
+            showType(@Model.RiDataConfigBo.FileType);
+            showHeader('@Model.HasHeader');
+            showRowMapping('@Model.IsColumnToRowMapping');
+
+            $('#IsColumnToRowMappingSwitch').on('change.bootstrapSwitch', function (e) {
+                showRowMapping(e.target.checked);
+            });
+
+            $('input.check').each(function () {
+                var ids = $('#IgnoreFinaliseIds').val().split(",");
+                if (ids != '') {
+                    if ($.inArray($(this).val(), ids) !== -1)
+                        $(this).prop('checked', true);
+                }
+            });
+
+            $("#ReportPeriodYear, #RiskPeriodYear").datepicker({
+                format: "yyyy",
+                viewMode: "years",
+                minViewMode: "years"
+            });
+        });
+
+        var selDiv = "";
+        document.addEventListener("DOMContentLoaded", init, false);
+        function init() {
+            var control = document.querySelector('#files');
+            if (control) {
+                document.querySelector('#files').addEventListener('change', handleFileSelect, false);
+                selDiv = document.querySelector("#selectedFiles");
+            }
+        }
+        function handleFileSelect(e) {
+            if (!e.target.files) return;
+            selDiv.innerHTML = "";
+            var files = e.target.files;
+            var list = "";
+            for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+
+                var fileSize = f.size / 1024 / 1024 / 1024; // in GB
+                if (fileSize >= 2) {
+                    $("#errorSizeExceeds").css("display", "block");
+                    $("#errorSizeExceeds").text('Maximum allowed size is : 2 GB');
+                    //reset file upload control
+                    e.target.value = null;
+                    return;
+                } else {
+                    $("#errorSizeExceeds").css("display", "none");
+                }
+
+                list += "<li>" + f.name + "</li>";
+            }
+            selDiv.innerHTML = "<ul>" + list + "</ul>";
+
+            if ('@Model.Status' == StatusPreSuccess || '@Model.Status' == StatusPostSuccess) {
+                if (files.length !== 0) {
+                    $("#submitForPreProcessingBtn").hide();
+                    $("#submitForFinaliseBtn").hide();
+                    $("#submitForPostProcessingBtn").hide();
+                }
+                else {
+                    $("#submitForPreProcessingBtn").show();
+                    $("#submitForFinaliseBtn").show();
+                    $("#submitForPostProcessingBtn").show();
+                }
+            }
+
+        }
+
+        function focusOnDate(val) {
+            $('#' + val).focus();
+        }
+
+        function getConfigData(Id) {
+
+            if (Id === '' || Id === '0' || Id === 'Please select') {
+                $('#TreatyCodeId').val('');
+                $('#TreatyName').val('');
+
+                $('#ConfigDetail').hide();
+                $('#FileType').val('');
+                $('#FileTypeName').val('');
+                $('#Worksheet').val('');
+                $('#DelimiterName').val('');
+                $('#HasHeader').val('');
+                $('#HeaderRow').val('');
+                $('#StartRow').val('');
+                $('#EndRow').val('');
+                $('#StartColumn').val('');
+                $('#EndColumn').val('');
+                checkColumnToRowMapping(false);
+                $('#NumberOfRowMapping').val('');
+                checkDataCorrection(false);
+            }
+            else {
+                var ConfigData;
+                $.ajax({
+                    url: GetConfigUrl,
+                    type: "POST",
+                    data: { id: Id },
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        ConfigData = data.riDataConfigBo;
+                    }
+                });
+
+                $('#TreatyId').val(ConfigData.TreatyId);
+                if (ConfigData.TreatyBo)
+                    $('#TreatyName').val(ConfigData.TreatyBo.TreatyIdCode + ' - ' + ConfigData.TreatyBo.Description);
+                else
+                    $('#TreatyName').val('');
+                Model.TreatyId = ConfigData.TreatyId;
+
+                $('#ConfigDetail').show();
+                $('#FileType').val(ConfigData.FileType);
+                $('#FileTypeName').val(ConfigData.FileTypeName);
+                showType(ConfigData.FileType);
+
+                if (Id == '@Model.ConfigId') {
+
+                    $('#Worksheet').val('@Model.Worksheet');
+                    $('#Delimiter').val('@Model.Delimiter');
+                    var hasHeader = '@Model.HasHeader';
+                    $('#HasHeader').val(hasHeader.toLowerCase());
+                    $('#HeaderRow').val('@Model.HeaderRow');
+                    $('#StartRow').val('@Model.StartRow');
+                    $('#EndRow').val('@Model.EndRow');
+                    $('#StartColumn').val('@Model.StartColumn');
+                    $('#EndColumn').val('@Model.EndColumn');
+                    checkColumnToRowMapping('@Model.IsColumnToRowMapping');
+                    $('#NumberOfRowMapping').val('@Model.NumberOfRowMapping');
+                    checkDataCorrection('@Model.IsDataCorrection');
+
+                    showHeader('@Model.HasHeader');
+                    showRowMapping('@Model.IsColumnToRowMapping');
+                }
+                else {
+
+                    $('#Worksheet').val(ConfigData.RiDataFileConfig.Worksheet);
+                    $('#Delimiter').val(ConfigData.RiDataFileConfig.Delimiter);
+                    $('#HasHeader').val(ConfigData.RiDataFileConfig.HasHeader == true ? 'true' : 'false');
+                    $('#HeaderRow').val(ConfigData.RiDataFileConfig.HeaderRow);
+                    $('#StartRow').val(ConfigData.RiDataFileConfig.StartRow);
+                    $('#EndRow').val(ConfigData.RiDataFileConfig.EndRow);
+                    $('#StartColumn').val(ConfigData.RiDataFileConfig.StartColumn);
+                    $('#EndColumn').val(ConfigData.RiDataFileConfig.EndColumn);
+                    checkColumnToRowMapping(ConfigData.RiDataFileConfig.IsColumnToRowMapping);
+                    $('#NumberOfRowMapping').val(ConfigData.RiDataFileConfig.NumberOfRowMapping);
+                    checkDataCorrection(ConfigData.RiDataFileConfig.IsDataCorrection);
+
+                    showHeader(ConfigData.RiDataFileConfig.HasHeader);
+                    showRowMapping(ConfigData.RiDataFileConfig.IsColumnToRowMapping);
+                }
+            }
+
+            $('#Delimiter').selectpicker('refresh');
+            $('#HasHeader').selectpicker('refresh');
+        }
+
+        function showType(val) {
+            switch (val) {
+                case @BusinessObject.RiDatas.RiDataConfigBo.FileTypeExcel:
+                    $('#FileType1').show();
+                    $('#FileType2').hide();
+                    break;
+                case @BusinessObject.RiDatas.RiDataConfigBo.FileTypePlainText:
+                    $('#FileType2').show();
+                    $('#FileType1').hide();
+                    break;
+                default:
+                    $('#FileType1').hide();
+                    $('#FileType2').hide();
+                    break;
+            }
+        }
+
+        function showHeader(val) {
+            if (val === "true" || val === true || val === "True") {
+                $('#HeaderRow').prop("readonly", false);
+            }
+            else { $('#HeaderRow').prop("readonly", true); }
+        }
+
+        function showRowMapping(val) {
+            if (val === "true" || val === true || val === "True") {
+                $('#RowMapping').show();
+            }
+            else {
+                $('#NumberOfRowMapping').val('');
+                $('#RowMapping').hide();
+            }
+        }
+
+        function checkColumnToRowMapping(val) {
+            $('#IsColumnToRowMappingSwitch').prop('checked', false);
+            if (val === "true" || val === true || val === "True") {
+                $('#IsColumnToRowMappingSwitch').prop('checked', true);
+            }
+        }
+
+        function checkDataCorrection(val) {
+            $('#IsDataCorrectionSwitch').prop('checked', false);
+            if (val === "true" || val === true || val === "True") {
+                $('#IsDataCorrectionSwitch').prop('checked', true);
+            }
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                RiDataBatchModel: Model,
+                SoaDataBatches: [],
+                MatchSoaDataBatchesValidation: [],
+                SoaDataMatchStatus: "",
+            },
+            methods: {
+                validateSoaDataMatchData: function () {
+                    var validation = new Array();
+                    if (this.RiDataBatchModel.CedantId == null || this.RiDataBatchModel.CedantId == "" || this.RiDataBatchModel.CedantId == 0)
+                        validation.push("Ceding Company is required");
+                    if (this.RiDataBatchModel.TreatyId == null || this.RiDataBatchModel.TreatyId == "" || this.RiDataBatchModel.TreatyId == 0)
+                        validation.push("Treaty ID is required");
+                    if (this.RiDataBatchModel.Quarter == null || this.RiDataBatchModel.Quarter == "")
+                        validation.push("Quarter is required");
+                    else if (!/[0-9]{4} Q{1}([1-4]){1}/.test(this.RiDataBatchModel.Quarter))
+                        validation.push("Quarter format is incorrect");
+
+                    this.MatchSoaDataBatchesValidation = validation;
+
+                    return this.MatchSoaDataBatchesValidation.length == 0;
+                },
+                searchSoaDataBatch: function () {
+                    if (!this.validateSoaDataMatchData())
+                        return;
+
+                    var obj = {
+                        Id: this. RiDataBatchModel.Id,
+                        CedantId: this.RiDataBatchModel.CedantId,
+                        TreatyId: this.RiDataBatchModel.TreatyId,
+                        Quarter: this.RiDataBatchModel.Quarter,
+                    };
+
+                    var soaDataBatchBos = [];
+                    $.ajax({
+                        url: SearchSoaDataUrl ? SearchSoaDataUrl : null,
+                        type: "POST",
+                        data: obj,
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            soaDataBatchBos = data.soaDataBatchBos;
+                        }
+                    });
+
+                    this.SoaDataBatches = soaDataBatchBos;
+                    if (this.SoaDataBatches == null || !this.SoaDataBatches.length)
+                        this.MatchSoaDataBatchesValidation.push("No match found");
+                },
+                selectSoaDataBatch: function () {
+                    var index = $('input[name="checkedSoadata"]:checked').val();
+                    if (typeof index == 'undefined') {
+                        this.MatchSoaDataBatchesValidation.push("No RI Data selected.");
+                        return;
+                    }
+
+                    var item = this.SoaDataBatches[index];
+                    $('#SoaDataBatchId').val(item.Id);
+                    this.RiDataBatchModel.SoaDataBatchId = item.Id;
+                    this.SoaDataMatchStatus = 'Matched - ' + item.Id;
+
+                    $('#matchSoaDataModal').modal('toggle');
+                },
+                createSoaDataBatch: function () {
+                    if (!this.validateSoaDataMatchData())
+                        return;
+
+                    var obj = {
+                        Id: this.RiDataBatchModel.Id,
+                        CedantId: this.RiDataBatchModel.CedantId,
+                        TreatyId: this.RiDataBatchModel.TreatyId,
+                        Quarter: this.RiDataBatchModel.Quarter,
+                    };
+
+                    var batchId = null;
+                    var result = null;
+                    var message = null;
+                    $.ajax({
+                        url: CreateSoaDataUrl ? CreateSoaDataUrl : null,
+                        type: "POST",
+                        data: obj,
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            result = data.success;
+                            batchId = data.resultId;
+                            message = data.message;
+                        }
+                    });
+
+                    if (result == false) {
+                        this.MatchSoaDataBatchesValidation.push(message);
+                        return;
+                    }
+
+                    $('#SoaDataBatchId').val(batchId);
+                    this.RiDataBatchModel.SoaDataBatchId = batchId;
+                    this.SoaDataMatchStatus = 'Matched - ' + batchId;
+
+                    $('#matchSoaDataModal').modal('toggle');
+                },
+                viewSoaDataBatch: function () {
+                    var url = ViewSoaDataBatchUrl + '/' + this.RiDataBatchModel.SoaDataBatchId;
+                    return window.open(url, "_blank");
+                },
+            },
+            created: function () {
+                this.SoaDataMatchStatus = (this.RiDataBatchModel.SoaDataBatchId) ? 'Matched - ' + this.RiDataBatchModel.SoaDataBatchId : '';
+                console.log(!this.RiDataBatchModel.SoaDataBatchId);
+            },
+        });
+
+        //function checkAllCheckbox(isChecked) {
+        //    $(".checkbox").prop('checked', isChecked);
+
+        //    $('#ridataPager a').each(function () {
+        //        var path = $(this).attr("href");
+        //        if (path == undefined) {
+        //            //alert(1);
+        //        }
+        //        else {
+        //            var a = path.replace(/(IgnoreFinalise=).*(&)/, '$1' + isChecked + '$2');
+        //            return $(this).attr("href", a);
+
+        //        }
+        //    });
+        //}
+
+        function checkCheckbox(isChecked, value) {
+            var arr = $('#IgnoreFinaliseIds').val().split(",");
+
+            if (false == isChecked) {
+                arr.splice(arr.indexOf(value), 1);
+            }
+            else {
+                arr.push(value);
+            }
+
+            if (arr != null) {
+                $('#IgnoreFinaliseIds').val(arr.filter(f => f != "").join(","));
+            }
+
+            $('#ridataPager a').each(function () {
+                var ids = $('#IgnoreFinaliseIds').val(); // encodeURIComponent(ids)
+
+                var path = $(this).prop("href"); // get full url
+                if (path != undefined && path != '') {
+                    var href = new URL(path);
+                    if (href.searchParams.has('IgnoreFinaliseIds')) {
+                        href.searchParams.set('IgnoreFinaliseIds', ids);
+                    }
+                    else {
+                        href.searchParams.append('IgnoreFinaliseIds', ids);
+                    }
+                    return $(this).attr("href", href.toString());
+                }
+            });
+        }
+
+        function refreshConflictTypeDropDown() {
+            if (selectedConflictType) {
+                var selectedIdArr = selectedConflictType.split(',');
+                $('#ConflictTypes').selectpicker('val', selectedIdArr)
+            }
+        }
+    </script>
+}

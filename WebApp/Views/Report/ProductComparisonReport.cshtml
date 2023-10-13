@@ -1,0 +1,2313 @@
+﻿@{
+    ViewBag.Title = "Products & Benefits Comparison";
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-body">
+        <div class="alert alert-danger display-none" id="errorMessage" role="alert">
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h4>Products & Benefits Comparison</h4>
+            </div>
+            <div class="card-body card-body-dashboard" v-cloak>
+                <div class="table-responsive my-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-10 bg-white"></th>
+                                <th v-for="(comparison, index) in Comparisons" class="w-10">
+                                    {{ comparison.Name }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Cedant" class="form-control" v-on:change="changeCedant(index)">
+                                        <option v-for="treatyPricingCedant in TreatyPricingCedants" :value="treatyPricingCedant.Value">{{ treatyPricingCedant.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.UnderwritingMethod" :id="'underwritingMethod' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Quotation Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.QuotationName" class="form-control" v-on:change="changeQuotationName(index)">
+                                        <option v-for="quotationNameDropdown in comparison.QuotationNameDropDowns" :value="quotationNameDropdown.Value">{{ quotationNameDropdown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Product ID & Name</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.ProductName" class="form-control" v-on:change="changeProductName(index)">
+                                        <option v-for="productNameDropdown in comparison.ProductNameDropDowns" :value="productNameDropdown.Value">{{ productNameDropdown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Target Segment</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.TargetSegment" :id="'targetSegment' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Type</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.ProductType" class="form-control" v-on:change="changeProductType(index)">
+                                        <option v-for="productTypeDropDown in comparison.ProductTypeDropdowns" :value="productTypeDropDown.Value">{{ productTypeDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.DistributionChannel" :id="'distributionChannel' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <select v-model="comparison.Version" class="form-control" v-on:change="changeVersion(index)">
+                                        <option v-for="versionDropDown in comparison.VersionDropDowns" :value="versionDropDown.Value">{{ versionDropDown.Text }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Code</td>
+                                <td v-for="(comparison, index) in Comparisons" class="w-20">
+                                    <input v-model="comparison.Benefit" :id="'benefit' + index + 'TokenField'" class="form-control" placeholder="Type here">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="w-100 text-right">
+                    <button type="button" class="btn btn-download" v-on:click="generate()">Generate</button>
+                    <button type="button" class="btn btn-download" v-on:click="download()">Download</button>
+                </div>
+
+                <div v-if="IsGenerated">
+                    <div class="table-responsive my-3">
+                        <table class="table table-hover" id="outputTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-10" style="background-color: #d9e5f1;">Product ID</th>
+                                    <td v-for="(product, index) in Products" class="w-20 font-weight-bold" style="background-color: #d9e5f1;">
+                                        {{product.Code}}
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- #region Product rows -->
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Ceding Company</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.TreatyPricingCedantBo.CedantBo.Name}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Quotation Name</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.QuotationName}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance Type</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.TreatyPricingCedantBo.ReinsuranceTypePickListDetailBo.Description}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Method</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.UnderwritingMethodStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Effective Date</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.EffectiveDateStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Name</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.Name}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Summary</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.Summary}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Per Life Retro</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.HasPerLifeRetroStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Final Documents</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.FinalDocuments}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Version</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.Version}}.0
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Person In-Charge<br />(Business Development)</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.BDPersonInChargeName}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Product Detail rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Product Details</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Type</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ProductType}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Target Segment</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.TargetSegment}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Distribution Channel</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.DistributionChannel}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Cession Type</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.CessionType}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Business Origin</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.BusinessOrigin}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Business Type</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.BusinessType}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Product Line</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.ProductLine}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance Arrangement</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ReinsuranceArrangement}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Expected Average Sum Assured</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.ExpectedAverageSumAssured}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Expected Number of Policy</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.ExpectedPolicyNo}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Expected RI Premium</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.ExpectedRiPremium}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Medical Table</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.MedicalTableInfo}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Financial Table</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.FinancialTableInfo}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Questionnaire</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.UwQuestionnaireInfo}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Advantage Program</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.AdvantageProgramInfo}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Jumbo Limit</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.JumboLimit}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Additional Remarks for Underwriting</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.UnderwritingAdditionalRemark}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Waiting Period</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.WaitingPeriod}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Survival Period</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.SurvivalPeriod}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Profit Commission</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ProfitCommInfo}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Payment of Reinsurance Premium</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ReinsurancePremiumPayment}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Refund of Unearned Premium</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.UnearnedPremiumRefund}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Termination Clause</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.TerminationClause}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Recapture Clause</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.RecaptureClause}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Country of Residence</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ResidenceCountry}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Quarterly Risk Premium (For SRT Only)</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.QuarterlyRiskPremium}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Direct Retro</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.IsDirectRetroStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Direct Retro Profit Commission</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.DirectRetroProfitCommission}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Direct Retro Termination Clause</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.DirectRetroTerminationClause}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Direct Retro Recapture Clause</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.DirectRetroRecaptureClause}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Direct Retro Quarterly Risk Premium (For SRT Only)</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.DirectRetroQuarterlyRiskPremium}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.IsInwardRetroStr}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Profit Commission</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.InwardRetroProfitCommission}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Termination Clause</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.InwardRetroTerminationClause}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Recapture Clause</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.InwardRetroRecaptureClause}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Quarterly Risk Premium (For SRT Only)</td>
+                                    <td v-for="(product, index) in Products">
+                                        {{product.ComparisonTreatyPricingProductVersionBo.InwardRetroQuarterlyRiskPremium}}
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                @*Split*@
+                                <!-- #region Benefit Code rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Benefit Code</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div class="font-weight-bold" style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_52_' + benefitIndex">{{benefitBo.BenefitCode}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Name</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_53_' + benefitIndex">{{benefitBo.Name}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Benefit (General) rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Benefit (General)</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Basic / Rider</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_56_' + benefitIndex">{{benefitBo.BasicRider}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Payout Type</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_57_' + benefitIndex">{{benefitBo.PayoutType}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rider Attachment Ratio</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_58_' + benefitIndex">{{benefitBo.RiderAttachmentRatio}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Age Basis</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_59_' + benefitIndex">{{benefitBo.AgeBasis}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Minimum Entry Age</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_60_' + benefitIndex">{{benefitBo.MinimumEntryAge}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Entry Age</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_61_' + benefitIndex">{{benefitBo.MaximumEntryAge}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Expiry Age</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_62_' + benefitIndex">{{benefitBo.MaximumExpiryAge}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Minimum Policy Term</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_63_' + benefitIndex">{{benefitBo.MinimumPolicyTerm}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Policy Term</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_64_' + benefitIndex">{{benefitBo.MaximumPolicyTerm}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Premium Paying Term</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_65_' + benefitIndex">{{benefitBo.PremiumPayingTerm}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Minimum Sum Assured</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_66_' + benefitIndex">{{benefitBo.MinimumSumAssured}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Maximum Sum Assured</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_67_' + benefitIndex">{{benefitBo.MaximumSumAssured}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Underwriting Limit</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_68_' + benefitIndex">{{benefitBo.UwLimitInfo}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Others</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_69_' + benefitIndex">{{benefitBo.Others}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Claim Approval Limit</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_70_' + benefitIndex">{{benefitBo.ClaimApprovalLimitInfo}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_71_' + benefitIndex">{{benefitBo.IfOthers1}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Definitions and Exclusions</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_72_' + benefitIndex">{{benefitBo.DefinitionExclusionInfo}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">If Others</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_73_' + benefitIndex">{{benefitBo.IfOthers2}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Refund Of Premium</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_74_' + benefitIndex">{{benefitBo.RefundOfPremium}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Pre-Existing Conditions</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_75_' + benefitIndex">{{benefitBo.PreExistingCondition}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Benefit (Pricing) rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Benefit (Pricing)</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Basic / Rider</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_78_' + benefitIndex">{{benefitBo.BasicRider}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance Type of Arrangement</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_79_' + benefitIndex">{{benefitBo.PricingArrangementReinsuranceType}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Benefit Payout</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_80_' + benefitIndex">{{benefitBo.BenefitPayout}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Cedant's Retention</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_81_' + benefitIndex">{{benefitBo.CedantRetention}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Reinsurance's Share</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_82_' + benefitIndex">{{benefitBo.ReinsuranceShare}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Coinsurance Cedant's Retention</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_83_' + benefitIndex">{{benefitBo.CoinsuranceCedantRetention}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Coinsurance Reinsurance's Share</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_84_' + benefitIndex">{{benefitBo.CoinsuranceReinsuranceShare}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Sum at Risk Pattern</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_85_' + benefitIndex">{{benefitBo.RiskPatternSum}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Profit Commission</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_86_' + benefitIndex">{{benefitBo.IsProfitCommissionStr}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Advantage Program</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_87_' + benefitIndex">{{benefitBo.IsAdvantageProgramStr}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Table</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_88_' + benefitIndex">{{benefitBo.RateTableInfo}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Requested Rate Guarantee</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_89_' + benefitIndex">{{benefitBo.RequestedRateGuarantee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Requested Reinsurance Discount</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_90_' + benefitIndex">{{benefitBo.RequestedReinsuranceDiscount}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Requested Coinsurance RI Discount</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_91_' + benefitIndex">{{benefitBo.RequestedCoinsuranceRiDiscount}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Benefit (Direct Retro) rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Benefit (Direct Retro)</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Basic / Rider</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_94_' + benefitIndex">{{benefitBo.BasicRider}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Party</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_95_' + benefitIndex">{{benefitBo.DirectRetroBo.RetroPartyCode}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession Type of Arrangement</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_96_' + benefitIndex">{{benefitBo.DirectRetroBo.ArrangementRetrocessionType}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro's Retention</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_97_' + benefitIndex">{{benefitBo.DirectRetroBo.MlreRetention}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">MLRe Share</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_98_' + benefitIndex">{{benefitBo.DirectRetroBo.RetrocessionShare}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession's Profit Commission</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_99_' + benefitIndex">{{benefitBo.DirectRetroBo.IsRetrocessionProfitCommissionStr}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession's Advantage Program</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_100_' + benefitIndex">{{benefitBo.DirectRetroBo.IsRetrocessionAdvantageProgramStr}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession Rate Table</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_101_' + benefitIndex">{{benefitBo.DirectRetroBo.RetrocessionRateTable}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Guarantee for New Business</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_102_' + benefitIndex">{{benefitBo.DirectRetroBo.NewBusinessRateGuarantee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Guarantee for Renewal Business</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_103_' + benefitIndex">{{benefitBo.DirectRetroBo.RenewalBusinessRateGuarantee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession Discount</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_104_' + benefitIndex">{{benefitBo.DirectRetroBo.RetrocessionDiscount}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Additional Discount</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_105_' + benefitIndex">{{benefitBo.DirectRetroBo.AdditionalDiscount}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Additional Loading</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_106_' + benefitIndex">{{benefitBo.DirectRetroBo.AdditionalLoading}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Benefit (Inward Retro) rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Benefit (Inward Retro)</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Basic / Rider</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_109_' + benefitIndex">{{benefitBo.BasicRider}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro Party</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_110_' + benefitIndex">{{benefitBo.InwardRetroParty}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession Type of Arrangement</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_111_' + benefitIndex">{{benefitBo.InwardRetroArrangementReinsuranceType}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Inward Retro's Retention</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_112_' + benefitIndex">{{benefitBo.InwardRetroRetention}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">MLRe's Share</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_113_' + benefitIndex">{{benefitBo.MlreShare}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession's Profit Commission</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_114_' + benefitIndex">{{benefitBo.IsRetrocessionProfitCommissionStr}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession's Advantage Program</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_115_' + benefitIndex">{{benefitBo.IsRetrocessionAdvantageProgramStr}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession's Rate Table</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_116_' + benefitIndex">{{benefitBo.RetrocessionRateTable}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Guarantee for New Business</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_117_' + benefitIndex">{{benefitBo.NewBusinessRateGuarantee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Rate Guarantee for Renewal Business</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_118_' + benefitIndex">{{benefitBo.RenewalBusinessRateGuarantee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retrocession Discount</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_119_' + benefitIndex">{{benefitBo.RetrocessionDiscount}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Additional Discount</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_120_' + benefitIndex">{{benefitBo.AdditionalDiscount}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Additional Loading</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_121_' + benefitIndex">{{benefitBo.AdditionalLoading}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+
+                                <!-- #region Benefit (Retakaful Service) rows -->
+                                <tr>
+                                    <td style="background-color: #f3f8fe;">&nbsp;</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #d9e5f1;">Benefit (Retakaful Service)</td>
+                                    <td v-for="(product, index) in Products" class="w-20" style="background-color: #d9e5f1;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Basic / Rider</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_124_' + benefitIndex">{{benefitBo.BasicRider}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Investment Profit Sharing</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_125_' + benefitIndex">{{product.ComparisonTreatyPricingProductVersionBo.InvestmentProfitSharing}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Retakaful Model</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_126_' + benefitIndex">{{product.ComparisonTreatyPricingProductVersionBo.RetakafulModel}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">Wakalah Fee</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_127_' + benefitIndex">{{benefitBo.WakalahFee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="font-weight-bold" style="background-color: #f3f8fe;">MLRe's Service Fee</td>
+                                    <td v-for="(product, index) in Products" class="w-20">
+                                        <div class="d-flex flex-row align-content-stretch flex-nowrap" style="width:350px;">
+                                            <div style="width:120px;" v-for="(benefitBo, benefitIndex) in product.ComparisonTreatyPricingProductBenefitBos" :id="'benefitNum_' + index + '_128_' + benefitIndex">{{benefitBo.MlreServiceFee}}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- #endregion -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+<script>
+        var TreatyPricingCedants = @Html.Raw(Json.Encode(ViewBag.DropDownTreatyPricingCedants));
+        var DropDownEmpty = @Html.Raw(Json.Encode(ViewBag.DropDownEmpty));
+
+        function initTokenfield(index) {
+            var underwritingMethodCount = 0;
+            var targetSegmentCount = 0;
+            var distributionChannelCount = 0;
+            var benefitCount = 0;
+
+            $(document).ready(function () {
+                $('#underwritingMethod' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (underwritingMethodCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].UnderwritingMethodCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        underwritingMethodCount += 1;
+                        $("#underwritingMethod" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].UnderwritingMethod = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeUnderwritingMethod(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].UnderwritingMethodCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        app.changeUnderwritingMethod(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        underwritingMethodCount -= 1;
+                        if (underwritingMethodCount == 0) {
+                            $("#underwritingMethod" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].UnderwritingMethod = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeUnderwritingMethod(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].UnderwritingMethodCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+
+                $('#distributionChannel' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (distributionChannelCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].DistributionChannelCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        distributionChannelCount += 1;
+                        $("#distributionChannel" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].DistributionChannel = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeDistributionChannel(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].DistributionChannelCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        app.changeDistributionChannel(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        distributionChannelCount -= 1;
+                        if (distributionChannelCount == 0) {
+                            $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].DistributionChannel = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeDistributionChannel(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].DistributionChannelCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+
+                $('#benefit' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (benefitCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].BenefitCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        benefitCount += 1;
+                        $("#benefit" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].Benefit = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].BenefitCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        benefitCount -= 1;
+                        if (benefitCount == 0) {
+                            $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].Benefit = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].BenefitCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+
+                $('#targetSegment' + index + 'TokenField')
+                    .on('tokenfield:createtoken', function (e) {
+                        var existingTokens = $(this).tokenfield('getTokens');
+                        if (targetSegmentCount != 0) {
+                            $.each(existingTokens, function (el, token) {
+                                if (token.value === e.attrs.value) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
+                    })
+                    .on('tokenfield:createdtoken', function (e) {
+                        var valid = app.Comparisons[index].TargetSegmentCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            $(e.relatedTarget).addClass('invalid');
+                        }
+                        targetSegmentCount += 1;
+                        $("#targetSegment" + index + "TokenField-tokenfield").removeAttr('placeholder');
+                        app.Comparisons[index].TargetSegment = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeTargetSegment(index);
+                    })
+                    .on('tokenfield:edittoken', function (e) {
+                        var valid = app.Comparisons[index].TargetSegmentCodes.includes(e.attrs.value)
+                        if (!valid) {
+                            e.preventDefault();
+                        }
+                        app.changeTargetSegment(index);
+                    })
+                    .on('tokenfield:removedtoken', function (e) {
+                        targetSegmentCount -= 1;
+                        if (targetSegmentCount == 0) {
+                            $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                        }
+                        app.Comparisons[index].TargetSegment = $(this).tokenfield('getTokens').map(e => e.value).join(",");
+                        app.changeTargetSegment(index);
+                    })
+                    .tokenfield({
+                        autocomplete: {
+                            source: app.Comparisons[index].TargetSegmentCodes,
+                            delay: 100
+                        },
+                        showAutocompleteOnFocus: true
+                    });
+            });
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                Comparisons: [
+                    {
+                        Name: "Comparison 1", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 2", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 3", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 4", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 5", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 6", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 7", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 8", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 9", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, Product: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                    {
+                        Name: "Comparison 10", Cedant: "",
+                        UnderwritingMethodCodes: [], UnderwritingMethod: "",
+                        QuotationNameDropDowns: DropDownEmpty, QuotationName: "",
+                        ProductNameDropDowns: DropDownEmpty, ProductName: "",
+                        TargetSegmentCodes: [], TargetSegment: "",
+                        ProductTypeDropdowns: DropDownEmpty, ProductType: "",
+                        DistributionChannelCodes: [], DistributionChannel: "",
+                        VersionDropDowns: DropDownEmpty, Version: "", ProductVersionId: 0,
+                        BenefitCodes: [], Benefit: "",
+                    },
+                ],
+                Products: [
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                    { ComparisonTreatyPricingProductBenefitBos: [] },
+                ],
+                IsGenerated: false,
+            },
+            methods: {
+                //Parameter value changes
+                changeCedant: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.UnderwritingMethod = "";
+                    $('#underwritingMethod' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#underwritingMethod" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.QuotationName = "";
+                    comparison.ProductName = "";
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductType = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var underwritingMethodCodes = comparison.UnderwritingMethodCodes;
+                    var quotationNameDropDowns = comparison.QuotationNameDropDowns;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var productTypeDropdowns = comparison.ProductTypeDropdowns;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            underwritingMethodCodes = data.underwritingMethodCodes;
+                            quotationNameDropDowns = data.quotationNameDropDowns;
+                            productNameDropDowns = data.productNameDropDowns;
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            productTypeDropdowns = data.productTypeDropdowns;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.UnderwritingMethodCodes = underwritingMethodCodes;
+                    $('#underwritingMethod' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: underwritingMethodCodes });
+                    comparison.QuotationNameDropDowns = quotationNameDropDowns;
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.ProductTypeDropdowns = productTypeDropdowns;
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeUnderwritingMethod: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.QuotationName = "";
+                    comparison.ProductName = "";
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductType = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var quotationNameDropDowns = comparison.QuotationNameDropDowns;
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var productTypeDropdowns = comparison.ProductTypeDropdowns;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            quotationNameDropDowns = data.quotationNameDropDowns;
+                            productNameDropDowns = data.productNameDropDowns;
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            productTypeDropdowns = data.productTypeDropdowns;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.QuotationNameDropDowns = quotationNameDropDowns;
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.ProductTypeDropdowns = productTypeDropdowns;
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeQuotationName: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductName = "";
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductType = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var productNameDropDowns = comparison.ProductNameDropDowns;
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var productTypeDropdowns = comparison.ProductTypeDropdowns;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            quotationName: comparison.QuotationName,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productNameDropDowns = data.productNameDropDowns;
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            productTypeDropdowns = data.productTypeDropdowns;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.ProductNameDropDowns = productNameDropDowns;
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.ProductTypeDropdowns = productTypeDropdowns;
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeProductName: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.TargetSegment = "";
+                    $('#targetSegment' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#targetSegment" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.ProductType = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var targetSegmentCodes = comparison.TargetSegmentCodes;
+                    var productTypeDropdowns = comparison.ProductTypeDropdowns;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            quotationName: comparison.QuotationName,
+                            productId: comparison.ProductName,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            targetSegmentCodes = data.targetSegmentCodes;
+                            productTypeDropdowns = data.productTypeDropdowns;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.TargetSegmentCodes = targetSegmentCodes;
+                    $('#targetSegment' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: targetSegmentCodes });
+                    comparison.ProductTypeDropdowns = productTypeDropdowns;
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeTargetSegment: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.ProductType = "";
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var productTypeDropdowns = comparison.ProductTypeDropdowns;
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            quotationName: comparison.QuotationName,
+                            productId: comparison.ProductName,
+                            targetSegment: formattedTargetSegment,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            productTypeDropdowns = data.productTypeDropdowns;
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.ProductTypeDropdowns = productTypeDropdowns;
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeProductType: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.DistributionChannel = "";
+                    $('#distributionChannel' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#distributionChannel" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var distributionChannelCodes = comparison.DistributionChannelCodes;
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            quotationName: comparison.QuotationName,
+                            productId: comparison.ProductName,
+                            targetSegment: formattedTargetSegment,
+                            productType: comparison.ProductType,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            distributionChannelCodes = data.distributionChannelCodes;
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.DistributionChannelCodes = distributionChannelCodes;
+                    $('#distributionChannel' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: distributionChannelCodes });
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeDistributionChannel: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+                    var formattedUnderwritingMethodArr = [];
+                    var formattedUnderwritingMethod = null;
+                    var formattedTargetSegmentArr = [];
+                    var formattedTargetSegment = null;
+                    var formattedDistributionChannelArr = [];
+                    var formattedDistributionChannel = null;
+
+                    if (comparison.UnderwritingMethod) {
+                        var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        underwritingMethodArr.forEach(function (value) {
+                            if (comparison.UnderwritingMethodCodes.includes(value)) {
+                                formattedUnderwritingMethodArr.push(value);
+                            }
+                        });
+                        formattedUnderwritingMethod = formattedUnderwritingMethodArr.join();
+                    }
+
+                    if (comparison.TargetSegment) {
+                        var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        targetSegmentArr.forEach(function (value) {
+                            if (comparison.TargetSegmentCodes.includes(value)) {
+                                formattedTargetSegmentArr.push(value);
+                            }
+                        });
+                        formattedTargetSegment = formattedTargetSegmentArr.join();
+                    }
+
+                    if (comparison.DistributionChannel) {
+                        var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                            return item.trim();
+                        });
+                        distributionChannelArr.forEach(function (value) {
+                            if (comparison.DistributionChannelCodes.includes(value)) {
+                                formattedDistributionChannelArr.push(value);
+                            }
+                        });
+                        formattedDistributionChannel = formattedDistributionChannelArr.join();
+                    }
+
+                    // Reset Value
+                    comparison.Version = "";
+                    comparison.ProductVersionId = 0;
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var versionDropDowns = comparison.VersionDropDowns;
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("UpdateProductComparisonData", "Report"))",
+                        type: "POST",
+                        data: {
+                            treatyPricingCedantId: comparison.Cedant,
+                            underwritingMethod: formattedUnderwritingMethod,
+                            quotationName: comparison.QuotationName,
+                            productId: comparison.ProductName,
+                            targetSegment: formattedTargetSegment,
+                            productType: comparison.ProductType,
+                            distributionChannel: formattedDistributionChannel,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            versionDropDowns = data.versionDropDowns;
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.VersionDropDowns = versionDropDowns;
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+                changeVersion: function (index) {
+                    this.IsGenerated = false;
+                    var comparison = this.Comparisons[index];
+
+                    // Reset Value
+                    comparison.Benefit = "";
+                    $('#benefit' + index + 'TokenField').tokenfield('setTokens', []);
+                    $("#benefit" + index + "TokenField-tokenfield").attr("placeholder", "Type here");
+
+                    var benefitCodes = comparison.BenefitCodes;
+
+                    $.ajax({
+                        url: "@(Url.Action("GetProductComparisonBenefitCodes", "Report"))",
+                        type: "POST",
+                        data: {
+                            versionId: comparison.Version,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            benefitCodes = data.benefitCodes;
+                        }
+                    });
+
+                    comparison.BenefitCodes = benefitCodes;
+                    $('#benefit' + index + 'TokenField').data('bs.tokenfield').$input.autocomplete({ source: benefitCodes });
+                },
+
+                resetErrorMessage() {
+                    $('#errorMessage').empty();
+                    $('#errorMessage').hide();
+                },
+                generate: function () {
+                    this.resetErrorMessage();
+                    var comparisons = this.Comparisons;
+                    var versionIds = [];
+                    var benefitCodes = [];
+
+                    var errorList = [];
+
+                    //Comparison parameters checking
+                    var comparisonsCount = 0;
+                    comparisons.forEach(function (comparison, index) {
+                        if (comparison.Cedant) {
+                            comparisonsCount++;
+
+                            if (comparison.UnderwritingMethod) {
+                                var isValid = true;
+                                var underwritingMethodArr = comparison.UnderwritingMethod.split(",").map(function (item) {
+                                    return item.trim();
+                                });
+                                var underwritingMethodCodesArr = [];
+                                comparison.UnderwritingMethodCodes.forEach(function (item) {
+                                    underwritingMethodCodesArr.push(item.trim());
+                                });
+                                underwritingMethodArr.forEach(function (value) {
+                                    if (!underwritingMethodCodesArr.includes(value)) {
+                                        isValid = false;
+                                    }
+                                });
+                                if (!isValid)
+                                    errorList.push("Please fill in the correct Underwriting Method for " + comparison.Name + ".");
+                            } else {
+                                //errorList.push("Please fill in the Underwriting Method for " + comparison.Name + ".");
+                            }
+
+                            //if (!comparison.QuotationName) {
+                            //    errorList.push("Please select Quotation Name for " + comparison.Name + ".");
+                            //}
+                            if (!comparison.ProductName) {
+                                errorList.push("Please select Product for " + comparison.Name + ".");
+                            }
+
+                            if (comparison.TargetSegment) {
+                                var isValid = true;
+                                var targetSegmentArr = comparison.TargetSegment.split(",").map(function (item) {
+                                    return item.trim();
+                                });
+                                var targetSegmentCodesArr = [];
+                                comparison.TargetSegmentCodes.forEach(function (item) {
+                                    targetSegmentCodesArr.push(item.trim());
+                                });
+                                targetSegmentArr.forEach(function (value) {
+                                    if (!targetSegmentCodesArr.includes(value)) {
+                                        isValid = false;
+                                    }
+                                });
+                                if (!isValid)
+                                    errorList.push("Please fill in the correct Target Segment for " + comparison.Name + ".");
+                            } else {
+                                //errorList.push("Please fill in the Target Segment for " + comparison.Name + ".");
+                            }
+
+                            //if (!comparison.ProductType) {
+                            //    errorList.push("Please select Product Type for " + comparison.Name + ".");
+                            //}
+
+                            if (comparison.DistributionChannel) {
+                                var isValid = true;
+                                var distributionChannelArr = comparison.DistributionChannel.split(",").map(function (item) {
+                                    return item.trim();
+                                });
+                                var distributionChannelCodesArr = [];
+                                comparison.DistributionChannelCodes.forEach(function (item) {
+                                    distributionChannelCodesArr.push(item.trim());
+                                });
+                                distributionChannelArr.forEach(function (value) {
+                                    if (!distributionChannelCodesArr.includes(value)) {
+                                        isValid = false;
+                                    }
+                                });
+                                if (!isValid)
+                                    errorList.push("Please fill in the correct Distribution Channel for " + comparison.Name + ".");
+                            } else {
+                                //errorList.push("Please fill in the Distribution Channel for " + comparison.Name + ".");
+                            }
+
+                            if (!comparison.Version) {
+                                errorList.push("Please select Version for " + comparison.Name + ".");
+                            }
+
+                            if (comparison.Benefit) {
+                                var isValid = true;
+                                var benefitArr = comparison.Benefit.split(",").map(function (item) {
+                                    return item.trim();
+                                });
+                                var benefitCodesArr = [];
+                                comparison.BenefitCodes.forEach(function (item) {
+                                    benefitCodesArr.push(item.trim());
+                                });
+                                benefitArr.forEach(function (value) {
+                                    if (!benefitCodesArr.includes(value)) {
+                                        isValid = false;
+                                    }
+                                });
+                                if (!isValid)
+                                    errorList.push("Please fill in the correct Benefit Code for " + comparison.Name + ".");
+                            } else {
+                                errorList.push("Please fill in the Benefit Code for " + comparison.Name + ".");
+                            }
+                        }
+                    });
+                    if (comparisonsCount < 2)
+                        errorList.push("Please select at least two Products for comparison.");
+
+                    if (errorList.length > 0) {
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+
+                    var versionId = 0;
+                    comparisons.forEach(function (comparison) {
+                        versionIds.push(comparison.Version);
+                        benefitCodes.push(comparison.Benefit);
+                    });
+
+                    var products = this.Products;
+
+                    $.ajax({
+                        url: "@(Url.Action("GenerateProductBenefitComparison", "Report"))",
+                        type: "POST",
+                        data: {
+                            versionIds: versionIds,
+                            benefitCodes: benefitCodes,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            products = data.products;
+                        },
+                    });
+                    this.Products = products;
+
+                    this.IsGenerated = true;
+                },
+                download: function () {
+                    this.resetErrorMessage();
+
+                    if ($('#outputTable').length == 0) {
+                        var errorList = [];
+                        errorList.push("Please generate the report first.");
+
+                        text = "<ul>";
+                        for (i = 0; i < errorList.length; i++) {
+                            text += "<li>" + errorList[i] + "</li>";
+                        }
+                        text += "</ul>";
+                        $('#errorMessage').append(text);
+                        $('#errorMessage').show();
+
+                        var elmnt = document.getElementById("errorMessage");
+                        elmnt.scrollIntoView();
+                        return;
+                    }
+                    else {
+                        var rows = [];
+                        var benefitCount = [];
+                        var separator = [];
+
+                        for (let i = 0; i < 10; i++) {
+                            benefitCount[i] = 0;
+                            separator[i] = "";
+                        }
+
+                        this.Products.forEach(function (product, index) {
+                            if (product) {
+                                benefitCount[index] = product.ComparisonTreatyPricingProductBenefitBos.length;
+                                
+                                for (let j = 0; j < benefitCount[index]; j++) {
+                                    separator[index] = separator[index] + "|";
+                                }
+                            }
+                            else {
+                                separator[index] = "|";
+                            }
+                        });
+
+                        $('#outputTable thead tr').each(function () {
+                            var header = "Product Code";
+                            var column1 = $(this).find('td').eq(0).text().trim();
+                            var column2 = $(this).find('td').eq(1).text().trim();
+                            var column3 = $(this).find('td').eq(2).text().trim();
+                            var column4 = $(this).find('td').eq(3).text().trim();
+                            var column5 = $(this).find('td').eq(4).text().trim();
+                            var column6 = $(this).find('td').eq(5).text().trim();
+                            var column7 = $(this).find('td').eq(6).text().trim();
+                            var column8 = $(this).find('td').eq(7).text().trim();
+                            var column9 = $(this).find('td').eq(8).text().trim();
+                            var column10 = $(this).find('td').eq(9).text().trim();
+                            var row = header
+                                + "|" + column1 + separator[0] + column2 + separator[1] + column3 + separator[2] + column4 + separator[3] + column5
+                                + separator[4] + column6 + separator[5] + column7 + separator[6] + column8 + separator[7] + column9 + separator[8] + column10 + separator[9];
+                            rows.push(row);
+                        });
+
+                        var rowNum = 2;
+                        $('#outputTable tbody tr').each(function () {
+                            if (rowNum <= 51) {
+                                var header = $(this).find('td').eq(0).text().trim();
+                                var column1 = $(this).find('td').eq(1).text().trim();
+                                var column2 = $(this).find('td').eq(2).text().trim();
+                                var column3 = $(this).find('td').eq(3).text().trim();
+                                var column4 = $(this).find('td').eq(4).text().trim();
+                                var column5 = $(this).find('td').eq(5).text().trim();
+                                var column6 = $(this).find('td').eq(6).text().trim();
+                                var column7 = $(this).find('td').eq(7).text().trim();
+                                var column8 = $(this).find('td').eq(8).text().trim();
+                                var column9 = $(this).find('td').eq(9).text().trim();
+                                var column10 = $(this).find('td').eq(10).text().trim();
+                                var row = header
+                                    + "|" + column1 + separator[0] + column2 + separator[1] + column3 + separator[2] + column4 + separator[3] + column5
+                                    + separator[4] + column6 + separator[5] + column7 + separator[6] + column8 + separator[7] + column9 + separator[8] + column10 + separator[9];
+                                rows.push(row);
+                            }
+                            else {
+                                var row = "";
+
+                                for (var i = 0; i < 11; i++) {
+                                    if (i == 0) {
+                                        row = $(this).find('td').eq(i).text().trim();
+                                    } else {
+                                        for (var j = 0; j < benefitCount[i - 1]; j++) {
+                                            var cellValue = $("#benefitNum_" + (i - 1).toString() + "_" + rowNum.toString() + "_" + j.toString()).text();
+
+                                            if (cellValue > "") {
+                                                row += "|" + cellValue;
+                                            }
+                                        }
+                                    }
+                                }
+                                rows.push(row);
+                            }
+                            rowNum++;
+                        });
+
+                        $.ajax({
+                            url: "@(Url.Action("ProcessProductComparisonHtmlTableReport", "Report"))",
+                            type: "POST",
+                            data: {
+                                //type: "ProductBenefit",
+                                rows: rows,
+                                benefitCount: benefitCount,
+                            },
+                            cache: false,
+                            async: false,
+                            success: function (data) {
+                                if (data.errors.length > 0) {
+
+                                }
+                                else {
+                                    window.location = '/Report/DownloadComparisonHtmlTableReport'
+                                        + '?fileName=' + data.fileName;
+                                }
+                            },
+                        });
+                    }
+                },
+            },
+            created: function () {
+                var i = 0;
+                this.Comparisons.forEach(function (comparison) {
+                    if (comparison != null) {
+                        initTokenfield(i);
+                        i++;
+                    }
+                });
+            },
+            updated() {
+            }
+        });
+</script>
+}

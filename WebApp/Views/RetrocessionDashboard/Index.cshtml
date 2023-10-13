@@ -1,0 +1,381 @@
+﻿@{
+    ViewBag.Title = "Operational Dashboard";
+
+    System.Web.Script.Serialization.JavaScriptSerializer serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card" id="app">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-10">
+                <h4>Operational Dashboard</h4>
+            </div>
+            <div class="col-md-2 text-right">
+                <select v-model="SelectedYear" class="col-sm-10 form-control selectpicker" ref="select" :name="SelectedYear" data-container="body" v-on:change="refreshRecords()">
+                    <option v-for="year in Years" :value="year.Value">{{ year.Text }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card-body card-body-dashboard">
+            <canvas id="Chart" style="width:100%; height:250px;"></canvas>
+        </div>
+        <div class="card-body card-body-dashboard">
+            <div class="table-responsive my-3">
+                <table class="table table-hover tableBodyScroll">
+                    <thead>
+                        <tr>
+                            <th class="w-30">Ceding Company</th>
+                            <th class="w-20">SOA Quarter</th>
+                            <th class="w-20">No of complete SOA</th>
+                            <th class="w-20">No of Incomplete Retro Statement</th>
+                            <th class="w-10 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody style="max-height: 310px !important;">
+                        <tr v-if="!DirectRetroStatues.length">
+                            <td colspan="5" class="no-data">No available data found.</td>
+                        </tr>
+                        <tr v-for="(directRetroStatues, index) in DirectRetroStatues">
+                            <td class="w-30">{{ directRetroStatues.CedingCompany }}</td>
+                            <td class="w-20">{{ directRetroStatues.SoaQuarter }}</td>
+                            <td class="w-20 text-right">{{ directRetroStatues.NoOfCompletedSOA }}</td>
+                            <td class="w-20 text-right">{{ directRetroStatues.NoOfIncompleteRetroStatement }}</td>
+                            <td class="w-10 text-center">
+                                <a href="javascript:void(0);" v-on:click="openDirectRetroDetailModal(index)"><span class="fas fa-eye" /></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-body card-body-dashboard">
+            <div class="col-form-label font-weight-bold">
+                Per Life Processing Status
+            </div>
+            <div class="table-responsive my-3">
+                <table class="table table-hover tableBodyScroll">
+                    <thead>
+                        <tr>
+                            <th class="w-15 bg-white"></th>
+                            <th class="w-25 bg-white"></th>
+                            <th class="w-60 text-center" colspan="4">SOA Quarter</th>
+                        </tr>
+                        <tr class="second-row-header">
+                            <th class="w-15">Retro Treaty</th>
+                            <th class="w-25">Task</th>
+                            <th class="w-15">{{ SelectedYear }} Q1</th>
+                            <th class="w-15">{{ SelectedYear }} Q2</th>
+                            <th class="w-15">{{ SelectedYear }} Q3</th>
+                            <th class="w-15">{{ SelectedYear }} Q4</th>
+                        </tr>
+                    </thead>
+                    <tbody style="max-height: 380px !important;">
+                        <tr v-if="!PerLifeProcessingStatues.length">
+                            <td colspan="6" class="no-data">No available data found.</td>
+                        </tr>
+                        <tr v-for="(perLifeProcessingStatus, index) in PerLifeProcessingStatues">
+                            <td v-if="index % MaxTask == 0" :rowspan="MaxTask" class="w-15 align-middle">{{ perLifeProcessingStatus.RetroTreaty }}</td>
+                            <td v-else class="w-15"></td>
+                            <td class="w-25">{{ perLifeProcessingStatus.Task }}</td>
+                            <td class="w-15">{{ perLifeProcessingStatus.Q1 }}</td>
+                            <td class="w-15">{{ perLifeProcessingStatus.Q2 }}</td>
+                            <td class="w-15">{{ perLifeProcessingStatus.Q3 }}</td>
+                            <td class="w-15">{{ perLifeProcessingStatus.Q4 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal fade" id="directRetroDetailModal" tabindex="-1" role="dialog" aria-labelledby="directRetroDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="directRetroDetailModalLabel">SOA Quarter Overview</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                <label class="col-form-label">Ceding Company</label>
+                                <input class="form-control" v-model="DirectRetroDetailModal.CedingCompany" readonly />
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                <label class="col-form-label">SOA Quarter</label>
+                                <input class="form-control" v-model="DirectRetroDetailModal.SoaQuarter" readonly />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mid-line-1">
+                                <label class="col-form-label">No of Completed SOA</label>
+                                <input class="form-control" v-model="DirectRetroDetailModal.NoOfCompletedSOA" readonly />
+                            </div>
+                            <div class="form-group col-md-6 mid-line-2">
+                                <label class="col-form-label">No of Incomplete Retro Statement</label>
+                                <input class="form-control" v-model="DirectRetroDetailModal.NoOfIncompleteRetroStatement" readonly />
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="col-form-label font-weight-bold">
+                                List of Treaty Codes
+                            </div>
+                            <table class="table table-hover tableBodyScroll">
+                                <thead>
+                                    <tr>
+                                        <th class="w-45">Treaty Code</th>
+                                        <th class="w-45">Direct Retro Status</th>
+                                        <th class="w-10 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="max-height: 310px !important;">
+                                    <tr v-if="!DirectRetroDetailModal.Detail.length">
+                                        <td colspan="3" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(Detail, index) in DirectRetroDetailModal.Detail">
+                                        <td class="w-45">{{ Detail.TreatyCode }}</td>
+                                        <td class="w-45">{{ RetroStatusList[Detail.DirectRetroStatus] }}</td>
+                                        <td class="w-10 text-center">
+                                            <a href="javascript:void(0);" v-bind:href="directRetroLink(index)" title="Edit Direct Retro"><span class="fas fa-pencil-alt" /></a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var DirectRetroStatues = @Html.Raw(serializer.Serialize(ViewBag.DirectRetroStatues));
+        var PerLifeProcessingStatues = @Html.Raw(serializer.Serialize(ViewBag.PerLifeProcessingStatues));
+        var Years = @Html.Raw(serializer.Serialize(ViewBag.DropDownYears));
+        var RetroStatusList = @Html.Raw(serializer.Serialize(ViewBag.RetroStatusList));
+        var CurrentDate = new Date();
+        var CurrentYear = CurrentDate.getFullYear();
+        var RefreshDirectRetroStatuesUrl = "@(Url.Action("RefreshDirectRetroStatues"))";
+        var RefreshPerLifeProcessingStatuesUrl = "@(Url.Action("RefreshPerLifeProcessingStatues"))";
+        var GetDirectRetroStatusDetailUrl = "@(Url.Action("GetDirectRetroStatusDetail"))";
+        var MaxTask = '@ViewBag.MaxTask';
+
+        var DirectRetroUrl = '@Url.Action("Edit", "DirectRetro")/';
+
+        var chart = null;
+
+        $(document).ready(function () {
+            chart = new Chart("Chart", {
+                type: "bar",
+                data: {
+                    labels: [],
+                    datasets: [],
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: "#01509F",
+                            },
+                            title: {
+                                display: true,
+                                text: "SOA Summary",
+                                color: "#01509F",
+                                font: { weight: 'bold' }
+                            },
+                        }
+                    },
+                    responsive: true,
+                    interaction: {
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: "#01509F",
+                                beginAtZero: true,
+                            },
+                            stacked: true,
+                        },
+                        y: {
+                            ticks: {
+                                color: "#01509F",
+                                beginAtZero: true
+                            },
+                            stacked: true,
+                        },
+                    }
+                }
+            });
+
+            app.refreshRefreshDirectRetroStatues();
+            app.refreshPerLifeProcessingStatues();
+        });
+
+        function groupBy(list, keyGetter) {
+            const map = new Map();
+            list.forEach((item) => {
+                const key = keyGetter(item);
+                const collection = map.get(key);
+                if (!collection) {
+                    map.set(key, [item]);
+                } else {
+                    collection.push(item);
+                }
+            });
+            return map;
+        }
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                SelectedYear: CurrentYear,
+                RetroStatusList: RetroStatusList ? RetroStatusList : [],
+                DirectRetroStatues: DirectRetroStatues ? DirectRetroStatues : [],
+                PerLifeProcessingStatues: PerLifeProcessingStatues ? PerLifeProcessingStatues : [],
+                MaxTask: MaxTask ? MaxTask : 7,
+                DirectRetroDetailModal: {
+                    CedantId: "",
+                    CedingCompany: "",
+                    SoaQuarter: "",
+                    NoOfCompletedSOA: "",
+                    NoOfIncompleteRetroStatement: "",
+                    Detail: [],
+                },
+            },
+            methods: {
+                refreshRecords: function () {
+                    this.refreshRefreshDirectRetroStatues();
+                    this.refreshPerLifeProcessingStatues();
+                },
+                refreshRefreshDirectRetroStatues: function () {
+                    var directRetroStatues = this.DirectRetroStatues;
+                    var year = this.SelectedYear;
+                    $.ajax({
+                        url: RefreshDirectRetroStatuesUrl ? RefreshDirectRetroStatuesUrl : null,
+                        type: "POST",
+                        data: { year: year },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            directRetroStatues = data.DirectRetroStatues;
+                        }
+                    });
+                    this.DirectRetroStatues = directRetroStatues;
+                    this.resetChart();
+                },
+                refreshPerLifeProcessingStatues: function () {
+                    var perLifeProcessingStatues = this.PerLifeProcessingStatues;
+                    var year = this.SelectedYear;
+                    $.ajax({
+                        url: RefreshPerLifeProcessingStatuesUrl ? RefreshPerLifeProcessingStatuesUrl : null,
+                        type: "POST",
+                        data: { year: year },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            perLifeProcessingStatues = data.PerLifeProcessingStatues;
+                        }
+                    });
+                    this.PerLifeProcessingStatues = perLifeProcessingStatues;
+                },
+                openDirectRetroDetailModal: function (index) {
+                    var directRetroStatus = this.DirectRetroStatues[index];
+                    this.DirectRetroDetailModal = directRetroStatus;
+
+                    var isError = true;
+                    var Detail = this.DirectRetroDetailModal.Detail;
+                    $.ajax({
+                        url: GetDirectRetroStatusDetailUrl ? GetDirectRetroStatusDetailUrl : null,
+                        type: "POST",
+                        data: {
+                            cedantId: directRetroStatus.CedantId,
+                            SoaQuarter: directRetroStatus.SoaQuarter,
+                        },
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            Detail = data.Detail;
+                            isError = false;
+                        }
+                    });
+                    this.DirectRetroDetailModal.Detail = Detail;
+                    if (!isError)
+                        $("#directRetroDetailModal").modal()
+                    else
+                        alert("Error encountered during retrieving data")
+                },
+                directRetroLink: function (index) {
+                    var item = this.DirectRetroDetailModal.Detail[index];
+                    if (item != null && item.DirectRetroId != '') {
+                        var url = DirectRetroUrl + item.DirectRetroId;
+                        return url
+                    }
+                },
+                resetChart: function () {
+                    var directRetroStatues = this.DirectRetroStatues;
+
+                    if (directRetroStatues.length > 0) {
+                        $('#Chart').show();
+
+                        var labels = [];
+                        var noOfCompletedSoaArr = [];
+                        var noOfIncompleteRetroStatementArr = [];
+
+                        directRetroStatues.forEach((item, index) => {
+                            var quarterStr = item.SoaQuarter.slice(item.SoaQuarter.length - 2);
+                            var label = item.CedingCompany + ' ' + quarterStr;
+                            labels.push(label);
+                            noOfCompletedSoaArr.push(item.NoOfCompletedSOA);
+                            noOfIncompleteRetroStatementArr.push(item.NoOfIncompleteRetroStatement);
+                        });
+
+
+                        var datasets = [
+                            {
+                                label: 'No of Completed SOA',
+                                data: noOfCompletedSoaArr,
+                                backgroundColor: "#e5edf5",
+                                barThickness: 24,
+                                stack: 'Stack 0',
+                            },
+                            {
+                                label: 'No of Incomplete Retro Statement',
+                                data: noOfIncompleteRetroStatementArr,
+                                backgroundColor: "#01509f",
+                                barThickness: 24,
+                                stack: 'Stack 0',
+                            },
+                        ];
+
+                        chart.data.labels = labels;
+                        chart.data.datasets = datasets;
+
+                        chart.update();
+                    } else {
+                        $('#Chart').hide();
+                    }
+                },
+            },
+            created: function () {
+
+            },
+            updated() {
+
+            }
+        });
+    </script>
+}

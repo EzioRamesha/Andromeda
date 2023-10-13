@@ -1,0 +1,58 @@
+﻿@model WebApp.Models.SanctionKeywordViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<div class="form-row">
+    <div class="form-group col-md-12">
+        <div class="text-right mt-4">
+            <button type="button" v-on:click="addNew" class="btn btn-add-sub mt-2" disabled="@disabled">ADD NEW</button>
+        </div>
+        <input type="hidden" v-model="DetailMaxIndex" name="detailMaxIndex" />
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th style="display: none;"></th>
+                        <th class="w-90">Keyword</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!SanctionKeywordDetails.length">
+                        <td colspan="10" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(detail, index) in SanctionKeywordDetails">
+                        <td class="text-center">{{index+1}}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'detailId[' + index + ']'" class="form-control" :value="detail.Id">
+                        </td>
+                        <td>
+                            <input v-model="detail.Keyword" :name="'keyword[' + index + ']'" class="form-control" :disabled="Disabled == 'True'" :value="detail.Keyword" maxlength=@ViewBag.KeywordMaxLength>
+                        </td>
+                        <td class="text-center">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeDetail(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var SanctionKeywordModel = @Html.Raw(Json.Encode(Model));
+    var SanctionKeywordDetails = @Html.Raw(Json.Encode(ViewBag.SanctionKeywordDetailBos));
+    var ModelId = "@Model.Id";
+    var Disabled = "@disabled";
+</script>

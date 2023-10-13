@@ -1,0 +1,170 @@
+﻿@model WebApp.Models.ClaimDataConfigViewModel
+
+@{
+    ViewBag.Title = "Claim Data Configuration";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Index");
+    var disabled = ViewBag.Disabled;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card" id="app">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+
+        @using (Html.BeginForm("Delete", "ClaimDataConfig", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+
+                @Html.HiddenFor(model => model.Id)
+                @Html.HiddenFor(model => model.Status, new { @Id = "configStatus" })
+                @Html.HiddenFor(model => model.ModuleId)
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Code, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Code, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.Code, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.CedantId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.CedantId, (List<SelectListItem>)ViewBag.DropDownCedants,
+                            htmlAttributes: new { @class = "form-control", @v_model = "ClaimDataConfig.CedantId", onchange = "getTreaty(this.value)", disabled = true })
+                        @Html.ValidationMessageFor(model => model.CedantId, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.TreatyId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.TreatyId, (List<SelectListItem>)ViewBag.DropDownTreaties, htmlAttributes: new { @class = "form-control", disabled = true })
+                        @Html.ValidationMessageFor(model => model.TreatyId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.FileType, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.FileType, (List<SelectListItem>)ViewBag.DropDownFileTypes,
+                            htmlAttributes: new { @class = "form-control", onchange = "changeFileType(this.value)", @id = "fileTypeSelect", disabled = true })
+                        @Html.ValidationMessageFor(model => model.FileType, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2" v-if="ClaimDataConfig.FileType == 1">
+                        @Html.LabelFor(model => model.Worksheet, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.Worksheet, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.Worksheet, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2" v-if="ClaimDataConfig.FileType == 2">
+                        @Html.LabelFor(model => model.Delimiter, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.Delimiter, (List<SelectListItem>)ViewBag.DropDownDelimiters,
+                            htmlAttributes: new { @class = "form-control", @id = "delimiterSelect", disabled = true })
+                        @Html.ValidationMessageFor(model => model.Delimiter, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.HasHeader, htmlAttributes: new { @class = "col-form-label" })
+                        <select id="HasHeader" v-model="ClaimDataConfig.HasHeader" name="HasHeader" class="form-control" disabled=@disabled>
+                            <option selected="selected" value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                        @Html.ValidationMessageFor(model => model.HasHeader, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2" v-if="ClaimDataConfig.HasHeader == true">
+                        @Html.LabelFor(model => model.HeaderRow, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.HeaderRow, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.HeaderRow, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.StartRow, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.StartRow, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.StartRow, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EndRow, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.EndRow, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.EndRow, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.StartColumn, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.StartColumn, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.StartColumn, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.EndColumn, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.EditorFor(model => model.EndColumn, new { htmlAttributes = (disabled ? (object)new { @class = "form-control", disabled = disabled } : new { @class = "form-control" }) })
+                        @Html.ValidationMessageFor(model => model.EndColumn, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <br />
+                <br />
+
+                @Html.Partial("_ClaimDataConfigDetails")
+
+                <br />
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-outline-cancel btn-cancel" })
+                    </div>
+                    <div class="form-group col-md-6">
+                        <div class="row m-0 p-0 float-right">
+                            <div class="mr-2">
+                                <button type="submit" class="btn btn-del">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        var ClaimDataConfigStatus = @BusinessObject.Claims.ClaimDataConfigBo.StatusDraft;
+        var StatusPending = @BusinessObject.Claims.ClaimDataConfigBo.StatusPending;
+        var InputTableKey = @BusinessObject.Claims.ClaimDataMappingBo.TransformFormulaInputTable;
+        var CustomFieldKey = @BusinessObject.StandardOutputBo.TypeCustomField;
+        var StatusDraft = @BusinessObject.Claims.ClaimDataConfigBo.StatusDraft;
+    </script>
+    @Scripts.Render("~/Scripts/models/ClaimDataConfig.js")
+}

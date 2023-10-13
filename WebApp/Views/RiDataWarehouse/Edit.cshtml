@@ -1,0 +1,130 @@
+﻿@using WebApp.Models
+@model WebApp.Models.RiDataWarehouseViewModel
+
+@{
+    ViewBag.Title = "RI Data Warehouse";
+    ViewBag.Action = "View";
+
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+    ViewBag.ListPageUrl = Url.Action("Index", new
+    {
+        IsSnapshotVersion = routeValue["IsSnapshotVersion"],
+        CutOffId = routeValue["CutOffId"],
+        CedantId = routeValue["CedantId"],
+        TreatyCode = routeValue["TreatyCode"],
+        SoaQuarter = routeValue["SoaQuarter"],
+        RiskPeriodStartDate = routeValue["RiskPeriodStartDate"],
+        RiskPeriodEndDate = routeValue["RiskPeriodEndDate"],
+        InsuredName = routeValue["InsuredName"],
+        PolicyNumber = routeValue["PolicyNumber"],
+        InsuredDateOfBirth = routeValue["InsuredDateOfBirth"],
+        CedingPlanCode = routeValue["CedingPlanCode"],
+        BenefitCode = routeValue["BenefitCode"],
+        TreatyCodeFilter = routeValue["TreatyCodeFilter"],
+        BenefitCodeFilter = routeValue["BenefitCodeFilter"],
+        ReinsBasisCode = routeValue["ReinsBasisCode"],
+        FundsAccountingTypeCode = routeValue["FundsAccountingTypeCode"],
+        PremiumFrequencyCode = routeValue["PremiumFrequencyCode"],
+        ReportPeriodMonth = routeValue["ReportPeriodMonth"],
+        ReportPeriodYear = routeValue["ReportPeriodYear"],
+        TransactionTypeCode = routeValue["TransactionTypeCode"],
+        PolicyNumberFilter = routeValue["PolicyNumberFilter"],
+        IssueDatePol = routeValue["IssueDatePol"],
+        IssueDateBen = routeValue["IssueDateBen"],
+        ReinsEffDatePol = routeValue["ReinsEffDatePol"],
+    });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+
+        @Html.Hidden("ReinsBasisCode")
+        @Html.Hidden("FundsAccountingTypeCode")
+        @Html.Hidden("PremiumFrequencyCode")
+        @Html.Hidden("ReportPeriodMonth")
+        @Html.Hidden("ReportPeriodYear")
+        @Html.Hidden("TransactionTypeCode")
+        @Html.Hidden("IssueDatePol")
+        @Html.Hidden("IssueDateBen")
+        @Html.Hidden("ReinsEffDatePol")
+
+        <div class="table-responsive">
+            <table class="table table-hover tableBodyScroll" id="dataFieldTable">
+                <thead>
+                    <tr>
+                        <th class="w-40"> Label </th>
+                        <th class="w-60"> Value </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            @Html.TextBox("SearchProperty", null, new { @class = "form-control form-control-sm w-50", @placeholder = "Type here", onkeyup = "toggleRowView()" })
+                        </th>
+                        <th>
+                            @Html.CheckBox("HasValue", htmlAttributes: new { onclick = "toggleRowView()" }) @Html.Label("Has Value Only", htmlAttributes: new { @class = "col-form-label" })
+                        </th>
+                    </tr>
+                </thead>
+                <tbody style="max-height: 60vh">
+                    @foreach (var property in (Dictionary<string, string>)ViewBag.Values)
+                    {
+                        <tr>
+                            <td class="w-40">
+                                @property.Key
+                            </td>
+                            <td class="w-60">
+                                @property.Value
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    var values = @Html.Raw(Json.Encode(ViewBag.Values));
+
+    function toggleRowView() {
+        var search = $('#SearchProperty').val();
+        var filter = search.toUpperCase();
+        var hasValueOnly = $('#HasValue').prop("checked");
+
+        var table = document.getElementById("dataFieldTable");
+        var tr = table.getElementsByTagName("tr");
+
+        var i = 2;
+        for (var key of Object.keys(values)) {
+            var value = values[key];
+
+            if (hasValueOnly == true && value == null) {
+                tr[i].style.display = "none";
+            } else if (key.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+            i++;
+        }
+    }
+
+    function isEmpty(td) {
+        var value = td.innerText; 
+        if (value === "" || $(td).text() === '')
+            return true;
+
+        return false;
+    }
+</script>

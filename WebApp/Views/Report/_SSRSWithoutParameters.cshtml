@@ -1,0 +1,31 @@
+﻿@using ReportViewerForMvc;
+
+<div class="card">
+    <div class="card-body" id="reportCardBody">
+        @if (ViewBag.RptViewer != null)
+        {
+            @Html.ReportViewer(ViewBag.RptViewer as Microsoft.Reporting.WebForms.ReportViewer, new { scrolling = "yes", width = "100%" })
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            $("#reportCardBody iframe").on('load', function () {
+                var style = '<style>' +
+                    'table input{ border-color: #01509F !important; color: #01509F; }' +
+                    'table button{ color: #01509F; }' +
+                    'table select{ border-color: #01509F !important; color: #01509F; }' +
+                    'table label{ color: #01509F; }' +
+                    'table p{ color: #01509F; }' +
+                    '.msrs-printdialog-divbuttonscontainer p{ color: white !important; }' +
+                    '.SubmitButtonCell{ border-color: #F3F8FE !important; }' +
+                    '.SubmitButtonCell .SubmitButton{ background: #C9A66E; color: white; border: 0; padding: 10px;}</style > ';
+
+                $("#reportCardBody iframe").contents().find('head').append(style);
+            });
+        });
+    </script>
+}

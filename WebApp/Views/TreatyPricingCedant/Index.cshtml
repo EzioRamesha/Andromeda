@@ -1,0 +1,233 @@
+﻿@using PagedList.Mvc
+
+@model PagedList.IPagedList<WebApp.Models.TreatyPricingCedantViewModel>
+
+@{
+    ViewBag.Title = "Cedant";
+    var routeValue = (RouteValueDictionary)ViewBag.RouteValue;
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-4"><h4>@ViewBag.Title</h4></div>
+            <div class="col-md-8 text-right  btn-row-inline">
+                <button class="btn btn-add" onclick="resetAddNewModal()" data-toggle="modal" data-target="#addNewModal">ADD NEW</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body card-listing">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCode;
+                                @Shared.Html.Sorter(ViewBag, "Code", "Code", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-30">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortCedantId;
+                                @Shared.Html.Sorter(ViewBag, "Ceding Company", "CedantId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-20">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortReinsuranceTypePickListDetailId;
+                                @Shared.Html.Sorter(ViewBag, "Reinsurance Type", "ReinsuranceTypePickListDetailId", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortNoOfProduct;
+                                @Shared.Html.Sorter(ViewBag, "No of Product", "NoOfProduct", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="w-15">
+                            @{
+                                routeValue["SortOrder"] = ViewBag.SortNoOfDocument;
+                                @Shared.Html.Sorter(ViewBag, "No of Document", "NoOfDocument", @Url.Action("Index", routeValue))
+                            }
+                        </th>
+                        <th class="text-center w-5">
+                            Action
+                        </th>
+                    </tr>
+
+                    <tr>
+                        @using (Html.BeginForm("Index", "TreatyPricingCedant", FormMethod.Get))
+                        {
+                            string sortOrder = ViewBag.SortOrder;
+
+                            @Html.Hidden("SortOrder", sortOrder)
+                            <th>
+                                @Html.TextBox("Code", null, new { @class = "form-control", placeholder = "Type here" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("CedantId", (List<SelectListItem>)ViewBag.DropDownCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.DropDownList("ReinsuranceTypePickListDetailId", (List<SelectListItem>)ViewBag.DropDownReinsuranceTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                            </th>
+                            <th>
+                                @Html.TextBox("NoOfProduct", null, new { @class = "form-control", placeholder = "Type here", @type = "number", @min = "0" })
+                            </th>
+                            <th>
+                                @Html.TextBox("NoOfDocument", null, new { @class = "form-control", placeholder = "Type here", @type = "number", @min = "0" })
+                            </th>
+                            <th class="text-center align-middle">
+                                <div class="btn-row-action">
+                                    <a href="@Url.Action("Index")" class="btn btn-circle" title="Clear">
+                                        <span class="fas fa-backspace" />
+                                    </a>
+                                    <button type="submit" title="Search" class="btn-circle"><span class="fas fa-search" /></button>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                @if (Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Code)
+                            </td>
+                            <td>
+                                @item.Cedant.ToString()
+                            </td>
+                            <td>
+                                @item.ReinsuranceTypePickListDetail.ToString()
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.NoOfProduct)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.NoOfDocument)
+                            </td>
+                            <td class="text-center">
+                                <a href="@Url.Action("Edit", new { id = item.Id })" class="bg-transparent linkbtn"><span class="fas fa-pencil-alt"></span></a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="no-data">No available data found.</td>
+                    </tr>
+                }
+
+            </table>
+        </div>
+
+        <div class="pagination-footer">
+            <div class="row">
+                <div class="col-md-4">
+                    @Html.Partial("_PageInfo")
+                </div>
+                <div class="col-md-8">
+                    @Html.PagedListPager(Model, Page => Url.Action("Index", new
+                    {
+                        Code = routeValue["Code"],
+                        FileName = routeValue["CedantId"],
+                        FileType = routeValue["ReinsuranceTypePickListDetailId"],
+                        SourceId = routeValue["NoOfProduct"],
+                        CreatedBy = routeValue["NoOfDocument"],
+                        SortOrder = ViewBag.SortOrder,
+                        Page,
+                    }), Shared.Html.GetPagedListRenderOptions())
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("AddCedant", "TreatyPricingCedant"))
+{
+    <div class="modal fade" id="addNewModal" tabindex="-1" role="dialog" aria-labelledby="addNewModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addNewModalTitle">Add New</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="addNewError" style="display:none;"></div>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            @Html.Label("Ceding Company", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("NewCedantId", (List<SelectListItem>)ViewBag.DropDownNewCedants, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Reinsurance Type", htmlAttributes: new { @class = "col-form-label" })
+                            @Html.DropDownList("NewReinsuranceTypePickListDetailId", (List<SelectListItem>)ViewBag.DropDownReinsuranceTypes, htmlAttributes: new { @class = "form-control selectpicker", @data_container = "body" })
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-submit" id="saveBtn">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/Scripts/date-quarter.js")
+
+    <script>
+        function resetAddNewModal() {
+            $('#NewCedantId').val('');
+            $('#NewReinsuranceTypePickListDetailId').val('');
+
+            $('#NewCedantId').selectpicker('refresh');
+            $('#NewReinsuranceTypePickListDetailId').selectpicker('refresh');
+
+            resetModalValidation();
+        }
+
+        function resetModalValidation() {
+            $('#addNewError').empty();
+            $('#addNewError').hide();
+        }
+
+        $('#saveBtn').on("click", function () {
+            resetModalValidation();
+            var errorList = [];
+
+            if (!$('#NewCedantId').val()) {
+                errorList.push("Ceding Company is Required.");
+            }
+            if (!$('#NewReinsuranceTypePickListDetailId').val()) {
+                errorList.push("Reinsurance Type is Required.");
+            }
+
+            if (errorList.length > 0) {
+                text = "<ul>";
+                for (i = 0; i < errorList.length; i++) {
+                    text += "<li>" + errorList[i] + "</li>";
+                }
+                text += "</ul>";
+                $('#addNewError').append(text);
+                $('#addNewError').show();
+                return false;
+            }
+        });
+    </script>
+}

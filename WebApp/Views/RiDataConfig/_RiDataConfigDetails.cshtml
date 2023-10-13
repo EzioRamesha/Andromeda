@@ -1,0 +1,857 @@
+﻿@model WebApp.Models.RiDataConfigViewModel
+
+@{
+    var disabled = ViewBag.Disabled || (ViewBag.ReadOnly == null ? false : ViewBag.ReadOnly);
+}
+
+<!DOCTYPE html>
+@Html.Partial("_StandardOutputInfo")
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a data-toggle="tab" href="#rawDataMapping" class="active underline-tab">Raw Data Mapping</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#preComputation1">Pre-Computation 1</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#preComputation2">Pre-Computation 2</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#preValidation">Pre-Validation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#postComputation">Post-Computation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" v-on:click="expandTextarea()" href="#postValidation">Post-Validation</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#statusHistory">Status History</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remark">Remark</a></li>
+</ul>
+
+<div class="tab-content underline-tab-content">
+    <div class="tab-pane fade show active" id="rawDataMapping" role="tabpanel" aria-labelledby="rawDataMapping-tab">
+
+        <div class="form-row" style="margin:0;">
+            <div>
+                @Html.LabelFor(model => model.IsColumnToRowMapping, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                <div class="row m-0 p-0">
+                    <div class="mr-2"> <p style="color: #004BA2;">Disable</p> </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" v-model="RiDataConfig.IsColumnToRowMapping" id="IsColumnToRowMappingSwitch" name="IsColumnToRowMapping" value="true" disabled=@disabled>
+                        <label class="custom-control-label" for="IsColumnToRowMappingSwitch">Enable</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group col-xs-2 ml-5" v-if="RiDataConfig.IsColumnToRowMapping">
+                @Html.LabelFor(model => model.NumberOfRowMapping, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+                <input type="number" class="form-control" id="rowMappingNo" v-model="RiDataConfig.NumberOfRowMapping" name="NumberOfRowMapping" disabled=@disabled placeholder="Type here" />
+                @Html.ValidationMessageFor(model => model.NumberOfRowMapping, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="text-right my-4">
+            <button type="button" v-on:click="addRawDataMapping" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+        </div>
+
+        <input type="hidden" v-model="RawDataMappingMaxIndex" name="RiDataMapping.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">Raw Column Sequence</th>
+                        <th class="w-15">Raw Column Name</th>
+                        <th class="w-15" v-if="RiDataConfig.IsColumnToRowMapping">Row</th>
+                        <th class="w-15" v-if="RiDataConfig.Delimiter == @BusinessObject.RiDatas.RiDataConfigBo.DelimiterFixedLength">Length</th>
+                        <th class="w-15">Standard Output Column</th>
+                        <th class="w-10">Field Type</th>
+                        <th class="w-10">Transform Formula</th>
+                        <th class="w-10">Input Value/Formula</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!RawDataMappings.length">
+                        <td colspan="9" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(rawDataMapping, index) in RawDataMappings">
+                        <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'RiDataMapping.Id[' + index + ']'" class="form-control" :value="rawDataMapping.Id" disabled=@disabled />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('RawColumnName' + index)" v-on:blur="autoCollapseTextarea('RawColumnName' + index)" :id="'RawColumnName' + index" v-model.lazy="rawDataMapping.RawColumnName" class="form-control textarea-auto-expand" :name="'RiDataMapping.RawColumnName[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td v-if="RiDataConfig.IsColumnToRowMapping">
+                            <select v-model="rawDataMapping.Row" class="form-control " :name="'RiDataMapping.Row[' + index + ']'" disabled=@disabled data-container="body">
+                                <option :value="0">All</option>
+                                <option v-for="rowCount in parseInt(RiDataConfig.NumberOfRowMapping ? RiDataConfig.NumberOfRowMapping : 0)" :value="rowCount">{{ rowCount }}</option>
+                            </select>
+                        </td>
+                        <td v-if="RiDataConfig.Delimiter == @BusinessObject.RiDatas.RiDataConfigBo.DelimiterFixedLength">
+                            <input type="number" v-model.lazy="rawDataMapping.Length" class="form-control" :name="'RiDataMapping.Length[' + index + ']'" placeholder="Type here" disabled=@disabled />
+                        </td>
+                        <td>
+                            <select v-model="rawDataMapping.StandardOutputId" class="form-control stdOutput chosen" :id="'mappingStdOutput_' + index" :name="'RiDataMapping.StandardOutputId[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="stdOutput in StandardOutputList" :value="stdOutput.Id">{{ stdOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td><div v-if="rawDataMapping.StandardOutputId"> {{ StandardOutputList[indexOfStandardOutput(rawDataMapping.StandardOutputId)].DataTypeName }} </div></td>
+                        <td>
+                            <select v-model.lazy="rawDataMapping.TransformFormula" class="form-control" :name="'RiDataMapping.TransformFormula[' + index + ']'" v-if="rawDataMapping.ShowTransformFormula" v-on:change="toggleInputValue(index)" disabled=@disabled data-container="body">
+                                <option :value="0" selected="selected">Please select</option>
+                                <option v-for="(transformFormula, transformFormulaId) in TransformFormulaList[StandardOutputList[indexOfStandardOutput(rawDataMapping.StandardOutputId)].DataType - 1]" v-if="transformFormula != null" :value="transformFormulaId">
+                                    {{ transformFormula }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <div style="display: flex;" v-if="rawDataMapping.DefaultValueType == @BusinessObject.RiDatas.RiDataMappingBo.DefaultValueString">
+                                <input v-model.lazy="rawDataMapping.DefaultValue"
+                                       class="form-control d-inline"
+                                       :name="'RiDataMapping.DefaultValue[' + index + ']'"
+                                       :disabled="rawDataMapping.DisableInputValueFormula" disabled=@disabled placeholder="Type here" />
+
+                                <a href="javascript:void(0);"
+                                   data-toggle="tooltip"
+                                   data-placement="top"
+                                   title="{start position},{length}"
+                                   class="tooltip-link"
+                                   v-if="rawDataMapping.TransformFormula == @BusinessObject.RiDatas.RiDataMappingBo.TransformFormulaSubstring"><span class="fa fa-question-circle" /></a>
+
+                                <a href="javascript:void(0);"
+                                   data-toggle="modal"
+                                   data-target="#dateFormatModal"
+                                   class="tooltip-link"
+                                   v-if="rawDataMapping.TransformFormula == @BusinessObject.RiDatas.RiDataMappingBo.TransformFormulaInputFormat"><span class="fa fa-question-circle" /></a>
+                            </div>
+
+                            <select v-model.lazy="rawDataMapping.DefaultValue" class="form-control" :name="'RiDataMapping.DefaultValue[' + index + ']'"
+                                    v-else-if="rawDataMapping.DefaultValueType == @BusinessObject.RiDatas.RiDataMappingBo.DefaultValueBoolean" disabled=@disabled data-container="body">
+                                <option :value="''" selected="selected">Please Select</option>
+                                <option :value="'False'">False</option>
+                                <option :value="'True'">True</option>
+                            </select>
+
+                            <select v-model.lazy="rawDataMapping.DefaultObjectId" class="form-control" :name="'RiDataMapping.DefaultObjectId[' + index + ']'"
+                                    v-else-if="rawDataMapping.DefaultValueType == @BusinessObject.RiDatas.RiDataMappingBo.DefaultValueDropDown" disabled=@disabled data-container="body">
+                                <option :value=null selected="selected">Please Select</option>
+                                <option v-if="rawDataMapping.StandardOutputId == TreatyCodeKey" v-for="defaultObject in TreatyCodeBos" :value="defaultObject.Id">{{ defaultObject.Code }}</option>
+                                <option v-if="rawDataMapping.StandardOutputId == MlreBenefitCodeKey" v-for="defaultObject in BenefitBos" :value="defaultObject.Id">{{ defaultObject.Code }}</option>
+                                <option v-if="rawDataMapping.StandardOutputId != MlreBenefitCodeKey && rawDataMapping.StandardOutputId != TreatyCodeKey" v-for="defaultObject in rawDataMapping.DefaultObjectList" :value="defaultObject.Id">{{ defaultObject.Code }}</option>
+                            </select>
+
+                            <button type="button" class="form-control" v-else-if="rawDataMapping.DefaultValueType == @BusinessObject.RiDatas.RiDataMappingBo.DefaultValueMappingDetail"
+                                    data-toggle="modal" data-target="#dropDownMappingModal" v-on:click="openDropDownMapping(index)">
+                                <span v-if="Disabled == 'True'">View Data</span>
+                                <span v-if="Disabled == 'False'">Enter Data</span>
+                            </button>
+
+                            <input type="hidden" v-model="rawDataMapping.DetailMaxIndex" :name="'RiDataMappingDetail.MaxIndex[' + index + ']'" />
+                            <div v-for="(mappingDetail, mappingDetailIndex) in rawDataMapping.RiDataMappingDetailBos">
+                                <input type="hidden" :name="'RiDataMappingDetail.Id[' + index + '][' + mappingDetailIndex + ']'" class="form-control" :value="mappingDetail.Id" />
+                                <input type="hidden" v-model="mappingDetail.RawValue" :name="'RiDataMappingDetail.RawValue[' + index + '][' + mappingDetailIndex + ']'" />
+                                <input type="hidden" v-model="mappingDetail.IsRawValueEmpty" :name="'RiDataMappingDetail.IsRawValueEmpty[' + index + '][' + mappingDetailIndex + ']'" />
+                                <input type="hidden" v-model="mappingDetail.PickListDetailId" :name="'RiDataMappingDetail.PickListDetailId[' + index + '][' + mappingDetailIndex + ']'" />
+                                <input type="hidden" v-model="mappingDetail.IsPickDetailIdEmpty" :name="'RiDataMappingDetail.IsPickDetailIdEmpty[' + index + '][' + mappingDetailIndex + ']'" />
+                            </div>
+                        </td>
+                        <td class="text-center align-middle">
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removeRawDataMapping(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal fade" id="dropDownMappingModal" tabindex="-1" role="dialog" aria-labelledby="dropDownMappingModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Drop Down Mapping</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-right">
+                            <button type="button" v-on:click="addMappingDetail" class="btn btn-add-sub mt-4" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover my-3">
+                                <thead>
+                                    <tr>
+                                        <th class="w-5">#</th>
+                                        <th colspan="2" class="w-45">Raw Value</th>
+                                        <th colspan="2" class="w-45">Value</th>
+                                        <th class="w-5">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="!MappingDetails.length">
+                                        <td colspan="6" class="no-data">No available data found.</td>
+                                    </tr>
+                                    <tr v-for="(dropDownMapping, index) in MappingDetails">
+                                        <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                                        <td><input v-model.lazy="dropDownMapping.RawValue" class="form-control" :disabled="Disabled == 'True' ? Disabled : dropDownMapping.IsRawValueEmpty" placeholder="Type here" /></td>
+                                        <td class="align-middle">
+                                            <div class="form-check">
+                                                <input class="form-check-input" v-on:click="resetRawValue(index)" :disabled="Disabled == 'True' ? Disabled : (NullRawValue != index && NullRawValue != null)" v-model="dropDownMapping.IsRawValueEmpty" type="checkbox" />Empty
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select v-model="dropDownMapping.PickListDetailId" class="form-control" :disabled="Disabled == 'True' ? Disabled : dropDownMapping.IsPickDetailIdEmpty" data-container="body">
+                                                <option value=null>Please Select</option>
+                                                <option v-for="pickListDetail in PickListDetailList" :value="pickListDetail.Id">{{ pickListDetail.Code }}</option>
+                                            </select>
+                                        </td>
+                                        <td class="align-middle">
+                                            <div class="form-check">
+                                                <input class="form-check-input" v-on:click="resetPickListDetailId(index)" disabled=@disabled v-model="dropDownMapping.IsPickDetailIdEmpty" type="checkbox" />Empty
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (disabled)
+                                            {
+                                                <span class="fas fa-trash-alt text-secondary" />
+                                            }
+                                            else
+                                            {
+                                                <a href="javascript:void(0);" v-on:click="removeMappingDetail(index)"><span class="fas fa-trash-alt" /></a>
+                                            }
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-right form-row-btn">
+                            <button type="button" class="btn btn-cancel" data-dismiss="modal" v-if="Disabled == 'True'">CLOSE</button>
+                            <button type="button" v-on:click="saveMappingDetail" class="btn btn-submit" data-dismiss="modal" v-if="Disabled == 'False'">SAVE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="tab-pane fade" id="preComputation1" role="tabpanel" aria-labelledby="preComputation1-tab">
+        <div>
+            @Html.LabelFor(model => model.IsDataCorrection, htmlAttributes: new { @class = "col-form-label font-weight-bold" })
+            <div class="row m-0 p-0">
+                <div class="mr-2">
+                    <p style="color: #004BA2;">Disable</p>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" v-model="RiDataConfig.IsDataCorrection" id="IsDataCorrectionSwitch" name="IsDataCorrection" value="true" disabled=@disabled />
+                    <label class="custom-control-label" for="IsDataCorrectionSwitch">Enable</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PC1')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addNewPreComputation1" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PreComputation1MaxIndex" name="RiDataComputation1.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-10">Sort</th>
+                        <th class="w-15">Description</th>
+                        <th class="w-15">Condition</th>
+                        <th class="w-20">Standard Output Column</th>
+                        <th class="w-15">Mode</th>
+                        <th class="w-15">Calculation Formula</th>
+                        <th class="w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PreComputation1.length">
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(riDataComputation, index) in PreComputation1">
+                        <td style="padding-top: 18px;">
+                            {{index+1}}
+                            <input type="hidden" :name="'RiDataComputation1.Id[' + index + ']'" class="form-control" :value="riDataComputation.Id" />
+                            <input type="hidden" :name="'RiDataComputation1.Step[' + index + ']'" class="form-control" :value="riDataComputation.Step" />
+                        </td>
+                        <td>
+                            <input type="number" :name="'RiDataComputation1.SortIndex[' + index + ']'" class="form-control"  v-model.lazy="riDataComputation.SortIndex" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreCom1' + index + '_Description')" :id="'PreCom1' + index + '_Description'" v-model.lazy="riDataComputation.Description" class="form-control textarea-auto-expand" :name="'RiDataComputation1.Description[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreCom1' + index + '_Condition')" :id="'PreCom1' + index + '_Condition'" v-model.lazy="riDataComputation.Condition" class="form-control textarea-auto-expand" :name="'RiDataComputation1.Condition[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td>
+                            <select v-model="riDataComputation.StandardOutputId" class="form-control stdOutput chosen" :name="'RiDataComputation1.StandardOutputId[' + index + ']'" :id="'preCom1StdOutput_' + index" disabled=@disabled data-container="body">
+                                <option v-for="stdOutput in StandardOutputList" :value="stdOutput.Id" v-if="stdOutput.Id != @BusinessObject.StandardOutputBo.TypeCustomField">{{ stdOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="riDataComputation.Mode" v-on:change="changePreComputation1Mode(index)" class="form-control" :name="'RiDataComputation1.Mode[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(riDataComputationMode, riDataComputationModeId) in ComputationModeList" :value="riDataComputationModeId">
+                                    {{ riDataComputationMode }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <span v-if="riDataComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeTable">
+                                <select v-model="riDataComputation.CalculationFormula" class="form-control comTable chosen" :name="'RiDataComputation1.CalculationFormula[' + index + ']'" :id="'preCom1Table_' + index" disabled=@disabled data-container="body">
+                                    <option v-for="(riDataComputationTable, riDataComputationTableId) in ComputationTableList" :value="riDataComputationTable.Value">
+                                        {{ riDataComputationTable.Text }}
+                                    </option>
+                                </select>
+                            </span>
+                            <select v-if="riDataComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeRiskDate" v-model="riDataComputation.CalculationFormula" class="form-control" :name="'RiDataComputation1.CalculationFormula[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(riDataComputationRiskDate, riDataComputationRiskDateId) in ComputationRiskDateList" :value="riDataComputationRiskDate.Value">
+                                    {{ riDataComputationRiskDate.Text }}
+                                </option>
+                            </select>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('PreCom1' + index + '_Formula')" :id="'PreCom1' + index + '_Formula'" v-if="riDataComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeFormula" v-model.lazy="riDataComputation.CalculationFormula" class="form-control textarea-auto-expand" :name="'RiDataComputation1.CalculationFormula[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea>
+                        </td>
+                        <td class="text-center align-middle">
+                            <a href="javascript:void(0);" class="mr-2" v-on:click="openSingleEval(riDataComputation, false)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePreComputation1(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <div class="tab-pane fade" id="preComputation2" role="tabpanel" aria-labelledby="preComputation2-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PC2')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addNewPreComputation2" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PreComputation2MaxIndex" name="RiDataComputation2.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-10">Sort</th>
+                        <th class="w-15">Description</th>
+                        <th class="w-15">Condition</th>
+                        <th class="w-20">Standard Output Column</th>
+                        <th class="w-15">Mode</th>
+                        <th class="w-15">Calculation Formula</th>
+                        <th class="w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PreComputation2.length">
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(riDataComputation, index) in PreComputation2">
+                        <td style="padding-top: 18px;">
+                            {{index+1}}
+                            <input type="hidden" :name="'RiDataComputation2.Id[' + index + ']'" class="form-control" :value="riDataComputation.Id" />
+                            <input type="hidden" :name="'RiDataComputation2.Step[' + index + ']'" class="form-control" :value="riDataComputation.Step" />
+                        </td>
+                        <td>
+                            <input type="number" :name="'RiDataComputation2.SortIndex[' + index + ']'" class="form-control"  v-model.lazy="riDataComputation.SortIndex" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreCom2' + index + '_Description')" :id="'PreCom2' + index + '_Description'" v-model.lazy="riDataComputation.Description" class="form-control textarea-auto-expand" :name="'RiDataComputation2.Description[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreCom2' + index + '_Condition')" :id="'PreCom2' + index + '_Condition'" v-model.lazy="riDataComputation.Condition" class="form-control textarea-auto-expand" :name="'RiDataComputation2.Condition[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td>
+                            <select v-model="riDataComputation.StandardOutputId" class="form-control stdOutput chosen" :name="'RiDataComputation2.StandardOutputId[' + index + ']'" :id="'preCom2StdOutput_' + index" disabled=@disabled data-container="body">
+                                <option v-for="stdOutput in StandardOutputList" :value="stdOutput.Id" v-if="stdOutput.Id != @BusinessObject.StandardOutputBo.TypeCustomField">{{ stdOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="riDataComputation.Mode" v-on:change="changePreComputation2Mode(index)" class="form-control" :name="'RiDataComputation2.Mode[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(riDataComputationMode, riDataComputationModeId) in ComputationModeList" :value="riDataComputationModeId">
+                                    {{ riDataComputationMode }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <span v-if="riDataComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeTable">
+                                <select v-model="riDataComputation.CalculationFormula" class="form-control comTable chosen" :name="'RiDataComputation2.CalculationFormula[' + index + ']'" :id="'preCom2Table_' + index" disabled=@disabled data-container="body">
+                                    <option v-for="(riDataComputationTable, riDataComputationTableId) in ComputationTableList" :value="riDataComputationTable.Value">
+                                        {{ riDataComputationTable.Text }}
+                                    </option>
+                                </select>
+                            </span>
+                            <select v-if="riDataComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeRiskDate" v-model="riDataComputation.CalculationFormula" class="form-control" :name="'RiDataComputation2.CalculationFormula[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(riDataComputationRiskDate, riDataComputationRiskDateId) in ComputationRiskDateList" :value="riDataComputationRiskDate.Value">
+                                    {{ riDataComputationRiskDate.Text }}
+                                </option>
+                            </select>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('PreCom2' + index + '_Formula')" :id="'PreCom2' + index + '_Formula'" v-if="riDataComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeFormula" v-model.lazy="riDataComputation.CalculationFormula" class="form-control textarea-auto-expand" :name="'RiDataComputation2.CalculationFormula[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea>
+                        </td>
+                        <td class="text-center align-middle">
+                            <a href="javascript:void(0);" class="mr-2" v-on:click="openSingleEval(riDataComputation, true)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePreComputation2(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <div class="tab-pane fade" id="preValidation" role="tabpanel" aria-labelledby="preValidation-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PV')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addPreValidation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PreValidationMaxIndex" name="RiDataPreValidation1.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-40">Description</th>
+                        <th class="w-50">Condition</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PreValidations.length">
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(preValidation, index) in PreValidations">
+                        <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'RiDataPreValidation1.Id[' + index + ']'" class="form-control" :value="preValidation.Id" />
+                            <input type="hidden" :name="'RiDataPreValidation1.Step[' + index + ']'" class="form-control" :value="preValidation.Step" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreVal' + index + '_Description')" :id="'PreVal' + index + '_Description'" v-model.lazy="preValidation.Description" class="form-control textarea-auto-expand" :name="'RiDataPreValidation1.Description[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PreVal' + index + '_Condition')" :id="'PreVal' + index + '_Condition'" v-model.lazy="preValidation.Condition" class="form-control textarea-auto-expand" :name="'RiDataPreValidation1.Condition[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td class="text-center align-middle">
+                            <a class="mr-2" href="javascript:void(0);" v-on:click="openSingleEval(preValidation, true)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePreValidation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="postComputation" role="tabpanel" aria-labelledby="postComputation-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PoC')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addNewPostComputation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PostComputationMaxIndex" name="RiDataComputation3.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-10">Sort</th>
+                        <th class="w-15">Description</th>
+                        <th class="w-15">Condition</th>
+                        <th class="w-20">Standard Output Column</th>
+                        <th class="w-15">Mode</th>
+                        <th class="w-15">Calculation Formula</th>
+                        <th class="w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PostComputations.length">
+                        <td colspan="7" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(riDataPostComputation, index) in PostComputations">
+                        <td style="padding-top: 18px;">
+                            {{index+1}}
+                            <input type="hidden" :name="'RiDataComputation3.Id[' + index + ']'" class="form-control" :value="riDataPostComputation.Id" />
+                            <input type="hidden" :name="'RiDataComputation3.Step[' + index + ']'" class="form-control" :value="riDataPostComputation.Step" />
+                        </td>
+                        <td>
+                            <input type="number" :name="'RiDataComputation3.SortIndex[' + index + ']'" class="form-control"  v-model.lazy="riDataPostComputation.SortIndex" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostCom' + index + '_Description')" :id="'PostCom' + index + '_Description'" v-model.lazy="riDataPostComputation.Description" class="form-control textarea-auto-expand" :name="'RiDataComputation3.Description[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostCom' + index + '_Condition')" :id="'PostCom' + index + '_Condition'" v-model.lazy="riDataPostComputation.Condition" class="form-control textarea-auto-expand" :name="'RiDataComputation3.Condition[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea></td>
+                        <td>
+                            <select v-model="riDataPostComputation.StandardOutputId" class="form-control stdOutput chosen" :name="'RiDataComputation3.StandardOutputId[' + index + ']'" :id="'postComStdOutput_' + index" disabled=@disabled data-container="body">
+                                <option v-for="stdOutput in StandardOutputList" :value="stdOutput.Id" v-if="stdOutput.Id != @BusinessObject.StandardOutputBo.TypeCustomField">{{ stdOutput.Code }}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select v-model="riDataPostComputation.Mode" v-on:change="changePostComputationMode(index)" class="form-control" :name="'RiDataComputation3.Mode[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(riDataComputationMode, riDataComputationModeId) in ComputationModeList" :value="riDataComputationModeId">
+                                    {{ riDataComputationMode }}
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <span v-if="riDataPostComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeTable">
+                                <select v-model="riDataPostComputation.CalculationFormula" class="form-control comTable chosen" :name="'RiDataComputation3.CalculationFormula[' + index + ']'" :id="'postComTable_' + index" disabled=@disabled data-container="body">
+                                    <option v-for="(riDataComputationTable, riDataComputationTableId) in ComputationTableList" :value="riDataComputationTable.Value">
+                                        {{ riDataComputationTable.Text }}
+                                    </option>
+                                </select>
+                            </span>
+                            <select v-if="riDataPostComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeRiskDate" v-model="riDataPostComputation.CalculationFormula" class="form-control" :name="'RiDataComputation3.CalculationFormula[' + index + ']'" disabled=@disabled data-container="body">
+                                <option v-for="(riDataComputationRiskDate, riDataComputationRiskDateId) in ComputationRiskDateList" :value="riDataComputationRiskDate.Value">
+                                    {{ riDataComputationRiskDate.Text }}
+                                </option>
+                            </select>
+                            <textarea rows="1" v-on:focus="autoExpandTextarea('PostCom' + index + '_Formula')" :id="'PostCom' + index + '_Formula'" v-if="riDataPostComputation.Mode == @BusinessObject.RiDatas.RiDataComputationBo.ModeFormula" v-model.lazy="riDataPostComputation.CalculationFormula" class="form-control textarea-auto-expand" :name="'RiDataComputation3.CalculationFormula[' + index + ']'" placeholder="Type here" disabled=@disabled></textarea>
+                        </td>
+                        <td class="text-center align-middle">
+                            <a href="javascript:void(0);" class="mr-2" v-on:click="openSingleEval(riDataPostComputation, true)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePostComputation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <div class="tab-pane fade" id="postValidation" role="tabpanel" aria-labelledby="postValidation-tab">
+        <div class="form-row float-right my-4">
+            <div class="mr-2">
+                <button type="button" v-on:click="eval('PoV')" class="btn btn-upload" style="width: auto;">Evaluate Formula</button>
+            </div>
+            <div class="mr-2">
+                <button type="button" v-on:click="addPostValidation" class="btn btn-add-sub" style="width: auto;" disabled=@disabled>ADD NEW ROW</button>
+            </div>
+        </div>
+
+        <input type="hidden" v-model="PostValidationMaxIndex" name="RiDataPreValidation2.MaxIndex" />
+        <div class="table-responsive pb-2">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="w-5">#</th>
+                        <th class="w-40">Description</th>
+                        <th class="w-50">Condition</th>
+                        <th class="text-center w-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!PostValidations.length">
+                        <td colspan="4" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(postValidation, index) in PostValidations">
+                        <td style="padding-top: 18px;">{{ index + 1 }}</td>
+                        <td style="display:none">
+                            <input type="hidden" :name="'RiDataPreValidation2.Id[' + index + ']'" class="form-control" :value="postValidation.Id" />
+                            <input type="hidden" :name="'RiDataPreValidation2.Step[' + index + ']'" class="form-control" :value="postValidation.Step" />
+                        </td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostVal' + index + '_Description')" :id="'PostVal' + index + '_Description'" v-model.lazy="postValidation.Description" class="form-control textarea-auto-expand" :name="'RiDataPreValidation2.Description[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td><textarea rows="1" v-on:focus="autoExpandTextarea('PostVal' + index + '_Condition')" :id="'PostVal' + index + '_Condition'" v-model.lazy="postValidation.Condition" class="form-control textarea-auto-expand" :name="'RiDataPreValidation2.Condition[' + index + ']'" placeholder="Type Here" disabled=@disabled></textarea></td>
+                        <td class="text-center align-middle">
+                            <a class="mr-2" href="javascript:void(0);" v-on:click="openSingleEval(postValidation, true)"><span class="fas fa-calculator" /></a>
+                            @if (disabled)
+                            {
+                                <span class="fas fa-trash-alt text-secondary" />
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0);" v-on:click="removePostValidation(index)"><span class="fas fa-trash-alt" /></a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="statusHistory" role="tabpanel" aria-labelledby="statusHistory-tab">
+        <div class="table-responsive">
+            <table class="table table-hover my-3">
+                <thead>
+                    <tr>
+                        <th class="w-35">Status</th>
+                        <th class="w-35">Update Date & time</th>
+                        <th class="w-30">Updated By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="!StatusHistories || !StatusHistories.length">
+                        <td colspan="3" class="no-data">No available data found.</td>
+                    </tr>
+                    <tr v-for="(statusHistory, index) in StatusHistories">
+                        <td class="va-middle"><span class="status-badge">{{ statusHistory.StatusName }}</span></td>
+                        <td>{{ statusHistory.UpdatedAtStr }}</td>
+                        <td>{{ statusHistory.UpdatedByName }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="remark" role="tabpanel" aria-labelledby="remark-tab">
+        @Html.Partial("_Remark", new ViewDataDictionary { { "dropdownRemarkStatus", ViewBag.DropDownStatus } })
+    </div>
+</div>
+
+<div class="modal fade" id="evaluationResultModal" tabindex="-1" role="dialog" aria-labelledby="evaluationResultModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Formula Evaluation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-success" v-if="CurrentEvalSuccess">{{ CurrentEvalMsg[0] }}</p>
+                <ul v-if="!CurrentEvalSuccess">
+                    <li v-for="(evaluation, index) in CurrentEvalMsg" class="text-danger">{{ evaluation }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="evaluationModal" tabindex="-1" role="dialog" aria-labelledby="evaluationModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Formula Evaluation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="max-height: 500px; overflow: auto;">
+                    <span class="font-weight-bold"><label class="col-form-label" for="Values">Values</label></span>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="w-30">Label</th>
+                                <th class="w-30">Type</th>
+                                <th class="w-40">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="(!CurrentEvalSingle.StandardOutputBos || !CurrentEvalSingle.StandardOutputBos.length) && !CurrentEvalSingle.HasQuarter">
+                                <td colspan="3" class="no-data">No available data found.</td>
+                            </tr>
+                            <tr v-if="CurrentEvalSingle.HasQuarter">
+                                <td>Quarter</td>
+                                <td>@BusinessObject.StandardOutputBo.GetDataTypeName(@BusinessObject.StandardOutputBo.DataTypeString)</td>
+                                <td><input v-if="CurrentEvalSingle.HasQuarter" v-model.lazy="CurrentEvalSingle.Quarter" class="form-control" placeholder="Type Here (eg. 2020 Q1)" /></td>
+                            </tr>
+                            <tr v-if="CurrentEvalSingle.HasOriQuarter">
+                                <td>ORI.Quarter</td>
+                                <td>@BusinessObject.StandardOutputBo.GetDataTypeName(@BusinessObject.StandardOutputBo.DataTypeString)</td>
+                                <td><input v-if="CurrentEvalSingle.HasOriQuarter" v-model.lazy="CurrentEvalSingle.OriQuarter" class="form-control" placeholder="Type Here (eg. 2020 Q1)" /></td>
+                            </tr>
+                            <tr v-for="(standardOutputBo, index) in CurrentEvalSingle.StandardOutputBos">
+                                <td>{{ standardOutputBo.Code }}</td>
+                                <td>{{ standardOutputBo.DataTypeName }}</td>
+                                <td>
+                                    <div class="input-w-icon" v-on:click="openDatePicker(index)">
+                                        <input v-model.lazy="standardOutputBo.DummyValue" :id="standardOutputBo.Code + '_' + index" class="form-control" :placeholder="getPlaceHolder(standardOutputBo.DataType)" autocomplete="off" />
+                                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" v-if="standardOutputBo.DataType == DataTypeDate" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div v-if="CurrentEvalSingle.ShowResult" class="mt-4">
+                        <span class="font-weight-bold"><label class="col-form-label" for="Result">Result</label></span>
+                        <table class="table table-hover">
+                            <tbody>
+                                <tr v-for="(result, index) in CurrentEvalSingle.Result" v-if="CurrentEvalSingle.Success">
+                                    <td class="w-20">{{ result.title }}</td>
+                                    <td class="w-80">{{ result.value }}</td>
+                                </tr>
+                                <tr v-for="error in CurrentEvalSingle.Errors" v-if="!CurrentEvalSingle.Success">
+                                    <td class="w-100 text-danger">{{ error }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-right mt-2">
+                    <button type="button" class="btn btn-submit" v-on:click="evalSingle()">Evaluate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="importConfigModal" tabindex="-1" role="dialog" aria-labelledby="importConfigModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Configuration</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>Filename: &nbsp;<span id="fileName"></span></span>
+                <br />
+                <span>Existing data will be overriden</span>
+                <div class="text-right">
+                    <input class="btn btn-primary" type="submit" href="#" formaction="@(Url.Action("Import"))" value="Confirm" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="dateFormatModal" tabindex="-1" role="dialog" aria-labelledby="dateFormatModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Date Format</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Format</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>d</td>
+                            <td>Day of the month ( 1 - 31 )</td>
+                        </tr>
+                        <tr>
+                            <td>dd</td>
+                            <td>Day of the month with leading zero ( 01 - 31 )</td>
+                        </tr>
+                        <tr>
+                            <td>ddd</td>
+                            <td>Abbreviated name of the day ( Mon, Tue, Wed, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>dddd</td>
+                            <td>Name of the day ( Monday, Tuesday, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>Month number ( 1 - 12 )</td>
+                        </tr>
+                        <tr>
+                            <td>MM</td>
+                            <td>Month number with leading zero ( 01 - 12 )</td>
+                        </tr>
+                        <tr>
+                            <td>MMM</td>
+                            <td>Abbreviated month name ( Nov, Dec, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>MMMM</td>
+                            <td>Month name ( November, December, etc )</td>
+                        </tr>
+                        <tr>
+                            <td>y</td>
+                            <td>Year without leading zero ( 2015 would be 15 )</td>
+                        </tr>
+                        <tr>
+                            <td>yy</td>
+                            <td>Year with leading zero ( 2015 would be 015 )</td>
+                        </tr>
+                        <tr>
+                            <td>yyyy</td>
+                            <td>Year ( 2015 )</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Models
+    var RiDataConfigModel = @Html.Raw(Json.Encode(Model));
+    var RawDataMappings = @Html.Raw(Json.Encode(ViewBag.RiDataMappingBos));
+    var PreComputation1 = @Html.Raw(Json.Encode(ViewBag.RiDataPreComputation1Bos));
+    var PreComputation2 = @Html.Raw(Json.Encode(ViewBag.RiDataPreComputation2Bos));
+    var PreValidations = @Html.Raw(Json.Encode(ViewBag.RiDataPreValidationBos));
+    var PostComputations = @Html.Raw(Json.Encode(ViewBag.RiDataPostComputationBos));
+    var PostValidations = @Html.Raw(Json.Encode(ViewBag.RiDataPostValidationBos));
+    var StatusHistories = @Html.Raw(Json.Encode(ViewBag.StatusHistoryBos));
+    var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+
+    // Lists
+    var StandardOutputList = @Html.Raw(Json.Encode(ViewBag.StdOutputList));
+    var TransformFormulaList = @Html.Raw(Json.Encode(ViewBag.TransformFormulaList));
+    var ComputationModeList = @Html.Raw(Json.Encode(ViewBag.DropDownComputationMode));
+    var ComputationTableList = @Html.Raw(Json.Encode(ViewBag.DropDownComputationTable));
+    var ComputationRiskDateList = @Html.Raw(Json.Encode(ViewBag.DropDownComputationRiskDate));
+    var InputRequiredTransformFormulas = @Html.Raw(Json.Encode(@BusinessObject.RiDatas.RiDataMappingBo.GetInputRequired()));
+    var StatusList = @Html.Raw(Json.Encode(ViewBag.StatusList));
+
+    var DelimiterItems = @Html.Raw(Json.Encode(ViewBag.DelimiterItems));
+    var BenefitBos = @Html.Raw(Json.Encode(ViewBag.BenefitBos));
+
+    // URL
+    var GetPickListDetailUrl = "@(Url.Action("GetPickListDetailByStandardOutput", "PickList"))";
+    var EvaluateObjectsUrl = "@(Url.Action("EvaluateObjects"))";
+    var GetTreatyUrl = "@(Url.Action("GetTreatyByCedant"))";
+    var GetTreatyCodeUrl = "@(Url.Action("GetByTreatyId", "TreatyCode"))";
+    var GetEvaluateVariableUrl = "@(Url.Action("GetEvaluateVariables"))";
+    var EvaluateSingleUrl = "@(Url.Action("GetEvaluateResult"))";
+
+    // Others
+    var AuthUserName = "@ViewBag.AuthUserName";
+    var Disabled = "@disabled";
+    var ModelId = "@Model.Id";
+    var ModuleId = "@Model.ModuleId";
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var FileTypePlainText = "@BusinessObject.RiDatas.RiDataConfigBo.FileTypePlainText";
+    var FileTypeExcel = "@BusinessObject.RiDatas.RiDataConfigBo.FileTypeExcel";
+    var ComputationModeFormula = "@BusinessObject.RiDatas.RiDataComputationBo.ModeFormula";
+    var ComputationModeRiskDate = "@BusinessObject.RiDatas.RiDataComputationBo.ModeRiskDate";
+    var ComputationModeTable = "@BusinessObject.RiDatas.RiDataComputationBo.ModeTable";
+    var DataTypeDate = "@BusinessObject.StandardOutputBo.DataTypeDate";
+    var DataTypeDropDown = "@BusinessObject.StandardOutputBo.DataTypeDropDown";
+    var DataTypeBoolean = "@BusinessObject.StandardOutputBo.DataTypeBoolean";
+    var DefaultValueString = "@BusinessObject.RiDatas.RiDataMappingBo.DefaultValueString";
+    var DefaultValueDropDown = "@BusinessObject.RiDatas.RiDataMappingBo.DefaultValueDropDown";
+    var DefaultValueMappingDetail = "@BusinessObject.RiDatas.RiDataMappingBo.DefaultValueMappingDetail";
+    var DefaultValueBoolean = "@BusinessObject.RiDatas.RiDataMappingBo.DefaultValueBoolean";
+    var InputTableKey = @BusinessObject.RiDatas.RiDataMappingBo.TransformFormulaInputTable;
+    var FixedValueKey = @BusinessObject.RiDatas.RiDataMappingBo.TransformFormulaFixedValue;
+    var CustomFieldKey = "@BusinessObject.StandardOutputBo.TypeCustomField";
+    var MlreBenefitCodeKey = "@BusinessObject.StandardOutputBo.TypeMlreBenefitCode";
+    var TreatyCodeKey = "@BusinessObject.StandardOutputBo.TypeTreatyCode";
+
+</script>

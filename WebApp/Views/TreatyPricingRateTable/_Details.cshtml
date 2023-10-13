@@ -1,0 +1,275 @@
+﻿@model WebApp.Models.TreatyPricingRateTableViewModel
+@using Shared.Forms.Helpers
+
+<!DOCTYPE html>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item"><a data-toggle="tab" href="#version" class="active underline-tab">Version</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#product">Product</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#remark">Remarks</a></li>
+    <li class="nav-item"><a class="underline-tab" data-toggle="tab" href="#changelog">Changelog</a></li>
+</ul>
+
+<div class="tab-content underline-tab-content" id="app">
+    <div class="tab-pane fade show active" id="version" role="tabpanel" aria-labelledby="version-tab">
+        <div class="col-form-label col-12 p-0 font-weight-bold">Version Details</div>
+        <div class="form-horizontal">
+            @Html.HiddenFor(mode => Model.CurrentVersionObjectId)
+            @Html.HiddenFor(mode => Model.RateTableRate)
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.Version, htmlAttributes: new { @class = "col-form-label" })
+                    <div class="input-group">
+                        @if (ViewBag.IsHideSideBar is null || !ViewBag.IsHideSideBar)
+                        {
+                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker" })
+                            @*<div class="input-group-prepend">
+                                    <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal">CREATE NEW VERSION</button>
+                                </div>*@
+                        }
+                        else
+                        {
+                            @Html.HiddenFor(model => model.CurrentVersion)
+                            @Html.DropDownListFor(model => model.CurrentVersion, (List<SelectListItem>)ViewBag.DropDownVersions, htmlAttributes: new { @class = "form-control selectpicker", @disabled = true })
+                            @*<div class="input-group-prepend">
+                                    <button type="button" class="input-group-text" data-toggle="modal" v-on:click="" data-target="#newVersionModal" disabled>CREATE NEW VERSION</button>
+                                </div>*@
+                        }
+                    </div>
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.PersonInChargeId, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.DropDownListFor(model => model.PersonInChargeId, (List<SelectListItem>)ViewBag.DropDownUsers, htmlAttributes: new { @class = "form-control selectpicker" })
+                    @Html.HiddenFor(model => model.PersonInChargeId)
+                    @Html.ValidationMessageFor(model => model.PersonInChargeId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-form-label col-12 p-0 mt-3 font-weight-bold">Rate Table Details</div>
+        <div class="form-horizontal">
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.BenefitName, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.BenefitName, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.BenefitName, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.EffectiveDateStr, htmlAttributes: new { @class = "col-form-label" })
+                    <div class="input-w-icon">
+                        @Html.TextBoxFor(model => model.EffectiveDateStr, new { id = "EffectiveDateStr", @class = "form-control", placeholder = "DD MM YYYY" })
+                        <span class="fa fa-calendar-alt field-icon" aria-hidden="true" onclick="focusOnDate('EffectiveDateStr')" />
+                    </div>
+                    @Html.ValidationMessageFor(model => model.EffectiveDateStr, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.AgeBasisPickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.DropDownListFor(model => model.AgeBasisPickListDetailId, (List<SelectListItem>)ViewBag.DropDownAgeBasis, htmlAttributes: new { @class = "form-control selectpicker" })
+                    @Html.HiddenFor(model => model.AgeBasisPickListDetailId)
+                    @Html.ValidationMessageFor(model => model.AgeBasisPickListDetailId, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.RiDiscount, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.RiDiscount, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.RiDiscount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.CoinsuranceRiDiscount, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.CoinsuranceRiDiscount, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.CoinsuranceRiDiscount, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.RateGuaranteePickListDetailId, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.DropDownListFor(model => model.RateGuaranteePickListDetailId, (List<SelectListItem>)ViewBag.DropDownRateGuarantees, htmlAttributes: new { @class = "form-control selectpicker" })
+                    @Html.ValidationMessageFor(model => model.RateGuaranteePickListDetailId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.RateGuaranteeForNewBusiness, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.RateGuaranteeForNewBusiness, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.RateGuaranteeForNewBusiness, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.RateGuaranteeForRenewalBusiness, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.RateGuaranteeForRenewalBusiness, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.RateGuaranteeForRenewalBusiness, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.AdvantageProgram, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.AdvantageProgram, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.AdvantageProgram, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.ProfitCommission, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.EditorFor(model => model.ProfitCommission, new { htmlAttributes = new { @class = "form-control", placeholder = "Type here" } })
+                    @Html.ValidationMessageFor(model => model.ProfitCommission, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.LargeSizeDiscount, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.HiddenFor(model => model.LargeSizeDiscount)
+                    <div class="input-group">
+                        @Html.Editor("Lsd", new { htmlAttributes = new { @class = "form-control", placeholder = "Click to edit", @readonly = "true" } })
+                        <div class="input-group-prepend">
+                            <button type="button" class="input-group-text prevent-disable" onclick="openFieldTableModal('Large Size Discount', 'LargeSizeDiscount')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.JuvenileLien, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.HiddenFor(model => model.JuvenileLien)
+                    <div class="input-group">
+                        @Html.Editor("Jl", new { htmlAttributes = new { @class = "form-control", placeholder = "Click to edit", @readonly = "true" } })
+                        <div class="input-group-prepend">
+                            <button type="button" class="input-group-text prevent-disable" onclick="openFieldTableModal('Juvenile Lien', 'JuvenileLien')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6 mid-line-1">
+                    @Html.LabelForRequired(model => model.SpecialLien, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.HiddenFor(model => model.SpecialLien)
+                    <div class="input-group">
+                        @Html.Editor("Sl", new { htmlAttributes = new { @class = "form-control", placeholder = "Click to edit", @readonly = "true" } })
+                        <div class="input-group-prepend">
+                            <button type="button" class="input-group-text prevent-disable" onclick="openFieldTableModal('Special Lien', 'SpecialLien')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-md-6 mid-line-2">
+                    @Html.LabelForRequired(model => model.AdditionalRemark, htmlAttributes: new { @class = "col-form-label" })
+                    @Html.TextAreaFor(model => model.AdditionalRemark, new { @class = "form-control textarea-auto-expand", placeholder = "Type here", rows = "1" })
+                    @Html.ValidationMessageFor(model => model.AdditionalRemark, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="col-form-label col-12 mt-3 p-0 font-weight-bold">Rate Table Preview</div>
+        <table class="table table-hover mt-3 tableBodyScroll" v-cloak>
+            <thead>
+                <tr>
+                    <th class="w-10 text-center">Age (ANxB)</th>
+                    <th class="w-10 text-center">Male Non-Smoker <br />MNS</th>
+                    <th class="w-10 text-center">Male Smoker  <br />MS</th>
+                    <th class="w-10 text-center">Female Non-Smoker  <br />FNS</th>
+                    <th class="w-10 text-center">Female Smoker  <br />FS</th>
+                    <th class="w-10 text-center">Male <br />M</th>
+                    <th class="w-10 text-center">Female <br />F</th>
+                    <th class="w-10 text-center">Unisex <br />US</th>
+                    <th class="w-10 text-center">Unit Rate <br />UR</th>
+                    <th class="w-10 text-center">Occupation <br />Class</th>
+                </tr>
+            </thead>
+            <tbody style="max-height: 310px !important;">
+                <tr v-if="!RateTableRates.length">
+                    <td colspan="10" class="no-data">No available data found.</td>
+                </tr>
+                <tr v-for="(RateTableRate, index) in RateTableRates">
+                    <td class="text-center">{{ RateTableRate.Age }}</td>
+                    <td class="text-center">{{ RateTableRate.MaleNonSmokerStr }}</td>
+                    <td class="text-center">{{ RateTableRate.MaleSmokerStr }}</td>
+                    <td class="text-center">{{ RateTableRate.FemaleNonSmokerStr }}</td>
+                    <td class="text-center">{{ RateTableRate.FemaleSmokerStr }}</td>
+                    <td class="text-center">{{ RateTableRate.MaleStr }}</td>
+                    <td class="text-center">{{ RateTableRate.FemaleStr }}</td>
+                    <td class="text-center">{{ RateTableRate.UnisexStr }}</td>
+                    <td class="text-center">{{ RateTableRate.UnitRateStr }}</td>
+                    <td class="text-center">{{ RateTableRate.OccupationClassStr }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade" id="product" role="tabpanel" aria-labelledby="product-tab">
+        @Html.Partial("_ProductList")
+    </div>
+
+    <div class="tab-pane fade" id="remark" role="tabpanel" aria-labelledby="remark-tab">
+        @Html.Partial("_Remark", new ViewDataDictionary { { "showDocuments", true }, { "showStatus", false }, { "showVersion", true }, { "showSubject", true }, { "dropdownVersions", ViewBag.DropDownVersions } })
+    </div>
+
+    <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+        @Html.Partial("_Changelog")
+    </div>
+</div>
+
+@Html.Partial("_FieldTableModal")
+
+
+@*
+    <div class="modal fade" id="newVersionModal" tabindex="-1" role="dialog" aria-labelledby="newVersionModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Version</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form">
+                        <div class="form-group">
+                            <label class="col-form-label" for="userName">Person In-Charge (Business Development)</label>
+                            <input type="text" readonly class="form-control" id="userName" value="@ViewBag.AuthUserName">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-form-label" for="duplicatePreviousVersion">Duplicate Previous Version</label>
+                            <div class="row m-0 p-0">
+                                <div class="mr-2"> <p style="color: #004BA2;">No</p> </div>
+                                <div class="custom-control custom-switch pl-2">
+                                    <input class="custom-control-input" id="duplicatePreviousVersion" name="duplicatePreviousVersion" type="checkbox" v-model="RemarkModal.RemarkIsPrivate" />
+                                    <label class="custom-control-label" for="duplicatePreviousVersion">Yes</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel mr-auto" data-dismiss="modal" style="width: auto;">CANCEL</button>
+                    <button type="button" onclick="createVersion()" class="btn btn-submit" data-dismiss="modal">CREATE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+*@
+
+<script>
+    // Model
+    var Model = @Html.Raw(Json.Encode(Model));
+    var DateTimeFormat = "@Shared.Util.GetDateTimeFormatMomentJs()";
+    var SubModuleController = '@BusinessObject.ModuleBo.ModuleController.TreatyPricingRateTable.ToString()';
+
+    //List
+    var Products = @Html.Raw(Json.Encode(ViewBag.Products));
+    var RateTableRates = @Html.Raw(Json.Encode(ViewBag.RateTableRateBos));
+
+    //Url
+    var CreateVersionUrl = "@(Url.Action("CreateVersion", "TreatyPricingRateTable"))";
+    var RefreshDataUrl = "@(Url.Action("RefreshData", "TreatyPricingRateTable"))";
+
+    //Remark
+    var Remarks = @Html.Raw(Json.Encode(ViewBag.RemarkBos));
+    var RemarkSubjects = @Html.Raw(Json.Encode(ViewBag.RemarkSubjects));
+
+    //Changelog
+    var Changelogs = @Html.Raw(Json.Encode(ViewBag.ObjectVersionChangelogs));
+
+    //Other
+    var AuthUserName = '@ViewBag.AuthUserName';
+</script>

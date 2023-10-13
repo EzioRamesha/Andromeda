@@ -1,0 +1,109 @@
+﻿@model WebApp.Models.AuthorizationLimitViewModel
+
+@{
+    ViewBag.Title = "Authorization Limit";
+    ViewBag.Action = "Edit";
+    ViewBag.ListPageUrl = Url.Action("Index");
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+@Html.Partial("_ValidationSummary")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Id)
+
+            <div class="form-horizontal">
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.AccessGroupId, htmlAttributes: new { @class = "col-form-label" })
+                        @Html.DropDownListFor(model => model.AccessGroupId, (List<SelectListItem>)ViewBag.DropDownAccessGroups, htmlAttributes: new { @class = "form-control selectpicker" })
+                        @Html.ValidationMessageFor(model => model.AccessGroupId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="mt-5 col-form-label">
+                    <span class="font-weight-bold">SOA Net Difference</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.PositiveAmountFrom, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.PositiveAmountFrom, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.PositiveAmountFrom, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.PositiveAmountTo, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.PositiveAmountTo, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.PositiveAmountTo, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.NegativeAmountFrom, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.NegativeAmountFrom, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.NegativeAmountFrom, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6 mid-line-2">
+                        @Html.LabelFor(model => model.NegativeAmountTo, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">MYR</div>
+                            </div>
+                            @Html.EditorFor(model => model.NegativeAmountTo, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.NegativeAmountTo, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6 mid-line-1">
+                        @Html.LabelFor(model => model.Percentage, htmlAttributes: new { @class = "col-form-label" })
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">%</div>
+                            </div>
+                            @Html.EditorFor(model => model.Percentage, new { htmlAttributes = new { @class = "form-control text-right", placeholder = "Type here" } })
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Percentage, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-row form-row-btn">
+                    <div class="form-group col-md-12 btn-row">
+                        @Html.ActionLink("CANCEL", "Index", null, new { @class = "btn btn-cancel" })
+                        @Html.ActionLink("DELETE", "Delete", new { id = Model.Id }, new { @class = "btn btn-del" })
+                        <button type="submit" class="btn btn-submit float-right">SAVE</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")

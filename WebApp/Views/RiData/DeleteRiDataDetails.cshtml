@@ -1,0 +1,123 @@
+﻿@model WebApp.Models.RiDataViewModel
+
+@{
+    ViewBag.Title = "RI Data Details";
+    ViewBag.Action = "Delete";
+    ViewBag.ListPageUrl = Url.Action("Index");
+
+    ViewBag.PrevTitle = "RI Data Batch";
+    ViewBag.PrevAction = "Edit";
+    ViewBag.EditPageUrl = Url.Action("Edit", new { id = Model.RiDataBatchId });
+
+    ViewBag.Prev2Title = "RI Data Details";
+    ViewBag.Prev2Action = "Edit";
+    ViewBag.EditDetailsPageUrl = Url.Action("Details", new { id = Model.Id });
+}
+
+@section breadcrumb
+{
+    @Html.Partial("_Breadcrumb")
+}
+
+@Html.Partial("_BackToList")
+
+<div class="card">
+    <div class="card-header">
+        <h4>@ViewBag.Action @ViewBag.Title</h4>
+    </div>
+    <div class="card-body">
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8 p-5 text-center delete-heading">
+                <h4>Are you sure you want to delete this?</h4>
+            </div>
+        </div>
+        <div class="form-row wrap-form">
+            <div class="form-group col-md-8">
+                <table class="table table-hover table-delete">
+                    <thead>
+                        <tr>
+                            <th class="w-50">Label</th>
+                            <th class="w-50">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Html.DisplayName("Ceding Company")</td>
+                            <td>@string.Format("{0} - {1}", Model.RiDataBatchBo.CedantBo.Code, Model.RiDataBatchBo.CedantBo.Name)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PolicyNumber)</td>
+                            <td>@Html.DisplayFor(model => model.PolicyNumber)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.TreatyCode)</td>
+                            <td>@Html.DisplayFor(model => model.TreatyCode)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.IssueDatePol)</td>
+                            <td>@Html.DisplayFor(model => model.IssueDatePolStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ReinsEffDatePol)</td>
+                            <td>@Html.DisplayFor(model => model.ReinsEffDatePolStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PolicyTerm)</td>
+                            <td>@Html.DisplayFor(model => model.PolicyTerm)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PolicyExpiryDate)</td>
+                            <td>@Html.DisplayFor(model => model.PolicyExpiryDateStr)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.MappingStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetMappingStatusName(Model.MappingStatus)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PreComputation1Status)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetPreComputation1StatusName(Model.PreComputation1Status)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PreComputation2Status)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetPreComputation2StatusName(Model.PreComputation2Status)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PreValidationStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetPreValidationStatusName(Model.PreValidationStatus)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.PostComputationStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetPostComputationStatusName(Model.PostComputationStatus)</td>
+                        </tr>
+                         <tr>
+                            <td>@Html.DisplayNameFor(model => model.PostValidationStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetPostValidationStatusName(Model.PostValidationStatus)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.FinaliseStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetFinaliseStatusName(Model.FinaliseStatus)</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.DisplayNameFor(model => model.ProcessWarehouseStatus)</td>
+                            <td>@BusinessObject.RiDatas.RiDataBo.GetProcessWarehouseStatusName(Model.ProcessWarehouseStatus)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color form-row form-row-btn">
+                <div class="form-group col-md-12 btn-row">
+                    @Html.ActionLink("CANCEL", "Details", new { id = Model.Id, ridataBatchId = Model.RiDataBatchId }, new { @class = "btn btn-cancel" })
+                    <button type="submit" class="btn btn-del float-right">DELETE</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@Html.Partial("_BackToList")
